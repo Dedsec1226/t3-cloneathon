@@ -1258,7 +1258,7 @@ const FormComponent: React.FC<FormComponentProps> = ({
                         }} suppressHydrationWarning>
                             <Textarea
                                 ref={inputRef}
-                                placeholder={hasInteracted ? "Ask a new question..." : "Ask a question..."}
+                                placeholder={hasInteracted ? "Ask a new question..." : "Type your message here..."}
                                 value={input}
                                 onChange={handleInput}
                                 disabled={isProcessing}
