@@ -1252,7 +1252,7 @@ const FormComponent: React.FC<FormComponentProps> = ({
                          marginBottom: "0px"
                      } as React.CSSProperties} suppressHydrationWarning>
                         <div className="relative flex w-full flex-col items-stretch gap-2 rounded-t-3xl border-0 border-white/70 bg-background px-3 pt-3 pb-safe text-secondary-foreground outline-0 sm:max-w-3xl" style={{
-                            boxShadow: "rgba(0, 0, 0, 0.1) 0px 80px 50px 0px, rgba(0, 0, 0, 0.07) 0px 50px 30px 0px, rgba(0, 0, 0, 0.06) 0px 30px 15px 0px, rgba(0, 0, 0, 0.04) 0px 15px 8px, rgba(0, 0, 0, 0.04) 0px 6px 4px, rgba(0, 0, 0, 0.02) 0px 2px 2px",
+                            boxShadow: "rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.06) 0px 2px 4px -1px",
                             marginBottom: "0px",
                             paddingBottom: "max(12px, env(safe-area-inset-bottom))"
                         }} suppressHydrationWarning>
@@ -1297,7 +1297,6 @@ const FormComponent: React.FC<FormComponentProps> = ({
                             <div
                                 className={cn(
                                 "flex justify-between items-center pt-3 mt-2",
-                                "border-t border-neutral-200/40 dark:border-neutral-700/40",
                                     isProcessing ? "opacity-20! cursor-not-allowed!" : ""
                                 )}
                             suppressHydrationWarning
@@ -1307,7 +1306,7 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                  <Button
                                      variant="outline"
                                      size="icon"
-                                     className="rounded-full h-8 w-8 bg-neutral-50 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-700 border-neutral-200/60 dark:border-neutral-700/60 shadow-sm hover:shadow-md transition-all duration-200"
+                                     className="rounded-full h-8 w-8 bg-background text-muted-foreground hover:bg-muted/40 hover:text-foreground border-secondary-foreground/10 shadow-sm hover:shadow-md transition-all duration-200"
                                      disabled={!!isProcessing}
                                      onClick={(e) => {
                                          e.preventDefault();
@@ -1338,7 +1337,7 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                                  ease: "easeInOut",
                                                  height: { duration: 0.25 }
                                              }}
-                                             className="absolute bottom-full left-0 mb-3 bg-white/95 dark:bg-neutral-800/95 backdrop-blur-md rounded-xl shadow-xl border border-neutral-200/50 dark:border-neutral-700/50 p-3 z-50 min-w-[220px]"
+                                             className="absolute bottom-full left-0 mb-3 bg-background backdrop-blur-md rounded-xl shadow-xl border border-neutral-200 dark:border-neutral-700 p-3 z-50 min-w-[220px]"
                                          >
                                              <div className="flex flex-col gap-1.5">
                                                  {searchGroups.filter(group => group.show).map((group) => (
@@ -1358,8 +1357,8 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                                                      className={cn(
                                                                          "w-full justify-start gap-3 h-11 px-3 transition-all duration-200 rounded-lg",
                                                                          selectedGroup === group.id
-                                                                             ? "bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 shadow-sm"
-                                                                             : "text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100/70 dark:hover:bg-neutral-700/70 hover:scale-[1.02]"
+                                                                             ? "bg-primary text-primary-foreground shadow-sm"
+                                                                             : "text-foreground hover:bg-muted/40 hover:text-foreground hover:scale-[1.02]"
                                                                      )}
                                                                      onClick={(e) => {
                                                                          e.preventDefault();
@@ -1458,11 +1457,11 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                                      }}
                                                      className={cn(
                                                          "flex items-center gap-1.5 h-8 transition-all duration-300",
-                                                         "rounded-full border border-neutral-200 dark:border-neutral-800",
+                                                         "rounded-full border border-secondary-foreground/10",
                                                          "hover:shadow-md",
                                                          selectedGroup === 'web'
                                                              ? "bg-blue-500 dark:bg-blue-500 text-white px-2"
-                                                             : "bg-white dark:bg-neutral-900 text-neutral-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 px-1.5 w-8",
+                                                             : "bg-background text-muted-foreground hover:bg-muted/40 hover:text-foreground px-1.5 w-8",
                                                      )}
                                                      suppressHydrationWarning
                                                  >
@@ -1477,7 +1476,7 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                              >
                                                  <div className="flex flex-col gap-0.5">
                                                      <span className="font-medium text-[11px]">Web Search</span>
-                                                     <span className="text-[10px] text-neutral-300 dark:text-neutral-600 leading-tight">Search the web for information</span>
+                                                     <span className="text-[10px] text-foreground/70 leading-tight">Search the web for information</span>
                                                  </div>
                                              </TooltipContent>
                                          </Tooltip>
@@ -1508,11 +1507,11 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                              }}
                                              className={cn(
                                                  "flex items-center gap-1.5 h-8 transition-all duration-300",
-                                                 "rounded-full border border-neutral-200 dark:border-neutral-800",
+                                                 "rounded-full border border-secondary-foreground/10",
                                                  "hover:shadow-md",
                                                  selectedGroup === 'web'
                                                      ? "bg-blue-500 dark:bg-blue-500 text-white px-2"
-                                                     : "bg-white dark:bg-neutral-900 text-neutral-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 px-1.5 w-8",
+                                                     : "bg-background text-muted-foreground hover:bg-muted/40 hover:text-foreground px-1.5 w-8",
                                              )}
                                              suppressHydrationWarning
                                          >
@@ -1551,11 +1550,11 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                                         }}
                                                         className={cn(
                                                          "flex items-center gap-1.5 h-8 transition-all duration-300",
-                                                         "rounded-full border border-neutral-200 dark:border-neutral-800",
+                                                         "rounded-full border border-secondary-foreground/10",
                                                             "hover:shadow-md",
                                                             selectedGroup === 'extreme'
                                                              ? "bg-purple-500 dark:bg-purple-500 text-white px-2"
-                                                             : "bg-white dark:bg-neutral-900 text-neutral-500 hover:bg-purple-50 dark:hover:bg-purple-900/20 px-1.5 w-8",
+                                                             : "bg-background text-muted-foreground hover:bg-muted/40 hover:text-foreground px-1.5 w-8",
                                                         )}
                                                      suppressHydrationWarning
                                                     >
@@ -1570,7 +1569,7 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                                 >
                                                     <div className="flex flex-col gap-0.5">
                                                         <span className="font-medium text-[11px]">Extreme Mode</span>
-                                                        <span className="text-[10px] text-neutral-300 dark:text-neutral-600 leading-tight">Deep research with multiple sources and analysis</span>
+                                                        <span className="text-[10px] text-foreground/70 leading-tight">Deep research with multiple sources and analysis</span>
                                                     </div>
                                                 </TooltipContent>
                                             </Tooltip>
@@ -1601,11 +1600,11 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                                 }}
                                                 className={cn(
                                                  "flex items-center gap-1.5 h-8 transition-all duration-300",
-                                                 "rounded-full border border-neutral-200 dark:border-neutral-800",
+                                                 "rounded-full border border-secondary-foreground/10",
                                                     "hover:shadow-md",
                                                     selectedGroup === 'extreme'
                                                      ? "bg-purple-500 dark:bg-purple-500 text-white px-2"
-                                                     : "bg-white dark:bg-neutral-900 text-neutral-500 hover:bg-purple-50 dark:hover:bg-purple-900/20 px-1.5 w-8",
+                                                     : "bg-background text-muted-foreground hover:bg-muted/40 hover:text-foreground px-1.5 w-8",
                                                 )}
                                              suppressHydrationWarning
                                             >
@@ -1642,7 +1641,7 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                                 >
                                                     <div className="flex flex-col gap-0.5">
                                                         <span className="font-medium text-[11px]">Attach File</span>
-                                                        <span className="text-[10px] text-neutral-300 dark:text-neutral-600 leading-tight">
+                                                        <span className="text-[10px] text-foreground/70 leading-tight">
                                                             {supportsPdfAttachments(selectedModel)
                                                                 ? "Upload an image or PDF document"
                                                                 : "Upload an image"}
@@ -1760,10 +1759,10 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                      </Button>
                                  )}
                                 </div>
+                                                            </div>
                             </div>
                         </div>
                     </div>
-                </div>
             </TooltipProvider>
         </div>
     );
