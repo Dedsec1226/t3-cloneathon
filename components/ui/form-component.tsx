@@ -1243,55 +1243,56 @@ const FormComponent: React.FC<FormComponentProps> = ({
                          suppressHydrationWarning
                      />
 
-                     <div className="border-reflect rounded-t-3xl p-2 backdrop-blur-lg" style={{
-                         "--gradientBorder-gradient": "linear-gradient(180deg, var(--min), var(--max), var(--min)), linear-gradient(15deg, var(--min) 50%, var(--max))",
-                         "--start": "#000000e0",
-                         "--opacity": "1",
-                         background: "hsl(var(--background))",
-                         paddingBottom: "0px",
-                         marginBottom: "0px"
-                     } as React.CSSProperties} suppressHydrationWarning>
-                        <div className="relative flex w-full flex-col items-stretch gap-2 rounded-t-3xl border-0 border-white/70 bg-background px-3 pt-3 pb-safe text-secondary-foreground outline-0 sm:max-w-3xl" style={{
-                            boxShadow: "rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.06) 0px 2px 4px -1px",
-                            marginBottom: "0px",
-                            paddingBottom: "max(12px, env(safe-area-inset-bottom))"
-                        }} suppressHydrationWarning>
+                        <div className="rounded-t-3xl p-2 backdrop-blur-lg bg-background border border-border/50" style={{
+                            paddingBottom: "0px",
+                            marginBottom: "0px"
+                        } as React.CSSProperties} suppressHydrationWarning>
+                            <div className="border-reflect rounded-t-2xl backdrop-blur-lg" style={{
+                                "--gradientBorder-gradient": "linear-gradient(180deg, var(--min), var(--max), var(--min)), linear-gradient(15deg, var(--min) 50%, var(--max))",
+                                "--start": "#000000e0",
+                                "--opacity": "0.6"
+                            } as React.CSSProperties}>
+                                <div className="relative flex w-full flex-col items-stretch gap-2 rounded-t-2xl border-0 backdrop-blur-md px-3 pt-3 pb-safe text-secondary-foreground outline-0 sm:max-w-3xl" style={{
+                                    backgroundColor: "rgb(44, 38, 48)",
+                                    marginBottom: "0px",
+                                    paddingBottom: "max(12px, env(safe-area-inset-bottom))"
+                                }} suppressHydrationWarning>
                             <Textarea
-                                ref={inputRef}
-                                placeholder={hasInteracted ? "Ask a new question..." : "Type your message here..."}
-                                value={input}
-                                onChange={handleInput}
-                                disabled={isProcessing}
-                                onFocus={handleFocus}
-                                onBlur={handleBlur}
-                                className={cn(
-                                    "w-full rounded-lg rounded-b-none md:text-base!",
-                                    "text-base leading-relaxed",
-                                "bg-transparent",
-                                "border-0! outline-0! shadow-none! ring-0!",
-                                "text-foreground",
-                                "focus:ring-0! focus-visible:ring-0! focus:border-0! focus:outline-0! focus:shadow-none! focus:ring-offset-0!",
-                                "active:ring-0! active:border-0! active:outline-0! active:shadow-none! active:ring-offset-0!",
-                                "hover:ring-0! hover:border-0! hover:outline-0! hover:shadow-none! hover:ring-offset-0!",
-                                "px-0! py-0!",
-                                    "touch-manipulation",
-                                "whatsize",
-                                "[&:focus]:ring-0! [&:focus]:border-0! [&:focus]:outline-0! [&:focus]:shadow-none!",
-                                "[&:active]:ring-0! [&:active]:border-0! [&:active]:outline-0! [&:active]:shadow-none!"
-                                )}
-                                style={{
-                                    WebkitUserSelect: 'text',
-                                    WebkitTouchCallout: 'none',
-                                    minHeight: width && width < 768 ? '40px' : undefined,
-                                    resize: 'none',
-                                }}
-                                rows={1}
-                                autoFocus={width ? width > 768 : true}
-                                onCompositionStart={() => isCompositionActive.current = true}
-                                onCompositionEnd={() => isCompositionActive.current = false}
-                                onKeyDown={handleKeyDown}
-                            suppressHydrationWarning
-                            />
+                                    ref={inputRef}
+                                    placeholder={hasInteracted ? "Ask a new question..." : "Type your message here..."}
+                                    value={input}
+                                    onChange={handleInput}
+                                    disabled={isProcessing}
+                                    onFocus={handleFocus}
+                                    onBlur={handleBlur}
+                                    className={cn(
+                                        "w-full rounded-lg rounded-b-none md:text-base!",
+                                        "text-base leading-relaxed",
+                                    "bg-transparent",
+                                    "border-0! outline-0! shadow-none! ring-0!",
+                                    "text-foreground",
+                                    "focus:ring-0! focus-visible:ring-0! focus:border-0! focus:outline-0! focus:shadow-none! focus:ring-offset-0!",
+                                    "active:ring-0! active:border-0! active:outline-0! active:shadow-none! active:ring-offset-0!",
+                                    "hover:ring-0! hover:border-0! hover:outline-0! hover:shadow-none! hover:ring-offset-0!",
+                                    "px-0! py-0!",
+                                        "touch-manipulation",
+                                    "whatsize",
+                                    "[&:focus]:ring-0! [&:focus]:border-0! [&:focus]:outline-0! [&:focus]:shadow-none!",
+                                    "[&:active]:ring-0! [&:active]:border-0! [&:active]:outline-0! [&:active]:shadow-none!"
+                                    )}
+                                    style={{
+                                        WebkitUserSelect: 'text',
+                                        WebkitTouchCallout: 'none',
+                                        minHeight: width && width < 768 ? '40px' : undefined,
+                                        resize: 'none',
+                                    }}
+                                    rows={1}
+                                    autoFocus={width ? width > 768 : true}
+                                    onCompositionStart={() => isCompositionActive.current = true}
+                                    onCompositionEnd={() => isCompositionActive.current = false}
+                                    onKeyDown={handleKeyDown}
+                                suppressHydrationWarning
+                                />
 
                         {/* Toolbar */}
                             <div
@@ -1763,6 +1764,7 @@ const FormComponent: React.FC<FormComponentProps> = ({
                             </div>
                         </div>
                     </div>
+                </div>
             </TooltipProvider>
         </div>
     );
