@@ -29,7 +29,6 @@ export const serverEnv = createEnv({
     OPENWEATHER_API_KEY: z.string().min(1).optional(),
     SANDBOX_TEMPLATE_ID: z.string().min(1).optional(),
     GOOGLE_MAPS_API_KEY: z.string().min(1).optional(),
-    MAPBOX_ACCESS_TOKEN: z.string().min(1).optional(),
     AVIATION_STACK_API_KEY: z.string().min(1).optional(),
     CRON_SECRET: z.string().min(1).optional(),
     BLOB_READ_WRITE_TOKEN: z.string().min(1).optional(),

@@ -87,16 +87,32 @@ DropdownMenuTrigger.displayName = "DropdownMenuTrigger"
 
 const DropdownMenuContent = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement> & { align?: "start" | "center" | "end" }
->(({ className, align = "center", ...props }, ref) => (
+  React.HTMLAttributes<HTMLDivElement> & { 
+    align?: "start" | "center" | "end"
+    side?: "top" | "right" | "bottom" | "left"
+  }
+>(({ className, align = "center", side = "bottom", ...props }, ref) => (
   <div
     ref={ref}
     className={cn(
       "absolute z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md",
-      align === "end" && "right-0",
-      align === "start" && "left-0",
-      align === "center" && "left-1/2 transform -translate-x-1/2",
-      "top-full mt-1",
+      // Horizontal alignment (for top/bottom sides)
+      side === "top" || side === "bottom" ? [
+        align === "end" && "right-0",
+        align === "start" && "left-0",
+        align === "center" && "left-1/2 transform -translate-x-1/2",
+      ] : [],
+      // Vertical alignment (for left/right sides)
+      side === "left" || side === "right" ? [
+        align === "end" && "bottom-0",
+        align === "start" && "top-0", 
+        align === "center" && "top-1/2 transform -translate-y-1/2",
+      ] : [],
+      // Side positioning
+      side === "top" && "bottom-full mb-1",
+      side === "bottom" && "top-full mt-1",
+      side === "left" && "right-full mr-1",
+      side === "right" && "left-full ml-1",
       className
     )}
     {...props}

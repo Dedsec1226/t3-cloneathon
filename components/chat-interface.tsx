@@ -50,7 +50,7 @@ const ChatInterface = memo(({ initialChatId, initialMessages, initialVisibility 
     const [q] = useQueryState('q', parseAsString.withDefault(''))
 
     // Use localStorage hook directly for model selection with a default
-    const [selectedModel, setSelectedModel] = useLocalStorage('scira-selected-model', 'scira-default');
+    const [selectedModel, setSelectedModel] = useLocalStorage('t3-selected-model', 't3-default');
 
     const initialState = useMemo(() => ({
         query: query || q,
@@ -63,7 +63,7 @@ const ChatInterface = memo(({ initialChatId, initialMessages, initialVisibility 
     const fileInputRef = useRef<HTMLInputElement>(null);
     const inputRef = useRef<HTMLTextAreaElement>(null);
     const initializedRef = useRef(false);
-    const [selectedGroup, setSelectedGroup] = useLocalStorage<SearchGroupId>('scira-selected-group', null);
+    const [selectedGroup, setSelectedGroup] = useLocalStorage<SearchGroupId>('t3-selected-group-v2', null);
     const [selectedCategoryButton, setSelectedCategoryButton] = useState<string | null>(null);
     const [hasSubmitted, setHasSubmitted] = React.useState(false);
     const [hasManuallyScrolled, setHasManuallyScrolled] = useState(false);
@@ -101,7 +101,7 @@ const ChatInterface = memo(({ initialChatId, initialMessages, initialVisibility 
 
     // Sign-in prompt dialog state
     // const [showSignInPrompt, setShowSignInPrompt] = useState(false);
-    const [hasShownSignInPrompt, setHasShownSignInPrompt] = useLocalStorage('scira-signin-prompt-shown', false);
+    const [hasShownSignInPrompt, setHasShownSignInPrompt] = useLocalStorage('t3-signin-prompt-shown', false);
     const signInTimerRef = useRef<NodeJS.Timeout | null>(null);
 
     // Generate a consistent ID for new chats
@@ -531,6 +531,13 @@ const ChatInterface = memo(({ initialChatId, initialMessages, initialVisibility 
                                                     onClick={() => {
                                                         setInput(question);
                                                         setHasSubmitted(true);
+                                                        // Focus the input and set cursor to end
+                                                        setTimeout(() => {
+                                                            if (inputRef.current) {
+                                                                inputRef.current.focus();
+                                                                inputRef.current.setSelectionRange(question.length, question.length);
+                                                            }
+                                                        }, 0);
                                                     }}
                                                 >
                                                     <span>{question}</span>

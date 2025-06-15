@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 import React, { useState, memo, useCallback } from 'react';
 import { cn } from "@/lib/utils";
-import InteractiveMap from './interactive-maps';
+// InteractiveMap removed - using placeholder instead
 import PlaceCard from './place-card';
 import { Badge } from './ui/badge';
 import { AlertCircle } from 'lucide-react';
@@ -216,12 +216,9 @@ const NearbySearchMapView = memo<NearbySearchMapViewProps>(({
             </div>
           ) : (
             <div className="relative w-full h-full">
-              <InteractiveMap
-                center={memoizedCenter}
-                places={normalizedPlaces}
-                selectedPlace={normalizedSelectedPlace}
-                onPlaceSelect={handlePlaceSelect}
-              />
+              <div className="w-full h-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center">
+                <p className="text-sm text-neutral-600 dark:text-neutral-400">Interactive map would be displayed here</p>
+              </div>
               
               {/* Selected Place Overlay - Only show in map view */}
               {selectedPlace && viewMode === 'map' && !mapError && (

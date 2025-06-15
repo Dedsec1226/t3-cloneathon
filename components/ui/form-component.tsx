@@ -179,17 +179,17 @@ const ImagePlusIcon = (props: SVGProps<SVGSVGElement>) => (
 );
 
 const models = [
-    { value: "scira-default", label: "Grok 3.0 Mini", icon: XAIIcon, iconClass: "text-current", description: "xAI's most efficient reasoning model", color: "black", vision: false, reasoning: true, experimental: false, category: "Stable", pdf: false, fast: true, web: false, imageGeneration: false },
-    { value: "scira-grok-3", label: "Grok 3.0", icon: XAIIcon, iconClass: "text-current", description: "xAI's most intelligent model", color: "gray", vision: false, reasoning: false, experimental: false, category: "Stable", pdf: false, fast: false, web: true, imageGeneration: false },
-    { value: "scira-vision", label: "Grok 2.0 Vision", icon: XAIIcon, iconClass: "text-current", description: "xAI's advanced vision model", color: "indigo", vision: true, reasoning: false, experimental: false, category: "Stable", pdf: false, fast: false, web: false, imageGeneration: false },
-    { value: "scira-anthropic", label: "Claude 4 Sonnet", icon: AnthropicIcon, iconClass: "text-current", description: "Anthropic's most advanced model", color: "violet", vision: true, reasoning: false, experimental: false, category: "Stable", pdf: true, fast: false, web: false, imageGeneration: false },
-    { value: "scira-anthropic-thinking", label: "Claude 4 Sonnet Thinking", icon: AnthropicIcon, iconClass: "text-current", description: "Anthropic's most advanced reasoning model", color: "violet", vision: true, reasoning: true, experimental: false, category: "Stable", pdf: true, fast: false, web: false, imageGeneration: false },
-    { value: "scira-google", label: "Gemini 2.5 Flash (Thinking)", icon: GeminiIcon, iconClass: "text-current", description: "Google's advanced small reasoning model", color: "gemini", vision: true, reasoning: true, experimental: false, category: "Stable", pdf: true, fast: true, web: false, imageGeneration: false },
-    { value: "scira-google-pro", label: "Gemini 2.5 Pro (Preview)", icon: GeminiIcon, iconClass: "text-current", description: "Google's advanced reasoning model", color: "gemini", vision: true, reasoning: true, experimental: false, category: "Stable", pdf: true, fast: false, web: false, imageGeneration: false },
-    { value: "scira-4o", label: "GPT 4o", icon: OpenAIIcon, iconClass: "text-current", description: "OpenAI's flagship model", color: "blue", vision: true, reasoning: false, experimental: false, category: "Stable", pdf: true, fast: false, web: true, imageGeneration: true },
-    { value: "scira-o4-mini", label: "o4 mini", icon: OpenAIIcon, iconClass: "text-current", description: "OpenAI's faster mini reasoning model", color: "blue", vision: true, reasoning: true, experimental: false, category: "Stable", pdf: false, fast: true, web: false, imageGeneration: false },
-    { value: "scira-llama-4", label: "Llama 4 Maverick", icon: GroqIcon, iconClass: "text-current", description: "Meta's latest model", color: "blue", vision: true, reasoning: false, experimental: true, category: "Experimental", pdf: false, fast: true, web: false, imageGeneration: false },
-    { value: "scira-qwq", label: "QWQ 32B", icon: QwenIcon, iconClass: "text-current", description: "Alibaba's advanced reasoning model", color: "purple", vision: false, reasoning: true, experimental: true, category: "Experimental", pdf: false, fast: false, web: false, imageGeneration: false },
+    { value: "t3-default", label: "Grok 3.0 Mini", icon: XAIIcon, iconClass: "text-current", description: "xAI's most efficient reasoning model", color: "black", vision: false, reasoning: true, experimental: false, category: "Stable", pdf: false, fast: true, web: false, imageGeneration: false },
+    { value: "t3-grok-3", label: "Grok 3.0", icon: XAIIcon, iconClass: "text-current", description: "xAI's most intelligent model", color: "gray", vision: false, reasoning: false, experimental: false, category: "Stable", pdf: false, fast: false, web: true, imageGeneration: false },
+    { value: "t3-vision", label: "Grok 2.0 Vision", icon: XAIIcon, iconClass: "text-current", description: "xAI's advanced vision model", color: "indigo", vision: true, reasoning: false, experimental: false, category: "Stable", pdf: false, fast: false, web: false, imageGeneration: false },
+    { value: "t3-anthropic", label: "Claude 4 Sonnet", icon: AnthropicIcon, iconClass: "text-current", description: "Anthropic's most advanced model", color: "violet", vision: true, reasoning: false, experimental: false, category: "Stable", pdf: true, fast: false, web: false, imageGeneration: false },
+    { value: "t3-anthropic-thinking", label: "Claude 4 Sonnet Thinking", icon: AnthropicIcon, iconClass: "text-current", description: "Anthropic's most advanced reasoning model", color: "violet", vision: true, reasoning: true, experimental: false, category: "Stable", pdf: true, fast: false, web: false, imageGeneration: false },
+    { value: "t3-google", label: "Gemini 2.5 Flash (Thinking)", icon: GeminiIcon, iconClass: "text-current", description: "Google's advanced small reasoning model", color: "gemini", vision: true, reasoning: true, experimental: false, category: "Stable", pdf: true, fast: true, web: false, imageGeneration: false },
+    { value: "t3-google-pro", label: "Gemini 2.5 Pro (Preview)", icon: GeminiIcon, iconClass: "text-current", description: "Google's advanced reasoning model", color: "gemini", vision: true, reasoning: true, experimental: false, category: "Stable", pdf: true, fast: false, web: false, imageGeneration: false },
+    { value: "t3-4o", label: "GPT 4o", icon: OpenAIIcon, iconClass: "text-current", description: "OpenAI's flagship model", color: "blue", vision: true, reasoning: false, experimental: false, category: "Stable", pdf: true, fast: false, web: true, imageGeneration: true },
+    { value: "t3-o4-mini", label: "o4 mini", icon: OpenAIIcon, iconClass: "text-current", description: "OpenAI's faster mini reasoning model", color: "blue", vision: true, reasoning: true, experimental: false, category: "Stable", pdf: false, fast: true, web: false, imageGeneration: false },
+    { value: "t3-llama-4", label: "Llama 4 Maverick", icon: GroqIcon, iconClass: "text-current", description: "Meta's latest model", color: "blue", vision: true, reasoning: false, experimental: true, category: "Experimental", pdf: false, fast: true, web: false, imageGeneration: false },
+    { value: "t3-qwq", label: "QWQ 32B", icon: QwenIcon, iconClass: "text-current", description: "Alibaba's advanced reasoning model", color: "purple", vision: false, reasoning: true, experimental: true, category: "Experimental", pdf: false, fast: false, web: false, imageGeneration: false },
 ];
 
 const getColorClasses = (color: string, isSelected: boolean = false) => {
@@ -247,10 +247,14 @@ const getColorClasses = (color: string, isSelected: boolean = false) => {
     }
 }
 
-const ModelSwitcher: React.FC<ModelSwitcherProps> = memo(({ selectedModel, setSelectedModel, className, showExperimentalModels, attachments, messages, status, onModelSelect, isOpen: externalIsOpen, onOpenChange, onGroupSelectorClose }) => {
+const ModelSwitcher: React.FC<ModelSwitcherProps & {
+    onFilterClick: () => void;
+}> = memo(({ selectedModel, setSelectedModel, className, showExperimentalModels, attachments, messages, status, onModelSelect, isOpen: externalIsOpen, onOpenChange, onGroupSelectorClose, onFilterClick }) => {
     const selectedModelData = models.find(model => model.value === selectedModel);
     const [internalIsOpen, setInternalIsOpen] = useState(false);
     const [mounted, setMounted] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [showAllModels, setShowAllModels] = useState(false);
     const isProcessing = status === 'submitted' || status === 'streaming';
     
     // Use external state if provided, otherwise use internal state
@@ -272,8 +276,23 @@ const ModelSwitcher: React.FC<ModelSwitcherProps> = memo(({ selectedModel, setSe
         ? models.filter(model => model.vision)
         : models;
 
+    // Apply search filter
+    const searchFilteredModels = searchQuery.trim() === '' 
+        ? filteredModels 
+        : filteredModels.filter(model => 
+            model.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            model.value.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            model.category.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+
+    // No filtering inside ModelSwitcher - will be handled externally
+    const capabilityFilteredModels = searchFilteredModels;
+
+    // Limit to first 8 models unless showing all
+    const limitedModels = showAllModels ? capabilityFilteredModels : capabilityFilteredModels.slice(0, 8);
+
     // Group filtered models by category
-    const groupedModels = filteredModels.reduce((acc, model) => {
+    const groupedModels = limitedModels.reduce((acc, model) => {
         const category = model.category;
         if (!acc[category]) {
             acc[category] = [];
@@ -337,6 +356,11 @@ const ModelSwitcher: React.FC<ModelSwitcherProps> = memo(({ selectedModel, setSe
                 // Close group selector when model selector opens
                 if (open && onGroupSelectorClose) {
                     onGroupSelectorClose();
+                }
+                // Clear search and reset show all when dropdown closes
+                if (!open) {
+                    setSearchQuery('');
+                    setShowAllModels(false);
                 }
             }}
             open={isOpen && !isProcessing}
@@ -410,16 +434,46 @@ const ModelSwitcher: React.FC<ModelSwitcherProps> = memo(({ selectedModel, setSe
                 </div>
             </DropdownMenuTrigger>
             <DropdownMenuContent
-                className="w-[400px] p-0 rounded-xl bg-background border border-border shadow-xl max-h-[500px] overflow-hidden"
+                className={cn(
+                    "w-[400px] p-0 rounded-xl bg-background border border-border shadow-xl overflow-hidden",
+                    showAllModels ? "max-h-[500px]" : "max-h-[600px]"
+                )}
                 align="start"
                 style={{
                     transform: 'translateY(-100%) translateY(-40px)',
                     marginTop: '0px'
                 }}
             >
-                                <div className="max-h-[400px] overflow-y-auto p-2">
+                {/* Search Bar */}
+                <div className="sticky top-0 rounded-t-lg bg-background px-3.5 pt-2 pb-1">
+                    <div className="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-search ml-px mr-3 !size-4 text-muted-foreground/75">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <path d="m21 21-4.3-4.3"></path>
+                        </svg>
+                        <input 
+                            role="searchbox" 
+                            aria-label="Search models" 
+                            placeholder="Search models..." 
+                            className="w-full bg-transparent py-2 text-sm text-foreground placeholder-muted-foreground/50 placeholder:select-none focus:outline-none" 
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                    </div>
+                    <div className="border-b border-border"></div>
+                </div>
+                
+                                <div className={cn("p-2", showAllModels && "overflow-y-auto max-h-[400px]")}>
                 <AnimatePresence>
-                {Object.entries(groupedModels).map(([category, categoryModels], categoryIndex) => (
+                {Object.entries(groupedModels).length === 0 && searchQuery.trim() !== '' ? (
+                    <div className="flex items-center justify-center py-8 text-muted-foreground">
+                        <div className="text-center">
+                            <p className="text-sm">No models found</p>
+                            <p className="text-xs mt-1">Try adjusting your search</p>
+                        </div>
+                    </div>
+                ) : (
+                    Object.entries(groupedModels).map(([category, categoryModels], categoryIndex) => (
                         <div key={category} className="space-y-1">
                                 {categoryModels.map((model, modelIndex) => (
                                     <DropdownMenuItem
@@ -528,14 +582,42 @@ const ModelSwitcher: React.FC<ModelSwitcherProps> = memo(({ selectedModel, setSe
                                     </DropdownMenuItem>
                                 ))}
                             </div>
-                ))}
+                    ))
+                )}
                 </AnimatePresence>
                 </div>
+                
+                {/* Bottom Controls */}
+                {!showAllModels && capabilityFilteredModels.length > 8 && (
+                    <div className="relative flex items-center justify-between rounded-b-lg bg-background pb-1 pl-1 pr-2.5 pt-1.5 mx-4">
+                        <div className="absolute inset-x-3 top-0 border-b border-border"></div>
+                        <button 
+                            onClick={() => setShowAllModels(true)}
+                            className="justify-center whitespace-nowrap rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent disabled:cursor-not-allowed disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-accent/20 hover:text-accent-foreground disabled:hover:bg-transparent disabled:hover:text-muted-foreground/50 h-9 px-4 py-2 flex items-center gap-2 pl-2 text-sm text-muted-foreground"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-up h-4 w-4">
+                                <path d="m18 15-6-6-6 6"></path>
+                            </svg>
+                            Show all
+                        </button>
+                        <button 
+                            onClick={onFilterClick}
+                            data-filter-button
+                            className="inline-flex items-center justify-center whitespace-nowrap font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent disabled:cursor-not-allowed disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-accent/20 hover:text-accent-foreground disabled:hover:bg-transparent disabled:hover:text-muted-foreground/50 h-8 rounded-md text-xs gap-2 px-2 text-muted-foreground" 
+                            type="button"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-filter h-4 w-4">
+                                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                            </svg>
+                        </button>
+                    </div>
+                )}
             </DropdownMenuContent>
         </DropdownMenu>
     );
 });
 
+// Separate Model Filter Component
 interface UploadingAttachment {
     file: File;
     progress: number;
@@ -953,6 +1035,23 @@ const FormComponent: React.FC<FormComponentProps> = ({
     const [isGroupSelectorExpanded, setIsGroupSelectorExpanded] = useState(false);
     const [showGroupSelector, setShowGroupSelector] = useState(false);
     const [modelSelectorOpen, setModelSelectorOpen] = useState(false);
+    const [selectedFilters, setSelectedFilters] = useState<Set<string>>(new Set());
+    const [filterDropdownOpen, setFilterDropdownOpen] = useState(false);
+    
+    // Close filter dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (filterDropdownOpen) {
+                const target = event.target as Element;
+                if (!target.closest('[data-filter-dropdown]') && !target.closest('[data-filter-button]')) {
+                    setFilterDropdownOpen(false);
+                }
+            }
+        };
+        
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [filterDropdownOpen]);
     const groupSelectorRef = useRef<HTMLDivElement>(null);
     const [switchNotification, setSwitchNotification] = useState<{
         show: boolean;
@@ -1042,16 +1141,16 @@ const FormComponent: React.FC<FormComponentProps> = ({
     };
 
     const handleGroupSelect = useCallback((group: SearchGroup) => {
-        // Toggle functionality: if the same group is clicked, switch to Chat mode (analysis)
+        // Toggle functionality: if the same group is clicked, deselect it (set to null)
         if (selectedGroup === group.id) {
-            setSelectedGroup('analysis');
+            setSelectedGroup(null);
             inputRef.current?.focus();
             
             showSwitchNotification(
                 'Chat Mode',
-                'Chat mode is now active',
+                'No group selected - default chat mode',
                 <MessageCircle className="size-4" />,
-                'analysis',
+                'default',
                 'group'
             );
         } else {
@@ -1357,7 +1456,7 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                  </AnimatePresence>
 
                                     <div className={cn(
-                                        "transition-all duration-300",
+                                        "relative transition-all duration-300",
                                         (isMobile && isGroupSelectorExpanded)
                                             ? "opacity-0 invisible w-0"
                                             : "opacity-100 visible w-auto"
@@ -1372,6 +1471,7 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                          isOpen={modelSelectorOpen}
                                          onOpenChange={setModelSelectorOpen}
                                          onGroupSelectorClose={() => setShowGroupSelector(false)}
+                                            onFilterClick={() => setFilterDropdownOpen(!filterDropdownOpen)}
                                             onModelSelect={(model) => {
                                                 const isVisionModel = model.vision === true;
                                                 showSwitchNotification(
@@ -1389,6 +1489,66 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                                 );
                                             }}
                                         />
+                                        
+                                                                {/* External Filter Dropdown - positioned to the right of model selector */}
+                        {filterDropdownOpen && (
+                            <div 
+                                data-filter-dropdown
+                                className="fixed z-50 min-w-[12rem] bg-background p-2 text-foreground shadow-xl border border-border w-48 rounded-xl"
+                                style={{ 
+                                    zIndex: 9999,
+                                    left: 'calc(50% + 120px)', // Reduce horizontal space
+                                    top: 'calc(50% - 150px)', // Move up more to match model selector level
+                                    transform: 'translateY(-50%)'
+                                }}
+                            >
+                                                <div className="px-2 py-1 mb-2 text-xs font-semibold text-muted-foreground border-b border-border/20">
+                                                    Filter by Capabilities
+                                                </div>
+                                            {[
+                                                { key: 'fast', label: 'Fast', icon: ZapIcon, color: 'hsl(46 77% 52%)', colorDark: 'hsl(46 77% 79%)' },
+                                                { key: 'vision', label: 'Vision', icon: EyeCapabilityIcon, color: 'hsl(168 54% 52%)', colorDark: 'hsl(168 54% 74%)' },
+                                                { key: 'web', label: 'Search', icon: GlobeCapabilityIcon, color: 'hsl(208 56% 52%)', colorDark: 'hsl(208 56% 74%)' },
+                                                { key: 'pdf', label: 'PDFs', icon: FileTextIcon, color: 'hsl(237 55% 57%)', colorDark: 'hsl(237 75% 77%)' },
+                                                { key: 'reasoning', label: 'Reasoning', icon: BrainCapabilityIcon, color: 'hsl(263 58% 53%)', colorDark: 'hsl(263 58% 75%)' },
+                                                { key: 'imageGeneration', label: 'Image Generation', icon: ImagePlusIcon, color: 'hsl(12 60% 45%)', colorDark: 'hsl(12 60% 60%)' }
+                                            ].map(({ key, label, icon: Icon, color }) => (
+                                                <div
+                                                    key={key}
+                                                    onClick={() => {
+                                                        const newFilters = new Set(selectedFilters);
+                                                        if (selectedFilters.has(key)) {
+                                                            newFilters.delete(key);
+                                                        } else {
+                                                            newFilters.add(key);
+                                                        }
+                                                        setSelectedFilters(newFilters);
+                                                    }}
+                                                    className="relative cursor-default select-none rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent/30 hover:text-accent-foreground flex items-center justify-between cursor-pointer"
+                                                >
+                                                    <div className="-ml-0.5 flex items-center gap-2">
+                                                        <div 
+                                                            className="relative flex h-6 w-6 items-center justify-center overflow-hidden rounded-md text-current"
+                                                            style={{ 
+                                                                color: color,
+                                                            } as React.CSSProperties}
+                                                        >
+                                                            <div className="absolute inset-0 bg-current opacity-20 dark:opacity-15"></div>
+                                                            <Icon className="h-4 w-4" />
+                                                        </div>
+                                                        <span>{label}</span>
+                                                    </div>
+                                                    <span className="flex h-3.5 w-3.5 items-center justify-center">
+                                                        {selectedFilters.has(key) && (
+                                                            <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                                                <path d="M20 6L9 17l-5-5" />
+                                                            </svg>
+                                                        )}
+                                                    </span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                        )}
                                     </div>
 
                                     <div className={cn(
@@ -1406,12 +1566,12 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                                             e.preventDefault();
                                                             e.stopPropagation();
                                                          if (selectedGroup === 'web') {
-                                                             setSelectedGroup('analysis');
+                                                             setSelectedGroup(null);
                                                              showSwitchNotification(
                                                                  'Chat Mode',
-                                                                 'Chat mode is now active',
+                                                                 'No group selected - default chat mode',
                                                                  <MessageCircle className="size-4" />,
-                                                                 'analysis',
+                                                                 'default',
                                                                  'group'
                                                              );
                                                          } else {
@@ -1456,12 +1616,12 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                                  e.preventDefault();
                                                  e.stopPropagation();
                                                  if (selectedGroup === 'web') {
-                                                     setSelectedGroup('analysis');
+                                                     setSelectedGroup(null);
                                                      showSwitchNotification(
                                                          'Chat Mode',
-                                                         'Chat mode is now active',
+                                                         'No group selected - default chat mode',
                                                          <MessageCircle className="size-4" />,
-                                                         'analysis',
+                                                         'default',
                                                          'group'
                                                      );
                                                  } else {
@@ -1499,12 +1659,12 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                                          e.preventDefault();
                                                          e.stopPropagation();
                                                          if (selectedGroup === 'extreme') {
-                                                             setSelectedGroup('analysis');
+                                                             setSelectedGroup(null);
                                                             showSwitchNotification(
                                                                  'Chat Mode',
-                                                                 'Chat mode is now active',
+                                                                 'No group selected - default chat mode',
                                                                  <MessageCircle className="size-4" />,
-                                                                 'analysis',
+                                                                 'default',
                                                                  'group'
                                                              );
                                                          } else {
@@ -1549,12 +1709,12 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                                     e.preventDefault();
                                                     e.stopPropagation();
                                                  if (selectedGroup === 'extreme') {
-                                                     setSelectedGroup('analysis');
+                                                     setSelectedGroup(null);
                                                     showSwitchNotification(
                                                          'Chat Mode',
-                                                         'Chat mode is now active',
+                                                         'No group selected - default chat mode',
                                                          <MessageCircle className="size-4" />,
-                                                         'analysis',
+                                                         'default',
                                                          'group'
                                                      );
                                                  } else {

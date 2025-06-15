@@ -41,19 +41,13 @@ interface MessagesProps {
 }
 
 // Create a consistent logo header component to reuse
-const SciraLogoHeader = () => (
+const T3LogoHeader = () => (
   <div className="flex items-center gap-2 mb-2">
-    <Image 
-      src="/scira.png" 
-      alt="Scira" 
-      className='size-6 invert dark:invert-0' 
-      width={100} 
-      height={100} 
-      unoptimized 
-      quality={100} 
-    />
+    <div className="w-6 h-6 rounded-full bg-accent flex items-center justify-center">
+      <span className="text-xs font-bold text-accent-foreground">T3</span>
+    </div>
     <h2 className="text-lg font-semibold font-syne text-neutral-800 dark:text-neutral-200">
-      Scira AI
+      T3 AI
     </h2>
   </div>
 );
@@ -167,7 +161,7 @@ const Messages: React.FC<MessagesProps> = ({
         
         return (
           <div key={`${messageIndex}-${partIndex}-loading`} className="flex flex-col min-h-[calc(100vh-18rem)]">
-            <SciraLogoHeader />
+            <T3LogoHeader />
             <div className="flex space-x-2 ml-8 mt-2">
               <div className="w-2 h-2 rounded-full bg-neutral-400 dark:bg-neutral-600 animate-bounce" style={{ animationDelay: '0ms' }}></div>
               <div className="w-2 h-2 rounded-full bg-neutral-400 dark:bg-neutral-600 animate-bounce" style={{ animationDelay: '150ms' }}></div>
@@ -269,7 +263,7 @@ const Messages: React.FC<MessagesProps> = ({
                         }
 
                         // Then copy the share link
-                        const shareUrl = `https://scira.ai/search/${chatId}`;
+                        const shareUrl = `https://t3.ai/search/${chatId}`;
                         await navigator.clipboard.writeText(shareUrl);
                         
                         return selectedVisibilityType === 'private' 
@@ -344,7 +338,7 @@ const Messages: React.FC<MessagesProps> = ({
           // Render logo and title for the first step-start
           return (
             <div key={`${messageIndex}-${partIndex}-step-start-logo`}>
-              <SciraLogoHeader />
+              <T3LogoHeader />
             </div>
           );
         }
@@ -499,7 +493,7 @@ const Messages: React.FC<MessagesProps> = ({
       {status === 'submitted' && (
         <div className="flex items-start min-h-[calc(100vh-18rem)]">
           <div className="w-full">
-            <SciraLogoHeader />
+            <T3LogoHeader />
             <div className="flex space-x-2 ml-8 mt-2">
               <div className="w-2 h-2 rounded-full bg-neutral-400 dark:bg-neutral-600 animate-bounce" style={{ animationDelay: '0ms' }}></div>
               <div className="w-2 h-2 rounded-full bg-neutral-400 dark:bg-neutral-600 animate-bounce" style={{ animationDelay: '150ms' }}></div>
@@ -512,7 +506,7 @@ const Messages: React.FC<MessagesProps> = ({
       {/* Reserve space for empty/streaming assistant message */}
       {status === 'streaming' && isWaitingForResponse && (
         <div className="min-h-[calc(100vh-18rem)] mt-2">
-          <SciraLogoHeader />
+          <T3LogoHeader />
           {/* Content will be populated by the streaming message */}
         </div>
       )}
