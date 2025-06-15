@@ -4,7 +4,7 @@ import { SpinnerIcon } from "@/components/ui/icons/spinner";
 import { T3Logo } from "@/components/ui/icons/t0-logo";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 interface KeyProps {
@@ -117,6 +117,7 @@ const useSound = (url: string) => {
 
 export const T0Keycap: React.FC = () => {
 	const router = useRouter();
+	const pathname = usePathname();
 	const { add, remove, has } = useSetState([]);
 	const { play, stop } = useSound("/keytype.mp3");
 	const [isNavigating, setIsNavigating] = useState(false);
@@ -124,7 +125,8 @@ export const T0Keycap: React.FC = () => {
 
 	const handleNavigation = useCallback(() => {
 		setIsNavigating(true);
-		router.push("/home");
+		// Use replace to ensure clean navigation
+		router.replace("/home");
 	}, [router]);
 
 	useEffect(() => {
@@ -151,6 +153,24 @@ export const T0Keycap: React.FC = () => {
 			document.removeEventListener("keyup", handleKeyUp);
 		};
 	}, [add, remove, play, stop, isNavigating, handleNavigation]);
+
+	// Reset navigation state when we reach the home page or after timeout
+	useEffect(() => {
+		if (isNavigating) {
+			// If we're already on the home page, reset immediately
+			if (pathname === "/home") {
+				setIsNavigating(false);
+				return;
+			}
+
+			// Otherwise, set a timeout as fallback
+			const timeout = setTimeout(() => {
+				setIsNavigating(false);
+			}, 3000); // 3 second timeout
+
+			return () => clearTimeout(timeout);
+		}
+	}, [isNavigating, pathname]);
 
 	const handleClick = (char: string) => {
 		if (isNavigating) return;

@@ -17,7 +17,14 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { User } from '@/lib/db/schema';
 import { SVGProps } from 'react';
-import { HiOutlineViewList } from 'react-icons/hi';
+// Route icon component
+const RouteIcon = ({ size = 14, className }: { size?: number; className?: string }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+        <circle cx="6" cy="19" r="3"/>
+        <path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"/>
+        <circle cx="18" cy="5" r="3"/>
+    </svg>
+);
 import { checkImageModeration } from '@/app/actions';
 
 interface ModelSwitcherProps {
@@ -1092,18 +1099,32 @@ const FormComponent: React.FC<FormComponentProps> = ({
     };
 
     const handleGroupSelect = useCallback((group: SearchGroup) => {
-        setSelectedGroup(group.id);
-        inputRef.current?.focus();
+        // Toggle functionality: if the same group is clicked, switch to Chat mode (analysis)
+        if (selectedGroup === group.id) {
+            setSelectedGroup('analysis');
+            inputRef.current?.focus();
+            
+            showSwitchNotification(
+                'Chat Mode',
+                'Chat mode is now active',
+                <MessageCircle className="size-4" />,
+                'analysis',
+                'group'
+            );
+        } else {
+            setSelectedGroup(group.id);
+            inputRef.current?.focus();
 
-        showSwitchNotification(
-            group.name,
-            group.description,
-            <group.icon className="size-4" />,
-            group.id, // Use the group ID directly as the color code
-            'group'   // Specify this is a group notification
-        );
+            showSwitchNotification(
+                group.name,
+                group.description,
+                <group.icon className="size-4" />,
+                group.id, // Use the group ID directly as the color code
+                'group'   // Specify this is a group notification
+            );
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [setSelectedGroup, inputRef]);
+    }, [selectedGroup, setSelectedGroup, inputRef]);
 
     const isProcessing = status === 'submitted' || status === 'streaming';
     const hasInteracted = messages.length > 0;
@@ -1318,7 +1339,7 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                      }}
                                      suppressHydrationWarning
                                  >
-                                     <HiOutlineViewList 
+                                     <RouteIcon 
                                          size={14}
                                     className={cn(
                                              "transition-transform duration-200",
@@ -1327,28 +1348,31 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                      />
                                  </Button>
 
-                                 {showGroupSelector && (
-                                     <AnimatePresence>
+                                 <AnimatePresence>
+                                     {showGroupSelector && (
                                          <motion.div
-                                             initial={{ opacity: 0, height: 0, y: 10 }}
-                                             animate={{ opacity: 1, height: "auto", y: 0 }}
-                                             exit={{ opacity: 0, height: 0, y: 10 }}
+                                             initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                                             animate={{ opacity: 1, scale: 1, y: 0 }}
+                                             exit={{ opacity: 0, scale: 0.95, y: 10 }}
                                              transition={{ 
-                                                 duration: 0.3,
-                                                 ease: "easeInOut",
-                                                 height: { duration: 0.25 }
+                                                 type: "spring",
+                                                 stiffness: 400,
+                                                 damping: 30,
+                                                 duration: 0.2
                                              }}
                                              className="absolute bottom-full left-0 mb-3 bg-background backdrop-blur-md rounded-xl shadow-xl border border-neutral-200 dark:border-neutral-700 p-3 z-50 min-w-[220px]"
                                          >
                                              <div className="flex flex-col gap-1.5">
-                                                 {searchGroups.filter(group => group.show).map((group) => (
+                                                 {searchGroups.filter(group => group.show).map((group, index) => (
                                                      <motion.div
                                                          key={group.id}
-                                                         initial={{ opacity: 0, x: -10 }}
-                                                         animate={{ opacity: 1, x: 0 }}
+                                                         initial={{ opacity: 0, x: -20, scale: 0.9 }}
+                                                         animate={{ opacity: 1, x: 0, scale: 1 }}
                                                          transition={{ 
-                                                             duration: 0.2,
-                                                             delay: searchGroups.filter(g => g.show).indexOf(group) * 0.05
+                                                             type: "spring",
+                                                             stiffness: 500,
+                                                             damping: 35,
+                                                             delay: index * 0.03
                                                          }}
                                                      >
                                                          <Tooltip delayDuration={300}>
@@ -1356,10 +1380,11 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                                                  <Button
                                                                      variant="ghost"
                                                                      className={cn(
-                                                                         "w-full justify-start gap-3 h-11 px-3 transition-all duration-200 rounded-lg",
+                                                                         "w-full justify-start gap-3 h-11 px-3 transition-all duration-300 rounded-lg",
+                                                                         "hover:scale-[1.02] active:scale-[0.98]",
                                                                          selectedGroup === group.id
                                                                              ? "bg-primary text-primary-foreground shadow-sm"
-                                                                             : "text-foreground hover:bg-muted/40 hover:text-foreground hover:scale-[1.02]"
+                                                                             : "text-foreground hover:bg-muted/40 hover:text-foreground"
                                                                      )}
                                                                      onClick={(e) => {
                                                                          e.preventDefault();
@@ -1384,10 +1409,10 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                                          </Tooltip>
                                                      </motion.div>
                                                  ))}
-                                    </div>
+                                             </div>
                                          </motion.div>
-                                     </AnimatePresence>
-                                 )}
+                                     )}
+                                 </AnimatePresence>
 
                                     <div className={cn(
                                         "transition-all duration-300",
@@ -1466,7 +1491,7 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                                      )}
                                                      suppressHydrationWarning
                                                  >
-                                                     <Globe className="h-3.5 w-3.5" />
+                                                     <Globe className="h-3.5 w-3.5 mx-auto" />
                                                      {selectedGroup === 'web' && <span className="text-xs font-medium">Web Search</span>}
                                                  </button>
                                              </TooltipTrigger>
@@ -1516,7 +1541,7 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                              )}
                                              suppressHydrationWarning
                                          >
-                                             <Globe className="h-3.5 w-3.5" />
+                                             <Globe className="h-3.5 w-3.5 mx-auto" />
                                              {selectedGroup === 'web' && <span className="text-xs font-medium">Web Search</span>}
                                          </button>
                                      )}

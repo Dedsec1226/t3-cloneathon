@@ -66,4 +66,4 @@ export const InvertedT3Logo: React.FC<T3LogoProps> = ({ width = 32, height = 32,
 
     {ThreePathInverted}
   </svg>
-);
+); 
