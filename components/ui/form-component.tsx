@@ -17,7 +17,14 @@ import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { User } from '@/lib/db/schema';
 import { SVGProps } from 'react';
-import { HiOutlineViewList } from 'react-icons/hi';
+// Route icon component
+const RouteIcon = ({ size = 14, className }: { size?: number; className?: string }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+        <circle cx="6" cy="19" r="3"/>
+        <path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"/>
+        <circle cx="18" cy="5" r="3"/>
+    </svg>
+);
 import { checkImageModeration } from '@/app/actions';
 
 interface ModelSwitcherProps {
@@ -1092,18 +1099,32 @@ const FormComponent: React.FC<FormComponentProps> = ({
     };
 
     const handleGroupSelect = useCallback((group: SearchGroup) => {
-        setSelectedGroup(group.id);
-        inputRef.current?.focus();
+        // Toggle functionality: if the same group is clicked, switch to Chat mode (analysis)
+        if (selectedGroup === group.id) {
+            setSelectedGroup('analysis');
+            inputRef.current?.focus();
+            
+            showSwitchNotification(
+                'Chat Mode',
+                'Chat mode is now active',
+                <MessageCircle className="size-4" />,
+                'analysis',
+                'group'
+            );
+        } else {
+            setSelectedGroup(group.id);
+            inputRef.current?.focus();
 
-        showSwitchNotification(
-            group.name,
-            group.description,
-            <group.icon className="size-4" />,
-            group.id, // Use the group ID directly as the color code
-            'group'   // Specify this is a group notification
-        );
+            showSwitchNotification(
+                group.name,
+                group.description,
+                <group.icon className="size-4" />,
+                group.id, // Use the group ID directly as the color code
+                'group'   // Specify this is a group notification
+            );
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [setSelectedGroup, inputRef]);
+    }, [selectedGroup, setSelectedGroup, inputRef]);
 
     const isProcessing = status === 'submitted' || status === 'streaming';
     const hasInteracted = messages.length > 0;
@@ -1205,7 +1226,7 @@ const FormComponent: React.FC<FormComponentProps> = ({
                         notificationType={switchNotification.notificationType}
                     />
 
-                                         {/* Hidden file inputs */}
+                    {/* Hidden file inputs */}
                     <input
                         type="file"
                         className="hidden"
@@ -1243,61 +1264,61 @@ const FormComponent: React.FC<FormComponentProps> = ({
                          suppressHydrationWarning
                      />
 
-                     <div className="border-reflect rounded-t-3xl p-2 backdrop-blur-lg" style={{
-                         "--gradientBorder-gradient": "linear-gradient(180deg, var(--min), var(--max), var(--min)), linear-gradient(15deg, var(--min) 50%, var(--max))",
-                         "--start": "#000000e0",
-                         "--opacity": "1",
-                         background: "hsl(var(--background))",
-                         paddingBottom: "0px",
-                         marginBottom: "0px"
-                     } as React.CSSProperties} suppressHydrationWarning>
-                        <div className="relative flex w-full flex-col items-stretch gap-2 rounded-t-3xl border-0 border-white/70 bg-background px-3 pt-3 pb-safe text-secondary-foreground outline-0 sm:max-w-3xl" style={{
-                            boxShadow: "rgba(0, 0, 0, 0.1) 0px 80px 50px 0px, rgba(0, 0, 0, 0.07) 0px 50px 30px 0px, rgba(0, 0, 0, 0.06) 0px 30px 15px 0px, rgba(0, 0, 0, 0.04) 0px 15px 8px, rgba(0, 0, 0, 0.04) 0px 6px 4px, rgba(0, 0, 0, 0.02) 0px 2px 2px",
-                            marginBottom: "0px",
-                            paddingBottom: "max(12px, env(safe-area-inset-bottom))"
-                        }} suppressHydrationWarning>
+                        <div className="rounded-t-3xl p-2 backdrop-blur-lg bg-background border border-border/50" style={{
+                            paddingBottom: "0px",
+                            marginBottom: "0px"
+                        } as React.CSSProperties} suppressHydrationWarning>
+                            <div className="border-reflect rounded-t-2xl backdrop-blur-lg" style={{
+                                "--gradientBorder-gradient": "linear-gradient(180deg, var(--min), var(--max), var(--min)), linear-gradient(15deg, var(--min) 50%, var(--max))",
+                                "--start": "#000000e0",
+                                "--opacity": "0.6"
+                            } as React.CSSProperties}>
+                                <div className="relative flex w-full flex-col items-stretch gap-2 rounded-t-2xl border-0 backdrop-blur-md px-3 pt-3 pb-safe text-secondary-foreground outline-0 sm:max-w-3xl" style={{
+                                    backgroundColor: "rgb(44, 38, 48)",
+                                    marginBottom: "0px",
+                                    paddingBottom: "max(12px, env(safe-area-inset-bottom))"
+                                }} suppressHydrationWarning>
                             <Textarea
-                                ref={inputRef}
-                                placeholder={hasInteracted ? "Ask a new question..." : "Type your message here..."}
-                                value={input}
-                                onChange={handleInput}
-                                disabled={isProcessing}
-                                onFocus={handleFocus}
-                                onBlur={handleBlur}
-                                className={cn(
-                                    "w-full rounded-lg rounded-b-none md:text-base!",
-                                    "text-base leading-relaxed",
-                                "bg-transparent",
-                                "border-0! outline-0! shadow-none! ring-0!",
-                                "text-foreground",
-                                "focus:ring-0! focus-visible:ring-0! focus:border-0! focus:outline-0! focus:shadow-none! focus:ring-offset-0!",
-                                "active:ring-0! active:border-0! active:outline-0! active:shadow-none! active:ring-offset-0!",
-                                "hover:ring-0! hover:border-0! hover:outline-0! hover:shadow-none! hover:ring-offset-0!",
-                                "px-0! py-0!",
-                                    "touch-manipulation",
-                                "whatsize",
-                                "[&:focus]:ring-0! [&:focus]:border-0! [&:focus]:outline-0! [&:focus]:shadow-none!",
-                                "[&:active]:ring-0! [&:active]:border-0! [&:active]:outline-0! [&:active]:shadow-none!"
-                                )}
-                                style={{
-                                    WebkitUserSelect: 'text',
-                                    WebkitTouchCallout: 'none',
-                                    minHeight: width && width < 768 ? '40px' : undefined,
-                                    resize: 'none',
-                                }}
-                                rows={1}
-                                autoFocus={width ? width > 768 : true}
-                                onCompositionStart={() => isCompositionActive.current = true}
-                                onCompositionEnd={() => isCompositionActive.current = false}
-                                onKeyDown={handleKeyDown}
-                            suppressHydrationWarning
-                            />
+                                    ref={inputRef}
+                                    placeholder={hasInteracted ? "Ask a new question..." : "Type your message here..."}
+                                    value={input}
+                                    onChange={handleInput}
+                                    disabled={isProcessing}
+                                    onFocus={handleFocus}
+                                    onBlur={handleBlur}
+                                    className={cn(
+                                        "w-full rounded-lg rounded-b-none md:text-base!",
+                                        "text-base leading-relaxed",
+                                    "bg-transparent",
+                                    "border-0! outline-0! shadow-none! ring-0!",
+                                    "text-foreground",
+                                    "focus:ring-0! focus-visible:ring-0! focus:border-0! focus:outline-0! focus:shadow-none! focus:ring-offset-0!",
+                                    "active:ring-0! active:border-0! active:outline-0! active:shadow-none! active:ring-offset-0!",
+                                    "hover:ring-0! hover:border-0! hover:outline-0! hover:shadow-none! hover:ring-offset-0!",
+                                    "px-0! py-0!",
+                                        "touch-manipulation",
+                                    "whatsize",
+                                    "[&:focus]:ring-0! [&:focus]:border-0! [&:focus]:outline-0! [&:focus]:shadow-none!",
+                                    "[&:active]:ring-0! [&:active]:border-0! [&:active]:outline-0! [&:active]:shadow-none!"
+                                    )}
+                                    style={{
+                                        WebkitUserSelect: 'text',
+                                        WebkitTouchCallout: 'none',
+                                        minHeight: width && width < 768 ? '40px' : undefined,
+                                        resize: 'none',
+                                    }}
+                                    rows={1}
+                                    autoFocus={width ? width > 768 : true}
+                                    onCompositionStart={() => isCompositionActive.current = true}
+                                    onCompositionEnd={() => isCompositionActive.current = false}
+                                    onKeyDown={handleKeyDown}
+                                suppressHydrationWarning
+                                />
 
                         {/* Toolbar */}
                             <div
                                 className={cn(
                                 "flex justify-between items-center pt-3 mt-2",
-                                "border-t border-neutral-200/40 dark:border-neutral-700/40",
                                     isProcessing ? "opacity-20! cursor-not-allowed!" : ""
                                 )}
                             suppressHydrationWarning
@@ -1307,7 +1328,7 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                  <Button
                                      variant="outline"
                                      size="icon"
-                                     className="rounded-full h-8 w-8 bg-neutral-50 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-700 border-neutral-200/60 dark:border-neutral-700/60 shadow-sm hover:shadow-md transition-all duration-200"
+                                     className="rounded-full h-8 w-8 bg-background text-muted-foreground hover:bg-muted/40 hover:text-foreground border-secondary-foreground/10 shadow-sm hover:shadow-md transition-all duration-200"
                                      disabled={!!isProcessing}
                                      onClick={(e) => {
                                          e.preventDefault();
@@ -1318,7 +1339,7 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                      }}
                                      suppressHydrationWarning
                                  >
-                                     <HiOutlineViewList 
+                                     <RouteIcon 
                                          size={14}
                                     className={cn(
                                              "transition-transform duration-200",
@@ -1327,28 +1348,31 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                      />
                                  </Button>
 
-                                 {showGroupSelector && (
-                                     <AnimatePresence>
+                                 <AnimatePresence>
+                                     {showGroupSelector && (
                                          <motion.div
-                                             initial={{ opacity: 0, height: 0, y: 10 }}
-                                             animate={{ opacity: 1, height: "auto", y: 0 }}
-                                             exit={{ opacity: 0, height: 0, y: 10 }}
+                                             initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                                             animate={{ opacity: 1, scale: 1, y: 0 }}
+                                             exit={{ opacity: 0, scale: 0.95, y: 10 }}
                                              transition={{ 
-                                                 duration: 0.3,
-                                                 ease: "easeInOut",
-                                                 height: { duration: 0.25 }
+                                                 type: "spring",
+                                                 stiffness: 400,
+                                                 damping: 30,
+                                                 duration: 0.2
                                              }}
-                                             className="absolute bottom-full left-0 mb-3 bg-white/95 dark:bg-neutral-800/95 backdrop-blur-md rounded-xl shadow-xl border border-neutral-200/50 dark:border-neutral-700/50 p-3 z-50 min-w-[220px]"
+                                             className="absolute bottom-full left-0 mb-3 bg-background backdrop-blur-md rounded-xl shadow-xl border border-neutral-200 dark:border-neutral-700 p-3 z-50 min-w-[220px]"
                                          >
                                              <div className="flex flex-col gap-1.5">
-                                                 {searchGroups.filter(group => group.show).map((group) => (
+                                                 {searchGroups.filter(group => group.show).map((group, index) => (
                                                      <motion.div
                                                          key={group.id}
-                                                         initial={{ opacity: 0, x: -10 }}
-                                                         animate={{ opacity: 1, x: 0 }}
+                                                         initial={{ opacity: 0, x: -20, scale: 0.9 }}
+                                                         animate={{ opacity: 1, x: 0, scale: 1 }}
                                                          transition={{ 
-                                                             duration: 0.2,
-                                                             delay: searchGroups.filter(g => g.show).indexOf(group) * 0.05
+                                                             type: "spring",
+                                                             stiffness: 500,
+                                                             damping: 35,
+                                                             delay: index * 0.03
                                                          }}
                                                      >
                                                          <Tooltip delayDuration={300}>
@@ -1356,10 +1380,11 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                                                  <Button
                                                                      variant="ghost"
                                                                      className={cn(
-                                                                         "w-full justify-start gap-3 h-11 px-3 transition-all duration-200 rounded-lg",
+                                                                         "w-full justify-start gap-3 h-11 px-3 transition-all duration-300 rounded-lg",
+                                                                         "hover:scale-[1.02] active:scale-[0.98]",
                                                                          selectedGroup === group.id
-                                                                             ? "bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 shadow-sm"
-                                                                             : "text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100/70 dark:hover:bg-neutral-700/70 hover:scale-[1.02]"
+                                                                             ? "bg-primary text-primary-foreground shadow-sm"
+                                                                             : "text-foreground hover:bg-muted/40 hover:text-foreground"
                                                                      )}
                                                                      onClick={(e) => {
                                                                          e.preventDefault();
@@ -1384,10 +1409,10 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                                          </Tooltip>
                                                      </motion.div>
                                                  ))}
-                                    </div>
+                                             </div>
                                          </motion.div>
-                                     </AnimatePresence>
-                                 )}
+                                     )}
+                                 </AnimatePresence>
 
                                     <div className={cn(
                                         "transition-all duration-300",
@@ -1458,15 +1483,15 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                                      }}
                                                      className={cn(
                                                          "flex items-center gap-1.5 h-8 transition-all duration-300",
-                                                         "rounded-full border border-neutral-200 dark:border-neutral-800",
+                                                         "rounded-full border border-secondary-foreground/10",
                                                          "hover:shadow-md",
                                                          selectedGroup === 'web'
                                                              ? "bg-blue-500 dark:bg-blue-500 text-white px-2"
-                                                             : "bg-white dark:bg-neutral-900 text-neutral-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 px-1.5 w-8",
+                                                             : "bg-background text-muted-foreground hover:bg-muted/40 hover:text-foreground px-1.5 w-8",
                                                      )}
                                                      suppressHydrationWarning
                                                  >
-                                                     <Globe className="h-3.5 w-3.5" />
+                                                     <Globe className="h-3.5 w-3.5 mx-auto" />
                                                      {selectedGroup === 'web' && <span className="text-xs font-medium">Web Search</span>}
                                                  </button>
                                              </TooltipTrigger>
@@ -1477,7 +1502,7 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                              >
                                                  <div className="flex flex-col gap-0.5">
                                                      <span className="font-medium text-[11px]">Web Search</span>
-                                                     <span className="text-[10px] text-neutral-300 dark:text-neutral-600 leading-tight">Search the web for information</span>
+                                                     <span className="text-[10px] text-foreground/70 leading-tight">Search the web for information</span>
                                                  </div>
                                              </TooltipContent>
                                          </Tooltip>
@@ -1508,15 +1533,15 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                              }}
                                              className={cn(
                                                  "flex items-center gap-1.5 h-8 transition-all duration-300",
-                                                 "rounded-full border border-neutral-200 dark:border-neutral-800",
+                                                 "rounded-full border border-secondary-foreground/10",
                                                  "hover:shadow-md",
                                                  selectedGroup === 'web'
                                                      ? "bg-blue-500 dark:bg-blue-500 text-white px-2"
-                                                     : "bg-white dark:bg-neutral-900 text-neutral-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 px-1.5 w-8",
+                                                     : "bg-background text-muted-foreground hover:bg-muted/40 hover:text-foreground px-1.5 w-8",
                                              )}
                                              suppressHydrationWarning
                                          >
-                                             <Globe className="h-3.5 w-3.5" />
+                                             <Globe className="h-3.5 w-3.5 mx-auto" />
                                              {selectedGroup === 'web' && <span className="text-xs font-medium">Web Search</span>}
                                          </button>
                                      )}
@@ -1551,11 +1576,11 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                                         }}
                                                         className={cn(
                                                          "flex items-center gap-1.5 h-8 transition-all duration-300",
-                                                         "rounded-full border border-neutral-200 dark:border-neutral-800",
+                                                         "rounded-full border border-secondary-foreground/10",
                                                             "hover:shadow-md",
                                                             selectedGroup === 'extreme'
                                                              ? "bg-purple-500 dark:bg-purple-500 text-white px-2"
-                                                             : "bg-white dark:bg-neutral-900 text-neutral-500 hover:bg-purple-50 dark:hover:bg-purple-900/20 px-1.5 w-8",
+                                                             : "bg-background text-muted-foreground hover:bg-muted/40 hover:text-foreground px-1.5 w-8",
                                                         )}
                                                      suppressHydrationWarning
                                                     >
@@ -1570,7 +1595,7 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                                 >
                                                     <div className="flex flex-col gap-0.5">
                                                         <span className="font-medium text-[11px]">Extreme Mode</span>
-                                                        <span className="text-[10px] text-neutral-300 dark:text-neutral-600 leading-tight">Deep research with multiple sources and analysis</span>
+                                                        <span className="text-[10px] text-foreground/70 leading-tight">Deep research with multiple sources and analysis</span>
                                                     </div>
                                                 </TooltipContent>
                                             </Tooltip>
@@ -1601,11 +1626,11 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                                 }}
                                                 className={cn(
                                                  "flex items-center gap-1.5 h-8 transition-all duration-300",
-                                                 "rounded-full border border-neutral-200 dark:border-neutral-800",
+                                                 "rounded-full border border-secondary-foreground/10",
                                                     "hover:shadow-md",
                                                     selectedGroup === 'extreme'
                                                      ? "bg-purple-500 dark:bg-purple-500 text-white px-2"
-                                                     : "bg-white dark:bg-neutral-900 text-neutral-500 hover:bg-purple-50 dark:hover:bg-purple-900/20 px-1.5 w-8",
+                                                     : "bg-background text-muted-foreground hover:bg-muted/40 hover:text-foreground px-1.5 w-8",
                                                 )}
                                              suppressHydrationWarning
                                             >
@@ -1642,7 +1667,7 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                                 >
                                                     <div className="flex flex-col gap-0.5">
                                                         <span className="font-medium text-[11px]">Attach File</span>
-                                                        <span className="text-[10px] text-neutral-300 dark:text-neutral-600 leading-tight">
+                                                        <span className="text-[10px] text-foreground/70 leading-tight">
                                                             {supportsPdfAttachments(selectedModel)
                                                                 ? "Upload an image or PDF document"
                                                                 : "Upload an image"}
@@ -1760,6 +1785,7 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                      </Button>
                                  )}
                                 </div>
+                                                            </div>
                             </div>
                         </div>
                     </div>

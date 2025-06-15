@@ -2,8 +2,8 @@
 
 import * as React from "react";
 import { useTheme } from "next-themes";
-import { motion } from "motion/react";
 import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
 
 export function ThemeToggle() {
   const { setTheme, theme } = useTheme();
@@ -13,22 +13,6 @@ export function ThemeToggle() {
   React.useEffect(() => {
     setMounted(true);
   }, []);
-
-  // SVG paths for smooth morphing
-  const sunPath = "M12 12m-4 0a4 4 0 1 0 8 0a4 4 0 1 0-8 0";
-  const moonPath = "M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z";
-
-  // Sun rays paths
-  const sunRays = [
-    "M12 2v2",
-    "M12 20v2", 
-    "m4.93 4.93 1.41 1.41",
-    "m17.66 17.66 1.41 1.41",
-    "M2 12h2",
-    "M20 12h2",
-    "m6.34 17.66-1.41 1.41",
-    "m19.07 4.93-1.41 1.41"
-  ];
 
   // Prevent hydration mismatch by not rendering until mounted
   if (!mounted) {
@@ -61,66 +45,54 @@ export function ThemeToggle() {
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
-        className="absolute size-4"
+        className="size-4"
         initial={false}
-        animate={{
-          rotate: isDark ? 0 : 180,
-        }}
-        transition={{
-          duration: 0.25,
-          ease: [0.23, 1, 0.32, 1]
-        }}
+        animate={{ rotate: isDark ? 0 : 0 }}
+        transition={{ duration: 0.15, ease: [0.4, 0, 0.2, 1] }}
       >
-        {/* Sun rays - show in dark mode (when we want to indicate we can switch to light) */}
+        {/* Sun rays - fade out when dark */}
         <motion.g
-          initial={false}
           animate={{
-            opacity: isDark ? 1 : 0,
-            scale: isDark ? 1 : 0.6,
+            opacity: isDark ? 0 : 1,
+            scale: isDark ? 0.8 : 1,
           }}
-          transition={{
-            duration: 0.2,
-            ease: [0.23, 1, 0.32, 1],
-            delay: isDark ? 0.05 : 0
-          }}
-          style={{ transformOrigin: "12px 12px" }}
+          transition={{ duration: 0.15, ease: [0.4, 0, 0.2, 1] }}
+          style={{ transformOrigin: '12px 12px' }}
         >
-          {sunRays.map((ray, index) => (
-            <motion.path
-              key={ray}
-              d={ray}
-              initial={false}
-              animate={{
-                opacity: isDark ? 1 : 0,
-                strokeWidth: isDark ? 2 : 1,
-              }}
-              transition={{
-                duration: 0.15,
-                delay: isDark ? index * 0.015 : 0,
-                ease: [0.23, 1, 0.32, 1],
-              }}
-            />
-          ))}
+          <motion.path d="M12 1v6" animate={{ pathLength: isDark ? 0 : 1 }} transition={{ duration: 0.15, delay: isDark ? 0 : 0.05 }} />
+          <motion.path d="M12 17v6" animate={{ pathLength: isDark ? 0 : 1 }} transition={{ duration: 0.15, delay: isDark ? 0 : 0.05 }} />
+          <motion.path d="m4.22 4.22 4.24 4.24" animate={{ pathLength: isDark ? 0 : 1 }} transition={{ duration: 0.15, delay: isDark ? 0 : 0.08 }} />
+          <motion.path d="m15.54 15.54 4.24 4.24" animate={{ pathLength: isDark ? 0 : 1 }} transition={{ duration: 0.15, delay: isDark ? 0 : 0.08 }} />
+          <motion.path d="M1 12h6" animate={{ pathLength: isDark ? 0 : 1 }} transition={{ duration: 0.15, delay: isDark ? 0 : 0.1 }} />
+          <motion.path d="M17 12h6" animate={{ pathLength: isDark ? 0 : 1 }} transition={{ duration: 0.15, delay: isDark ? 0 : 0.1 }} />
+          <motion.path d="m4.22 19.78 4.24-4.24" animate={{ pathLength: isDark ? 0 : 1 }} transition={{ duration: 0.15, delay: isDark ? 0 : 0.12 }} />
+          <motion.path d="m15.54 8.46 4.24-4.24" animate={{ pathLength: isDark ? 0 : 1 }} transition={{ duration: 0.15, delay: isDark ? 0 : 0.12 }} />
         </motion.g>
-
-        {/* Main shape that morphs between sun circle and moon crescent */}
+        
+        {/* Center circle that morphs into moon */}
         <motion.path
-          initial={false}
           animate={{
-            d: isDark ? sunPath : moonPath,
-            opacity: 1,
-            rotate: isDark ? 0 : 180,
+            d: isDark 
+              ? "M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"
+              : "M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10Z"
           }}
-          transition={{
-            duration: 0.25,
-            ease: [0.23, 1, 0.32, 1],
-            delay: 0.02
-          }}
-          fill="none"
-          style={{
-            transformOrigin: "12px 12px",
-          }}
+          transition={{ duration: 0.15, ease: [0.4, 0, 0.2, 1] }}
+          fill={isDark ? "currentColor" : "none"}
         />
+        
+        {/* Moon crater details - only visible in dark mode */}
+        <motion.g
+          animate={{
+            opacity: isDark ? 0.6 : 0,
+            scale: isDark ? 1 : 0.5,
+          }}
+          transition={{ duration: 0.15, ease: [0.4, 0, 0.2, 1], delay: isDark ? 0.1 : 0 }}
+          style={{ transformOrigin: '12px 12px' }}
+        >
+          <circle cx="15" cy="9" r="1" fill="currentColor" opacity="0.4" />
+          <circle cx="13" cy="15" r="0.5" fill="currentColor" opacity="0.6" />
+          <circle cx="16" cy="13" r="0.3" fill="currentColor" opacity="0.5" />
+        </motion.g>
       </motion.svg>
       
       <span className="sr-only">Toggle theme</span>

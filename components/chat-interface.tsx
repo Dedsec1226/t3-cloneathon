@@ -434,11 +434,11 @@ const ChatInterface = memo(({ initialChatId, initialMessages, initialVisibility 
                             ? 'w-full max-w-4xl space-y-8 text-center' // Wider centered layout for empty state
                             : 'w-full max-w-[95%] sm:max-w-2xl space-y-6 p-0 mx-auto' // Original layout for messages
                         } transition-all duration-300`}>
-                        {status === 'ready' && messages.length === 0 && (
-                                <div className="w-full max-w-2xl mx-auto space-y-6 px-2 pt-[calc(max(15vh,2.5rem))] pb-12 duration-300 animate-in fade-in-50 zoom-in-95 sm:px-8">
-                                    <h2 className="text-3xl font-semibold text-left">
+                                                    {status === 'ready' && messages.length === 0 && (
+                                <div className="w-full max-w-2xl mx-auto space-y-4 px-2 pt-[calc(max(2vh,0.5rem))] pb-6 duration-300 animate-in fade-in-50 zoom-in-95 sm:px-8">
+                                    <h1 className="text-4xl font-semibold text-left">
                                         How can I help you?
-                                    </h2>
+                                    </h1>
                                     
                                     {/* Category buttons */}
                                     <div className="flex flex-row flex-wrap gap-2.5 text-sm max-sm:justify-evenly">
@@ -457,7 +457,7 @@ const ChatInterface = memo(({ initialChatId, initialMessages, initialVisibility 
                                                 label: 'Create' 
                                             },
                                             { 
-                                                group: 'web', 
+                                                group: 'analysis', 
                                                 icon: (
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-newspaper max-sm:block">
                                                         <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"></path>
@@ -515,7 +515,7 @@ const ChatInterface = memo(({ initialChatId, initialMessages, initialVisibility 
                                         ].map((question, index) => (
                                             <div key={question} className="flex items-start gap-2 border-t border-secondary/40 py-1 first:border-none">
                                                 <button
-                                                    className="w-full rounded-md py-2 text-left text-secondary-foreground hover:bg-secondary/50 sm:px-3"
+                                                    className="w-full rounded-md py-1.5 text-left text-sm text-secondary-foreground hover:bg-secondary/50 sm:px-3"
                                                     onClick={() => {
                                                         setInput(question);
                                                         setHasSubmitted(true);
@@ -602,20 +602,13 @@ const ChatInterface = memo(({ initialChatId, initialMessages, initialVisibility 
                         !initialChatId || 
                         (!user && selectedVisibilityType === 'private')
                     ) && (
-                        <div className="px-4 space-y-4">
-                            {/* Footer like in reference - moved above input */}
-                            <div className="text-center text-sm text-neutral-400 dark:text-neutral-500">
-                                Make sure you agree to our{' '}
-                                <a href="/terms-of-service" className="text-neutral-300 dark:text-neutral-400 hover:underline">
-                                    Terms
-                                </a>
-                                {' '}and our{' '}
-                                <a href="/privacy-policy" className="text-neutral-300 dark:text-neutral-400 hover:underline">
-                                    Privacy Policy
-                                </a>
-                    </div>
-
-                            <div className="w-full max-w-3xl mx-auto">
+                        <div>
+                            <div className="w-full flex justify-center px-4">
+                                <div className="prose max-w-none rounded-t-md border border-secondary/40 bg-chat-background/50 py-2 px-6 text-sm text-secondary-foreground/80 backdrop-blur-md blur-fallback:bg-chat-background text-center inline-block mx-auto">
+                                    <span className="font-semibold text-center block">Make sure you agree to our <a href="/terms-of-service" className="text-foreground hover:text-primary dark:hover:text-muted-foreground underline font-semibold">Terms</a> and our <a href="/privacy-policy" className="text-foreground hover:text-primary dark:hover:text-muted-foreground underline font-semibold">Privacy Policy</a></span>
+                                </div>
+                            </div>
+                            <div className="w-full max-w-3xl mx-auto px-4">
                                 <FormComponent
                                     chatId={chatId}
                                     user={user!}

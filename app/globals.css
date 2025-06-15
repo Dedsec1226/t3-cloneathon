@@ -85,6 +85,8 @@
   --accent-foreground: oklch(0.4448 0.1341 324.7991);
   --destructive: oklch(0.5248 0.1368 20.8317);
   --destructive-foreground: oklch(1.0000 0 0);
+  --success: oklch(0.63 0.17 149.56);
+  --success-foreground: oklch(1.0 0 0);
   --border: oklch(0.8568 0.0829 328.9110);
   --input: oklch(0.8517 0.0558 336.6002);
   --ring: oklch(0.5916 0.2180 0.5844);
@@ -120,8 +122,24 @@
   --shadow-md: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 2px 4px -1px hsl(0 0% 0% / 0.10);
   --shadow-lg: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 4px 6px -1px hsl(0 0% 0% / 0.10);
   --shadow-xl: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 8px 10px -1px hsl(0 0% 0% / 0.10);
-  --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
-  --tracking-normal: 0em;
+  	--shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
+
+	/* Keyboard theme colors - Light Theme */
+	--keyboard-bg: var(--background);
+	--keyboard-base: oklch(0.9 0.0084 325.6414);
+	--keyboard-highlight: var(--secondary);
+	--keyboard-shadow: oklch(0.8 0.0084 325.6414);
+	--keyboard-text: var(--foreground);
+	--keyboard-text-shadow: var(--muted-foreground);
+	--keyboard-text-shadow-dark: var(--foreground);
+	--keyboard-key-bg: #db2777;
+	--keyboard-key-highlight: #ec4899;
+	--keyboard-key-shadow: #be185d;
+	--keyboard-inset-highlight: #f472b6;
+	--keyboard-inset-shadow: #9d174d;
+
+	/* crafter-primary */
+	--crafter-primary: oklch(0.83 0.1576 83.08);
 }
 
 .dark {
@@ -141,6 +159,8 @@
   --accent-foreground: oklch(0.9647 0.0091 341.8035);
   --destructive: oklch(0.2258 0.0524 12.6119);
   --destructive-foreground: oklch(1.0000 0 0);
+  --success: oklch(0.77 0.15 163.22);
+  --success-foreground: oklch(1.0 0 0);
   --border: oklch(0.3286 0.0154 343.4461);
   --input: oklch(0.3387 0.0195 332.8347);
   --ring: oklch(0.5916 0.2180 0.5844);
@@ -177,6 +197,23 @@
   --shadow-lg: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 4px 6px -1px hsl(0 0% 0% / 0.10);
   --shadow-xl: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 8px 10px -1px hsl(0 0% 0% / 0.10);
   --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
+
+	/* Keyboard theme colors - Dark Theme */
+	--keyboard-bg: var(--background);
+	--keyboard-base: var(--card);
+	--keyboard-highlight: var(--secondary);
+	--keyboard-shadow: var(--border);
+	--keyboard-text: var(--foreground);
+	--keyboard-text-shadow: var(--muted-foreground);
+	--keyboard-text-shadow-dark: var(--foreground);
+	--keyboard-key-bg: #db2777;
+	--keyboard-key-highlight: #ec4899;
+	--keyboard-key-shadow: #be185d;
+	--keyboard-inset-highlight: #f472b6;
+	--keyboard-inset-shadow: #9d174d;
+
+	/* crafter-primary */
+	--crafter-primary: oklch(0.88 0.1811 94.46);
 }
 
 @layer base {
@@ -185,7 +222,22 @@
   }
   body {
     @apply bg-background text-foreground;
-    letter-spacing: var(--tracking-normal);
+  }
+  button {
+    @apply cursor-pointer;
+  }
+
+  html body[data-scroll-locked] {
+    --removed-body-scroll-bar-size: 0px !important;
+    margin-right: 0px !important;
+    overflow-y: auto !important;
+  }
+
+  /* Add perspective to the body for 3D keyboard */
+  html,
+  body {
+    perspective: 300rem;
+    background: var(--background);
   }
 }
 
@@ -243,12 +295,16 @@
     .pb-safe {
       padding-bottom: max(12px, env(safe-area-inset-bottom)) !important;
     }
+    .pb-safe-offset-3 {
+      padding-bottom: max(0.75rem, env(safe-area-inset-bottom)) !important;
+    }
   }
 
   /* Chat input background variable */
   :root {
     --chat-input-background: hsl(var(--background));
     --chat-input-gradient: 220 13% 91%;
+    --chat-background: hsl(var(--background));
     --min: rgba(0,0,0,0.08);
     --max: rgba(0,0,0,0.15);
   }
@@ -256,7 +312,185 @@
   .dark {
     --chat-input-background: hsl(var(--background));
     --chat-input-gradient: 220 3% 15%;
+    --chat-background: hsl(var(--background));
     --min: rgba(255,255,255,0.02);
     --max: rgba(255,255,255,0.08);
+  }
+
+  /* Chat background utilities */
+  .bg-chat-background {
+    background-color: var(--chat-background);
+  }
+  
+  .bg-chat-background\/50 {
+    background-color: color-mix(in srgb, var(--chat-background) 50%, transparent);
+  }
+
+  /* Blur fallback for browsers that don't support backdrop-blur */
+  .blur-fallback\:bg-chat-background {
+    background-color: var(--chat-background);
+  }
+  
+  @supports not (backdrop-filter: blur(1px)) {
+    .blur-fallback\:bg-chat-background {
+      background-color: var(--chat-background) !important;
+    }
+  }
+
+  /* Gradient noise background for settings/theme toggle group */
+  .bg-gradient-noise-top {
+    background: linear-gradient(135deg, 
+      hsl(var(--muted) / 0.3) 0%, 
+      hsl(var(--muted) / 0.1) 50%, 
+      hsl(var(--muted) / 0.3) 100%
+    );
+  }
+
+  /* 3D Keyboard Styles */
+  .keyboard {
+    transform: rotateX(60deg) rotateZ(45deg);
+    transform-style: preserve-3d;
+    background: var(--keyboard-bg);
+    border-radius: 2rem;
+    padding: 2rem;
+    box-shadow: inset 1rem 1rem 0 0.4rem var(--keyboard-highlight);
+    display: flex;
+    gap: 0 2rem;
+    position: relative;
+  }
+
+  .keyboard .shade {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 90%;
+    height: 5rem;
+    background-image: linear-gradient(
+      90deg,
+      var(--keyboard-shadow) 50%,
+      var(--keyboard-highlight)
+    );
+    transform: rotateX(90deg) rotateX(14deg) translateX(10rem) translateY(-6rem)
+      translateZ(-39rem);
+    filter: blur(0.5rem);
+  }
+
+  .keyboard .cover {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    background: transparent;
+    border-radius: 2rem;
+    box-shadow:
+      inset -0.3rem -0.3rem 0.1rem 0.2rem var(--keyboard-highlight),
+      inset -1rem -1rem 0 0.4rem var(--keyboard-inset-shadow),
+      inset -2rem -2rem 2rem -0.6rem var(--keyboard-base),
+      0 0 var(--keyboard-base),
+      0.3rem 0.3rem var(--keyboard-base),
+      0.6rem 0.6rem var(--keyboard-base),
+      0.9rem 0.9rem var(--keyboard-base),
+      1.2rem 1.2rem var(--keyboard-base),
+      1.5rem 1.5rem var(--keyboard-base),
+      1.8rem 1.8rem var(--keyboard-base),
+      2.1rem 2.1rem var(--keyboard-base),
+      2.4rem 2.4rem var(--keyboard-base),
+      2.7rem 2.7rem var(--keyboard-base),
+      3rem 3rem var(--keyboard-base),
+      3.3rem 3.3rem var(--keyboard-base),
+      3.6rem 3.6rem var(--keyboard-base),
+      3.9rem 3.9rem var(--keyboard-base),
+      4.2rem 4.2rem var(--keyboard-base),
+      4.5rem 4.5rem var(--keyboard-base),
+      4.8rem 4.8rem var(--keyboard-base),
+      5.1rem 5.1rem var(--keyboard-base),
+      5.4rem 5.4rem var(--keyboard-base),
+      5.7rem 5.7rem var(--keyboard-base),
+      6rem 6rem var(--keyboard-base),
+      6.3rem 6.3rem var(--keyboard-base),
+      6.6rem 6.6rem var(--keyboard-base),
+      6.6rem 6.6rem var(--keyboard-base),
+      8rem 8rem 1.5rem var(--keyboard-shadow);
+  }
+
+  .key {
+    position: relative;
+    width: 6rem;
+    height: 6rem;
+    transform: translateX(-3rem) translateY(-3rem);
+    transform-style: preserve-3d;
+    user-select: none;
+    transition: transform 0.1s ease-out;
+  }
+
+  .key.active {
+    transform: translateX(-1rem) translateY(-1rem);
+  }
+
+  .key .char {
+    position: absolute;
+    font-size: 4rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    color: var(--keyboard-text);
+    text-shadow:
+      0.05rem 0rem 0 var(--keyboard-text-shadow),
+      0.05rem 0.1rem 0 var(--keyboard-text-shadow-dark),
+      0.1rem 0.05rem 0 var(--keyboard-text-shadow),
+      0.1rem 0.15rem 0 var(--keyboard-text-shadow-dark),
+      0.15rem 0.1rem 0 var(--keyboard-text-shadow),
+      0.15rem 0.2rem 0 var(--keyboard-text-shadow-dark),
+      0.2rem 0.15rem 0 var(--keyboard-text-shadow),
+      0.2rem 0.25rem 0 var(--keyboard-text-shadow-dark),
+      0.25rem 0.2rem 0 var(--keyboard-text-shadow),
+      0.25rem 0.3rem 0 var(--keyboard-text-shadow-dark);
+  }
+
+  .key .side {
+    position: absolute;
+    width: 250%;
+    height: 140%;
+    background-image: linear-gradient(
+      var(--keyboard-key-highlight) 45%,
+      var(--keyboard-key-shadow) 55%
+    );
+    border-radius: 1rem;
+    transform: rotateZ(45deg) translate(19%, 28%);
+  }
+
+  .key .top {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+  }
+
+  .key .top::before {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: var(--keyboard-key-bg);
+    border-radius: 0.8em;
+    filter: blur(0.3rem);
+    transform: translate(10%, 10%);
+  }
+
+  .key .top::after {
+    content: "";
+    position: absolute;
+    width: 105%;
+    height: 105%;
+    background-image: linear-gradient(
+      -45deg,
+      transparent 45%,
+      var(--keyboard-key-highlight) 55%
+    );
+    border-radius: 0.8rem;
+    box-shadow: inset -0.2rem -0.2rem 0.5rem -0.2rem var(--keyboard-inset-shadow),
+      0.2rem 0.2rem 0.5rem -0.2rem var(--keyboard-inset-highlight);
   }
 }
