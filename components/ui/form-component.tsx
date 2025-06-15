@@ -196,53 +196,53 @@ const getColorClasses = (color: string, isSelected: boolean = false) => {
     const baseClasses = "transition-colors duration-200";
     const selectedClasses = isSelected ? "bg-opacity-100! dark:bg-opacity-100!" : "";
 
-    // For selected state, prioritize using your project's primary theme colors
+    // For selected state, use consistent theme colors like Gemini and OpenAI
     if (isSelected) {
     switch (color) {
         case 'black':
-                return `${baseClasses} ${selectedClasses} bg-[#0F0F0F]! dark:bg-[#0F0F0F]! text-white! hover:bg-[#0F0F0F]! dark:hover:bg-[#0F0F0F]! border-[#0F0F0F]! dark:border-[#0F0F0F]!`;
+                return `${baseClasses} ${selectedClasses} bg-accent! dark:bg-accent/80! text-accent-foreground! hover:bg-accent/80! dark:hover:bg-accent/70! border-accent! dark:border-accent/80!`;
         case 'gray':
-                return `${baseClasses} ${selectedClasses} bg-[#4E4E4E]! dark:bg-[#4E4E4E]! text-white! hover:bg-[#3D3D3D]! dark:hover:bg-[#3D3D3D]! border-[#4E4E4E]! dark:border-[#4E4E4E]!`;
+                return `${baseClasses} ${selectedClasses} bg-secondary! dark:bg-secondary/80! text-secondary-foreground! hover:bg-secondary/80! dark:hover:bg-secondary/70! border-secondary! dark:border-secondary/80!`;
         case 'indigo':
-                return `${baseClasses} ${selectedClasses} bg-[#4F46E5]! dark:bg-[#4F46E5]! text-white! hover:bg-[#4338CA]! dark:hover:bg-[#4338CA]! border-[#4F46E5]! dark:border-[#4F46E5]!`;
+                return `${baseClasses} ${selectedClasses} bg-accent! dark:bg-accent/80! text-accent-foreground! hover:bg-accent/80! dark:hover:bg-accent/70! border-accent! dark:border-accent/80!`;
         case 'violet':
-                return `${baseClasses} ${selectedClasses} bg-primary! text-primary-foreground! hover:bg-primary/90! border-primary! dark:border-primary!`;
+                return `${baseClasses} ${selectedClasses} bg-secondary! dark:bg-secondary/80! text-secondary-foreground! hover:bg-secondary/80! dark:hover:bg-secondary/70! border-secondary! dark:border-secondary/80!`;
         case 'purple':
-                return `${baseClasses} ${selectedClasses} bg-primary! text-primary-foreground! hover:bg-primary/90! border-primary! dark:border-primary!`;
+                return `${baseClasses} ${selectedClasses} bg-accent! dark:bg-accent/80! text-accent-foreground! hover:bg-accent/80! dark:hover:bg-accent/70! border-accent! dark:border-accent/80!`;
         case 'alpha':
-                return `${baseClasses} ${selectedClasses} bg-gradient-to-r! from-[#0b3d91]! to-[#d01012]! text-white! hover:opacity-90! border-[#0b3d91]! dark:border-[#0b3d91]!`;
+                return `${baseClasses} ${selectedClasses} bg-secondary! dark:bg-secondary/80! text-secondary-foreground! hover:bg-secondary/80! dark:hover:bg-secondary/70! border-secondary! dark:border-secondary/80!`;
         case 'blue':
-                return `${baseClasses} ${selectedClasses} bg-[#1C7DFF]! dark:bg-[#1C7DFF]! text-white! hover:bg-[#0A6AE9]! dark:hover:bg-[#0A6AE9]! border-[#1C7DFF]! dark:border-[#1C7DFF]!`;
+                return `${baseClasses} ${selectedClasses} bg-secondary! dark:bg-secondary/80! text-secondary-foreground! hover:bg-secondary/80! dark:hover:bg-secondary/70! border-secondary! dark:border-secondary/80!`;
         case 'gemini':
-                return `${baseClasses} ${selectedClasses} bg-[#1EA896]! dark:bg-[#1EA896]! text-white! hover:bg-[#19967F]! dark:hover:bg-[#19967F]! border-[#1EA896]! dark:border-[#1EA896]!`;
+                return `${baseClasses} ${selectedClasses} bg-accent! dark:bg-accent/80! text-accent-foreground! hover:bg-accent/80! dark:hover:bg-accent/70! border-accent! dark:border-accent/80!`;
         case 'vercel-gray':
-                return `${baseClasses} ${selectedClasses} bg-[#27272A]! dark:bg-[#27272A]! text-white! hover:bg-[#18181B]! dark:hover:bg-[#18181B]! border-[#27272A]! dark:border-[#27272A]!`;
+                return `${baseClasses} ${selectedClasses} bg-secondary! dark:bg-secondary/80! text-secondary-foreground! hover:bg-secondary/80! dark:hover:bg-secondary/70! border-secondary! dark:border-secondary/80!`;
         default:
-                return `${baseClasses} ${selectedClasses} bg-primary! text-primary-foreground! hover:bg-primary/90! border-primary! dark:border-primary!`;
+                return `${baseClasses} ${selectedClasses} bg-accent! dark:bg-accent/80! text-accent-foreground! hover:bg-accent/80! dark:hover:bg-accent/70! border-accent! dark:border-accent/80!`;
         }
     } else {
-        // For non-selected state, use theme-aware colors
+        // For non-selected state, use consistent theme colors like Gemini and OpenAI
         switch (color) {
             case 'black':
-                return `${baseClasses} text-[#0F0F0F]! dark:text-[#E5E5E5]! hover:bg-[#0F0F0F]! hover:text-white! dark:hover:bg-[#0F0F0F]! dark:hover:text-white!`;
+                return `${baseClasses} text-accent-foreground! dark:text-accent! hover:bg-accent! hover:text-accent-foreground! dark:hover:bg-accent/80! dark:hover:text-white!`;
             case 'gray':
-                return `${baseClasses} text-[#4E4E4E]! dark:text-[#E5E5E5]! hover:bg-[#4E4E4E]! hover:text-white! dark:hover:bg-[#4E4E4E]! dark:hover:text-white!`;
+                return `${baseClasses} text-secondary-foreground! dark:text-secondary! hover:bg-secondary! hover:text-secondary-foreground! dark:hover:bg-secondary/80! dark:hover:text-white!`;
             case 'indigo':
-                return `${baseClasses} text-[#4F46E5]! dark:text-[#6366F1]! hover:bg-[#4F46E5]! hover:text-white! dark:hover:bg-[#4F46E5]! dark:hover:text-white!`;
+                return `${baseClasses} text-accent-foreground! dark:text-accent! hover:bg-accent! hover:text-accent-foreground! dark:hover:bg-accent/80! dark:hover:text-white!`;
             case 'violet':
-                return `${baseClasses} text-primary! hover:bg-primary! hover:text-primary-foreground!`;
+                return `${baseClasses} text-secondary-foreground! dark:text-secondary! hover:bg-secondary! hover:text-secondary-foreground! dark:hover:bg-secondary/80! dark:hover:text-white!`;
             case 'purple':
-                return `${baseClasses} text-primary! hover:bg-primary! hover:text-primary-foreground!`;
+                return `${baseClasses} text-accent-foreground! dark:text-accent! hover:bg-accent! hover:text-accent-foreground! dark:hover:bg-accent/80! dark:hover:text-white!`;
             case 'alpha':
-                return `${baseClasses} text-[#d01012]! dark:text-[#3f83f8]! hover:bg-gradient-to-r! hover:from-[#0b3d91]! hover:to-[#d01012]! hover:text-white! dark:hover:text-white!`;
+                return `${baseClasses} text-secondary-foreground! dark:text-secondary! hover:bg-secondary! hover:text-secondary-foreground! dark:hover:bg-secondary/80! dark:hover:text-white!`;
             case 'blue':
-                return `${baseClasses} text-[#1C7DFF]! dark:text-[#4C96FF]! hover:bg-[#1C7DFF]! hover:text-white! dark:hover:bg-[#1C7DFF]! dark:hover:text-white!`;
+                return `${baseClasses} text-secondary-foreground! dark:text-secondary! hover:bg-secondary! hover:text-secondary-foreground! dark:hover:bg-secondary/80! dark:hover:text-white!`;
             case 'gemini':
-                return `${baseClasses} text-[#1EA896]! dark:text-[#34C0AE]! hover:bg-[#1EA896]! hover:text-white! dark:hover:bg-[#1EA896]! dark:hover:text-white!`;
+                return `${baseClasses} text-accent-foreground! dark:text-accent! hover:bg-accent! hover:text-accent-foreground! dark:hover:bg-accent/80! dark:hover:text-white!`;
             case 'vercel-gray':
-                return `${baseClasses} text-[#27272A]! dark:text-[#A1A1AA]! hover:bg-[#27272A]! hover:text-white! dark:hover:bg-[#27272A]! dark:hover:text-white!`;
+                return `${baseClasses} text-secondary-foreground! dark:text-secondary! hover:bg-secondary! hover:text-secondary-foreground! dark:hover:bg-secondary/80! dark:hover:text-white!`;
             default:
-                return `${baseClasses} text-foreground! hover:bg-primary! hover:text-primary-foreground!`;
+                return `${baseClasses} text-accent-foreground! dark:text-accent! hover:bg-accent! hover:text-accent-foreground! dark:hover:bg-accent/80! dark:hover:text-white!`;
         }
     }
 }
@@ -282,18 +282,18 @@ const ModelSwitcher: React.FC<ModelSwitcherProps> = memo(({ selectedModel, setSe
         return acc;
     }, {} as Record<string, typeof models>);
 
-    // Get hover color classes based on model color
+    // Get hover color classes using consistent theme colors like Gemini and OpenAI
     const getHoverColorClasses = (modelColor: string) => {
         switch (modelColor) {
-            case 'black': return 'hover:bg-black/20! dark:hover:bg-black/20!';
-            case 'gray': return 'hover:bg-gray-500/20! dark:hover:bg-gray-400/20!';
-            case 'indigo': return 'hover:bg-indigo-500/20! dark:hover:bg-indigo-400/20!';
-            case 'violet': return 'hover:bg-violet-500/20! dark:hover:bg-violet-400/20!';
-            case 'purple': return 'hover:bg-purple-500/20! dark:hover:bg-purple-400/20!';
-            case 'gemini': return 'hover:bg-teal-500/20! dark:hover:bg-teal-400/20!';
-            case 'blue': return 'hover:bg-blue-500/20! dark:hover:bg-blue-400/20!';
-            case 'vercel-gray': return 'hover:bg-zinc-500/20! dark:hover:bg-zinc-400/20!';
-            default: return 'hover:bg-neutral-500/20! dark:hover:bg-neutral-400/20!';
+            case 'black': return 'hover:bg-accent/20! dark:hover:bg-accent/15!';
+            case 'gray': return 'hover:bg-secondary/20! dark:hover:bg-secondary/15!';
+            case 'indigo': return 'hover:bg-accent/20! dark:hover:bg-accent/15!';
+            case 'violet': return 'hover:bg-secondary/20! dark:hover:bg-secondary/15!';
+            case 'purple': return 'hover:bg-accent/20! dark:hover:bg-accent/15!';
+            case 'gemini': return 'hover:bg-accent/20! dark:hover:bg-accent/15!';
+            case 'blue': return 'hover:bg-secondary/20! dark:hover:bg-secondary/15!';
+            case 'vercel-gray': return 'hover:bg-secondary/20! dark:hover:bg-secondary/15!';
+            default: return 'hover:bg-accent/20! dark:hover:bg-accent/15!';
         }
     };
 
@@ -410,7 +410,7 @@ const ModelSwitcher: React.FC<ModelSwitcherProps> = memo(({ selectedModel, setSe
                 </div>
             </DropdownMenuTrigger>
             <DropdownMenuContent
-                className="w-[400px] p-0 rounded-xl bg-neutral-900 border border-neutral-800 shadow-xl max-h-[500px] overflow-hidden"
+                className="w-[400px] p-0 rounded-xl bg-background border border-border shadow-xl max-h-[500px] overflow-hidden"
                 align="start"
                 style={{
                     transform: 'translateY(-100%) translateY(-40px)',
@@ -438,10 +438,10 @@ const ModelSwitcher: React.FC<ModelSwitcherProps> = memo(({ selectedModel, setSe
                                         }}
                                         className={cn(
                                             "flex items-center justify-between p-3 rounded-lg cursor-pointer transition-all duration-200",
-                                            "hover:bg-neutral-800 focus:bg-neutral-800",
+                                            "hover:bg-muted focus:bg-muted",
                                             selectedModel === model.value
-                                                ? "bg-neutral-800 border border-neutral-700"
-                                                : "bg-transparent hover:bg-neutral-800/50"
+                                                ? "bg-muted border border-border"
+                                                : "bg-transparent hover:bg-muted/50"
                                         )}
                                     >
                                         <div className="flex items-center gap-3">
@@ -453,11 +453,11 @@ const ModelSwitcher: React.FC<ModelSwitcherProps> = memo(({ selectedModel, setSe
                                                         className="w-5 h-5 object-contain"
                                                     />
                                                 ) : (
-                                                    <model.icon className="w-5 h-5 text-white" />
+                                                    <model.icon className="w-5 h-5 text-foreground" />
                                                 )}
                                             </div>
                                             <div>
-                                                <p className="text-sm font-medium text-white leading-none">
+                                                <p className="text-sm font-medium text-foreground leading-none">
                                                     {model.label}
                                                 </p>
                                             </div>
@@ -471,8 +471,8 @@ const ModelSwitcher: React.FC<ModelSwitcherProps> = memo(({ selectedModel, setSe
                                                             <EyeCapabilityIcon className="w-3 h-3 text-teal-400" />
                                                         </div>
                                                     </TooltipTrigger>
-                                                    <TooltipContent side="top" className="bg-neutral-800 border-neutral-700">
-                                                        <span className="text-xs text-white">Vision</span>
+                                                    <TooltipContent side="top" className="bg-popover border-border">
+                                                        <span className="text-xs text-popover-foreground">Vision</span>
                                                     </TooltipContent>
                                                 </Tooltip>
                                             )}
@@ -483,8 +483,8 @@ const ModelSwitcher: React.FC<ModelSwitcherProps> = memo(({ selectedModel, setSe
                                                             <GlobeCapabilityIcon className="w-3 h-3 text-blue-400" />
                                                         </div>
                                                     </TooltipTrigger>
-                                                    <TooltipContent side="top" className="bg-neutral-800 border-neutral-700">
-                                                        <span className="text-xs text-white">Web Search</span>
+                                                    <TooltipContent side="top" className="bg-popover border-border">
+                                                        <span className="text-xs text-popover-foreground">Web Search</span>
                                                     </TooltipContent>
                                                 </Tooltip>
                                             )}
@@ -495,8 +495,8 @@ const ModelSwitcher: React.FC<ModelSwitcherProps> = memo(({ selectedModel, setSe
                                                             <FileTextIcon className="w-3 h-3 text-purple-400" />
                                                         </div>
                                                     </TooltipTrigger>
-                                                    <TooltipContent side="top" className="bg-neutral-800 border-neutral-700">
-                                                        <span className="text-xs text-white">PDF Support</span>
+                                                    <TooltipContent side="top" className="bg-popover border-border">
+                                                        <span className="text-xs text-popover-foreground">PDF Support</span>
                                                     </TooltipContent>
                                                 </Tooltip>
                                             )}
@@ -507,8 +507,8 @@ const ModelSwitcher: React.FC<ModelSwitcherProps> = memo(({ selectedModel, setSe
                                                             <BrainCapabilityIcon className="w-3 h-3 text-violet-400" />
                                                         </div>
                                                     </TooltipTrigger>
-                                                    <TooltipContent side="top" className="bg-neutral-800 border-neutral-700">
-                                                        <span className="text-xs text-white">Reasoning</span>
+                                                    <TooltipContent side="top" className="bg-popover border-border">
+                                                        <span className="text-xs text-popover-foreground">Reasoning</span>
                                                     </TooltipContent>
                                                 </Tooltip>
                                             )}
@@ -519,8 +519,8 @@ const ModelSwitcher: React.FC<ModelSwitcherProps> = memo(({ selectedModel, setSe
                                                             <ImagePlusIcon className="w-3 h-3 text-orange-400" />
                                                         </div>
                                                     </TooltipTrigger>
-                                                    <TooltipContent side="top" className="bg-neutral-800 border-neutral-700">
-                                                        <span className="text-xs text-white">Image Generation</span>
+                                                    <TooltipContent side="top" className="bg-popover border-border">
+                                                        <span className="text-xs text-popover-foreground">Image Generation</span>
                                                     </TooltipContent>
                                                 </Tooltip>
                                             )}
@@ -838,35 +838,35 @@ const SwitchNotification: React.FC<SwitchNotificationProps> = memo(({
     // Icon color is always white for better contrast on colored backgrounds
     const getIconColorClass = () => "text-white";
 
-    // Get background color for model notifications only
+    // Get background color for model notifications using consistent theme colors like Gemini and OpenAI
     const getModelBgClass = (color: string) => {
         switch (color) {
             case 'black':
-                return 'bg-[#0F0F0F] dark:bg-[#0F0F0F] border-[#0F0F0F] dark:border-[#0F0F0F]';
+                return 'bg-accent dark:bg-accent/80 border-accent dark:border-accent/80';
             case 'gray':
-                return 'bg-[#4E4E4E] dark:bg-[#4E4E4E] border-[#4E4E4E] dark:border-[#4E4E4E]';
+                return 'bg-secondary dark:bg-secondary/80 border-secondary dark:border-secondary/80';
             case 'indigo':
-                return 'bg-[#4F46E5] dark:bg-[#4F46E5] border-[#4F46E5] dark:border-[#4F46E5]';
+                return 'bg-accent dark:bg-accent/80 border-accent dark:border-accent/80';
             case 'violet':
-                return 'bg-[#8B5CF6] dark:bg-[#8B5CF6] border-[#8B5CF6] dark:border-[#8B5CF6]';
+                return 'bg-secondary dark:bg-secondary/80 border-secondary dark:border-secondary/80';
             case 'purple':
-                return 'bg-[#5E5ADB] dark:bg-[#5E5ADB] border-[#5E5ADB] dark:border-[#5E5ADB]';
+                return 'bg-accent dark:bg-accent/80 border-accent dark:border-accent/80';
             case 'gemini':
-                return 'bg-[#1EA896] dark:bg-[#1EA896] border-[#1EA896] dark:border-[#1EA896]';
+                return 'bg-accent dark:bg-accent/80 border-accent dark:border-accent/80';
             case 'blue':
-                return 'bg-[#1C7DFF] dark:bg-[#1C7DFF] border-[#1C7DFF] dark:border-[#1C7DFF]';
+                return 'bg-secondary dark:bg-secondary/80 border-secondary dark:border-secondary/80';
             case 'vercel-gray':
-                return 'bg-[#27272A] dark:bg-[#27272A] border-[#27272A] dark:border-[#27272A]';
+                return 'bg-secondary dark:bg-secondary/80 border-secondary dark:border-secondary/80';
             default:
-                return 'bg-neutral-100 dark:bg-neutral-900 border-neutral-300 dark:border-neutral-700';
+                return 'bg-accent dark:bg-accent/80 border-accent dark:border-accent/80';
         }
     };
 
-    // For model notifications, use model colors. For group notifications, use default background.
+    // For model notifications, use model colors. For group notifications, use theme background.
     const useModelColor = notificationType === 'model' && modelColor !== 'default';
     const bgColorClass = useModelColor
         ? getModelBgClass(modelColor)
-        : "bg-neutral-100 dark:bg-neutral-900 border-neutral-300 dark:border-neutral-700";
+        : "bg-card dark:bg-card border-border dark:border-border";
 
     return (
         <AnimatePresence>
