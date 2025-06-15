@@ -50,7 +50,7 @@ const ChatInterface = memo(({ initialChatId, initialMessages, initialVisibility 
     const [q] = useQueryState('q', parseAsString.withDefault(''))
 
     // Use localStorage hook directly for model selection with a default
-    const [selectedModel, setSelectedModel] = useLocalStorage('scira-selected-model', 'scira-default');
+    const [selectedModel, setSelectedModel] = useLocalStorage('t3-selected-model', 't3-default');
 
     const initialState = useMemo(() => ({
         query: query || q,
@@ -63,7 +63,8 @@ const ChatInterface = memo(({ initialChatId, initialMessages, initialVisibility 
     const fileInputRef = useRef<HTMLInputElement>(null);
     const inputRef = useRef<HTMLTextAreaElement>(null);
     const initializedRef = useRef(false);
-    const [selectedGroup, setSelectedGroup] = useLocalStorage<SearchGroupId>('scira-selected-group', 'analysis');
+    const [selectedGroup, setSelectedGroup] = useLocalStorage<SearchGroupId>('t3-selected-group-v2', null);
+    const [selectedCategoryButton, setSelectedCategoryButton] = useState<string | null>(null);
     const [hasSubmitted, setHasSubmitted] = React.useState(false);
     const [hasManuallyScrolled, setHasManuallyScrolled] = useState(false);
     const isAutoScrollingRef = useRef(false);
@@ -100,7 +101,7 @@ const ChatInterface = memo(({ initialChatId, initialMessages, initialVisibility 
 
     // Sign-in prompt dialog state
     // const [showSignInPrompt, setShowSignInPrompt] = useState(false);
-    const [hasShownSignInPrompt, setHasShownSignInPrompt] = useLocalStorage('scira-signin-prompt-shown', false);
+    const [hasShownSignInPrompt, setHasShownSignInPrompt] = useLocalStorage('t3-signin-prompt-shown', false);
     const signInTimerRef = useRef<NodeJS.Timeout | null>(null);
 
     // Generate a consistent ID for new chats
@@ -434,7 +435,7 @@ const ChatInterface = memo(({ initialChatId, initialMessages, initialVisibility 
                             ? 'w-full max-w-4xl space-y-8 text-center' // Wider centered layout for empty state
                             : 'w-full max-w-[95%] sm:max-w-2xl space-y-6 p-0 mx-auto' // Original layout for messages
                         } transition-all duration-300`}>
-                                                    {status === 'ready' && messages.length === 0 && (
+                                                    {status === 'ready' && messages.length === 0 && !input.trim() && (
                                 <div className="w-full max-w-2xl mx-auto space-y-4 px-2 pt-[calc(max(2vh,0.5rem))] pb-6 duration-300 animate-in fade-in-50 zoom-in-95 sm:px-8">
                                     <h1 className="text-4xl font-semibold text-left">
                                         How can I help you?
@@ -492,10 +493,21 @@ const ChatInterface = memo(({ initialChatId, initialMessages, initialVisibility 
                                         ].map((item, index) => (
                                             <button
                                                 key={item.group + index}
-                                                className="justify-center whitespace-nowrap text-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-primary text-primary-foreground shadow hover:bg-pink-600/90 disabled:hover:bg-primary h-9 flex items-center gap-1 rounded-xl px-5 py-2 font-semibold outline-1 outline-secondary/70 backdrop-blur-xl data-[selected=false]:bg-secondary/30 data-[selected=false]:text-secondary-foreground/90 data-[selected=false]:outline data-[selected=false]:hover:bg-secondary max-sm:size-16 max-sm:flex-col sm:gap-2 sm:rounded-full"
-                                                data-selected="false"
+                                                className={`justify-center whitespace-nowrap text-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 ${
+                                                    selectedCategoryButton === item.label
+                                                        ? 'border-reflect button-reflect bg-[rgb(162,59,103)] p-2 text-primary-foreground shadow hover:bg-[#d56698] active:bg-[rgb(162,59,103)] disabled:hover:bg-[rgb(162,59,103)] disabled:active:bg-[rgb(162,59,103)] dark:bg-primary/20 dark:hover:bg-pink-800/70 dark:active:bg-pink-800/40 disabled:dark:hover:bg-primary/20 disabled:dark:active:bg-primary/20'
+                                                        : 'bg-primary text-primary-foreground shadow hover:bg-primary/90'
+                                                } h-9 flex items-center gap-1 rounded-xl px-5 py-2 font-semibold outline-1 outline-secondary/70 backdrop-blur-xl data-[selected=false]:bg-secondary/30 data-[selected=false]:text-secondary-foreground/90 data-[selected=false]:outline data-[selected=false]:hover:bg-secondary max-sm:size-16 max-sm:flex-col sm:gap-2 sm:rounded-full`}
+                                                data-selected={selectedCategoryButton === item.label ? 'true' : 'false'}
                                                 onClick={() => {
-                                                    setSelectedGroup(item.group as any);
+                                                    // Toggle behavior: if already selected, unselect it; otherwise select it
+                                                    if (selectedCategoryButton === item.label) {
+                                                        setSelectedCategoryButton(null);
+                                                        setSelectedGroup(null);
+                                                    } else {
+                                                        setSelectedCategoryButton(item.label);
+                                                        setSelectedGroup(item.group as any);
+                                                    }
                                                     inputRef.current?.focus();
                                                 }}
                                             >
@@ -519,6 +531,13 @@ const ChatInterface = memo(({ initialChatId, initialMessages, initialVisibility 
                                                     onClick={() => {
                                                         setInput(question);
                                                         setHasSubmitted(true);
+                                                        // Focus the input and set cursor to end
+                                                        setTimeout(() => {
+                                                            if (inputRef.current) {
+                                                                inputRef.current.focus();
+                                                                inputRef.current.setSelectionRange(question.length, question.length);
+                                                            }
+                                                        }, 0);
                                                     }}
                                                 >
                                                     <span>{question}</span>

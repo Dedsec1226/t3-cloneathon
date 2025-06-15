@@ -64,7 +64,7 @@ import { Memory, Clock as PhosphorClock, RedditLogo, RoadHorizon, XLogo } from '
 // Components
 import { FlightTracker } from '@/components/flight-tracker';
 import InteractiveChart from '@/components/interactive-charts';
-import { MapComponent, MapContainer } from '@/components/map-components';
+import { MapComponent, MapContainer } from '@/components/placeholders';
 import TMDBResult from '@/components/movie-info';
 import MultiSearch from '@/components/multi-search';
 import NearbySearchMapView from '@/components/nearby-search-map-view';

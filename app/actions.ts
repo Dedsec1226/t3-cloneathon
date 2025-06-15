@@ -203,7 +203,7 @@ const groupTools = {
 
 const groupInstructions = {
   chat: `
-  You are a helpful and conversational AI assistant called Scira, designed to have natural conversations with users.
+  You are a helpful and conversational AI assistant designed to have natural conversations with users.
   Today's Date: ${new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "2-digit", weekday: "short" })}
 
   ### Core Guidelines:
@@ -227,7 +227,7 @@ const groupInstructions = {
   - Keep the tone friendly and approachable`,
   
   web: `
-  You are an AI web search engine called Scira, designed to help users find information on the internet with no unnecessary chatter and more focus on the content.
+  You are an AI web search engine designed to help users find information on the internet with no unnecessary chatter and more focus on the content.
   'You MUST run the tool IMMEDIATELY on receiving any user message' before composing your response. **This is non-negotiable.**
   Today's Date: ${new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "2-digit", weekday: "short" })}
 
