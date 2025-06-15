@@ -436,9 +436,9 @@ const ChatInterface = memo(({ initialChatId, initialMessages, initialVisibility 
                         } transition-all duration-300`}>
                                                     {status === 'ready' && messages.length === 0 && (
                                 <div className="w-full max-w-2xl mx-auto space-y-4 px-2 pt-[calc(max(2vh,0.5rem))] pb-6 duration-300 animate-in fade-in-50 zoom-in-95 sm:px-8">
-                                    <h2 className="text-2xl font-semibold text-left">
+                                    <h1 className="text-4xl font-semibold text-left">
                                         How can I help you?
-                                    </h2>
+                                    </h1>
                                     
                                     {/* Category buttons */}
                                     <div className="flex flex-row flex-wrap gap-2.5 text-sm max-sm:justify-evenly">

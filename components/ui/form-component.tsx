@@ -1205,7 +1205,7 @@ const FormComponent: React.FC<FormComponentProps> = ({
                         notificationType={switchNotification.notificationType}
                     />
 
-                                         {/* Hidden file inputs */}
+                    {/* Hidden file inputs */}
                     <input
                         type="file"
                         className="hidden"
