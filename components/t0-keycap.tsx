@@ -1,12 +1,12 @@
 "use client";
 
 import { SpinnerIcon } from "@/components/ui/icons/spinner";
-import { T3Logo } from "@/components/ui/icons/t0-logo";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { useRouter, usePathname } from "next/navigation";
 import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
+
 interface KeyProps {
 	char: string;
 	span?: boolean;
@@ -52,10 +52,8 @@ const Key: React.FC<KeyProps> = ({
 				onKeyDown={onKeyDown}
 				onKeyUp={onKeyUp}
 			/>
-			{active ? (
-				<SpinnerIcon className="char h-10 w-10 animate-spin" />
-			) : (
-				<T3Logo className="char h-10 w-10 transition-transform" />
+			{active && (
+				<SpinnerIcon className="char w-full h-full animate-spin transition-opacity duration-200 ease-in-out" />
 			)}
 		</div>
 	);
@@ -123,10 +121,34 @@ export const T0Keycap: React.FC = () => {
 	const [isNavigating, setIsNavigating] = useState(false);
 	const isMobile = useIsMobile();
 
+	// Check localStorage on mount and clear if we're already on home page
+	useEffect(() => {
+		if (typeof window !== 'undefined') {
+			const wasNavigating = localStorage.getItem('t3-keycap-navigating') === 'true';
+			if (wasNavigating) {
+				// If we're on any page and there's a stale navigation state, clear it
+				// This handles page reloads where navigation is no longer happening
+				localStorage.removeItem('t3-keycap-navigating');
+				setIsNavigating(false);
+			}
+		}
+	}, [pathname]);
+
+	// Persist navigation state to localStorage
+	useEffect(() => {
+		if (typeof window !== 'undefined') {
+			if (isNavigating) {
+				localStorage.setItem('t3-keycap-navigating', 'true');
+			} else {
+				localStorage.removeItem('t3-keycap-navigating');
+			}
+		}
+	}, [isNavigating]);
+
 	const handleNavigation = useCallback(() => {
 		setIsNavigating(true);
-		// Use replace to ensure clean navigation
-		router.replace("/home");
+		// Use push for better navigation tracking
+		router.push("/home");
 	}, [router]);
 
 	useEffect(() => {
@@ -157,30 +179,36 @@ export const T0Keycap: React.FC = () => {
 	// Reset navigation state when we reach the home page or after timeout
 	useEffect(() => {
 		if (isNavigating) {
-			// If we're already on the home page, reset immediately
+			// Check if we're on the home page
 			if (pathname === "/home") {
-				setIsNavigating(false);
-				return;
+				// Add a small delay to ensure the page has fully loaded
+				const resetTimeout = setTimeout(() => {
+					setIsNavigating(false);
+					// Clear the char state to hide spinner
+					remove("t");
+				}, 100);
+
+				return () => clearTimeout(resetTimeout);
 			}
 
-			// Otherwise, set a timeout as fallback
+			// Otherwise, set a longer timeout as fallback
 			const timeout = setTimeout(() => {
 				setIsNavigating(false);
-			}, 3000); // 3 second timeout
+				// Clear the char state to hide spinner
+				remove("t");
+			}, 5000); // 5 second timeout
 
 			return () => clearTimeout(timeout);
 		}
-	}, [isNavigating, pathname]);
+	}, [isNavigating, pathname, remove]);
 
 	const handleClick = (char: string) => {
 		if (isNavigating) return;
 		add(char);
 		stop();
 		play();
-		setTimeout(() => {
-			remove(char);
-			handleNavigation();
-		}, 100);
+		// Start navigation immediately, don't remove char state
+		handleNavigation();
 	};
 
 	const handleMouseDown = (char: string) => {
@@ -192,7 +220,7 @@ export const T0Keycap: React.FC = () => {
 
 	const handleMouseUp = (char: string) => {
 		if (isNavigating) return;
-		remove(char);
+		// Start navigation immediately, don't remove char state
 		handleNavigation();
 	};
 
@@ -210,7 +238,7 @@ export const T0Keycap: React.FC = () => {
 		if (e.key === "Enter" || e.key === " ") {
 			e.preventDefault();
 			if (isNavigating) return;
-			remove(char);
+			// Start navigation immediately, don't remove char state
 			handleNavigation();
 		}
 	};
@@ -249,3 +277,4 @@ export const T0Keycap: React.FC = () => {
 		</div>
 	);
 };
+ 

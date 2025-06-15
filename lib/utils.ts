@@ -7,7 +7,7 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export type SearchGroupId = 'web' | 'academic' | 'youtube' | 'reddit' | 'x' | 'analysis' | 'extreme' | 'memory';
+export type SearchGroupId = 'web' | 'academic' | 'youtube' | 'reddit' | 'x' | 'analysis' | 'extreme' | 'memory' | null;
 
 export interface SearchGroup {
   id: SearchGroupId;

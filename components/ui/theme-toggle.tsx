@@ -6,13 +6,20 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 
 export function ThemeToggle() {
-  const { setTheme, theme } = useTheme();
+  const { setTheme, theme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = React.useState(false);
-  const isDark = theme === "dark";
+  
+  // Use resolvedTheme for more reliable theme detection
+  const isDark = resolvedTheme === "dark";
 
   React.useEffect(() => {
     setMounted(true);
   }, []);
+
+  const toggleTheme = () => {
+    // Simple toggle logic - if currently dark, go to light, otherwise go to dark
+    setTheme(isDark ? "light" : "dark");
+  };
 
   // Prevent hydration mismatch by not rendering until mounted
   if (!mounted) {
@@ -32,7 +39,7 @@ export function ThemeToggle() {
     <Button
       variant="ghost"
       size="icon"
-      onClick={() => theme === "dark" ? setTheme("light") : setTheme("dark")}
+      onClick={toggleTheme}
       className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-muted/40 hover:text-foreground disabled:hover:bg-transparent disabled:hover:text-foreground/50 group relative size-8"
     >
       <motion.svg

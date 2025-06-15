@@ -311,12 +311,7 @@ const Navbar = memo(({
             {/* Right side - settings, theme toggle and user profile */}
             <div className="flex-1 flex justify-end items-center gap-3">
                 {/* Settings and theme toggle group - always visible */}
-                <motion.div
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.3, ease: "easeOut" }}
-                    className="pointer-events-auto"
-                >
+                <div className="pointer-events-auto">
                     <div className="flex flex-row items-center bg-gradient-noise-top text-muted-foreground gap-0.5 rounded-md p-1 transition-all rounded-bl-xl">
                         <a aria-label="Go to settings" role="button" data-state="closed" href="/settings/customization" data-discover="true">
                             <button className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-muted/40 hover:text-foreground disabled:hover:bg-transparent disabled:hover:text-foreground/50 size-8 rounded-bl-xl">
@@ -330,7 +325,7 @@ const Navbar = memo(({
                         </a>
                         <ThemeToggle />
                     </div>
-                </motion.div>
+                </div>
                 
                 {/* User profile - only show if authenticated */}
                 {user && (

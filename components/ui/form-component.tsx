@@ -27,6 +27,13 @@ const RouteIcon = ({ size = 14, className }: { size?: number; className?: string
 );
 import { checkImageModeration } from '@/app/actions';
 
+interface Attachment {
+    url: string;
+    name: string;
+    contentType: string;
+    size: number;
+}
+
 interface ModelSwitcherProps {
     selectedModel: string;
     setSelectedModel: (value: string) => void;
@@ -403,184 +410,124 @@ const ModelSwitcher: React.FC<ModelSwitcherProps> = memo(({ selectedModel, setSe
                 </div>
             </DropdownMenuTrigger>
             <DropdownMenuContent
-                className="w-[450px]! p-0! font-sans! rounded-xl bg-white dark:bg-neutral-900 z-52! shadow-xl border border-neutral-200 dark:border-neutral-700 max-h-[500px]! overflow-hidden"
+                className="w-[400px] p-0 rounded-xl bg-neutral-900 border border-neutral-800 shadow-xl max-h-[500px] overflow-hidden"
                 align="start"
                 style={{
                     transform: 'translateY(-100%) translateY(-40px)',
                     marginTop: '0px'
                 }}
             >
-                <div className="p-3 border-b border-neutral-200 dark:border-neutral-700">
-                    <div className="relative">
-                        <input
-                            type="text"
-                            placeholder="Search models..."
-                            className="w-full pl-8 pr-3 py-2 text-sm rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 placeholder-neutral-500 dark:placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                        />
-                        <svg className="absolute left-2.5 top-2.5 h-4 w-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                    </div>
-                </div>
-
-                <div className="max-h-[300px] overflow-y-auto scrollbar-thin scrollbar-thumb-neutral-700 dark:scrollbar-thumb-neutral-500 scrollbar-track-transparent">
+                                <div className="max-h-[400px] overflow-y-auto p-2">
                 <AnimatePresence>
-                    {isOpen && Object.entries(groupedModels).map(([category, categoryModels], categoryIndex) => (
-                        <motion.div 
-                            key={category}
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            transition={{ 
-                                duration: 0.2,
-                                delay: categoryIndex * 0.1
-                            }}
-                            className={cn("pt-2 pb-1 px-3", categoryIndex > 0 ? "border-t border-neutral-200 dark:border-neutral-800" : "")}
-                        >
-                            <div className="flex items-center gap-2 mb-2">
-                                <span className="w-2 h-2 rounded-full bg-primary"></span>
-                                <span className="text-xs font-medium text-neutral-600 dark:text-neutral-400">
-                            {category} Models
-                                </span>
-                        </div>
-                        <div className="space-y-0.5">
+                {Object.entries(groupedModels).map(([category, categoryModels], categoryIndex) => (
+                        <div key={category} className="space-y-1">
                                 {categoryModels.map((model, modelIndex) => (
-                                    <motion.div
-                                    key={model.value}
-                                        initial={{ opacity: 0, x: -15 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        transition={{ 
-                                            duration: 0.2,
-                                            delay: (categoryIndex * 0.1) + (modelIndex * 0.05)
+                                    <DropdownMenuItem
+                                        key={model.value}
+                                        onSelect={() => {
+                                            console.log("Selected model:", model.value);
+                                            setSelectedModel(model.value.trim());
+
+                                            // Call onModelSelect if provided
+                                            if (onModelSelect) {
+                                                onModelSelect(model);
+                                            }
+
+                                            // Close the dropdown after selection
+                                            setIsOpen(false);
                                         }}
-                                    >
-                                        <DropdownMenuItem
-                                    onSelect={() => {
-                                        console.log("Selected model:", model.value);
-                                        setSelectedModel(model.value.trim());
-
-                                        // Call onModelSelect if provided
-                                        if (onModelSelect) {
-                                            // Show additional info about image attachments for vision models
-                                            onModelSelect(model);
-                                        }
-
-                                                // Close the dropdown after selection
-                                                setIsOpen(false);
-                                    }}
-                                    className={cn(
-                                        "flex items-center gap-2 px-1.5 py-1.5 rounded-md text-xs",
-                                        "transition-all duration-200",
-                                        "group/item",
-                                        selectedModel === model.value
-                                            ? getColorClasses(model.color, true)
-                                            : getHoverColorClasses(model.color)
-                                    )}
-                                >
-                                    <div className={cn(
-                                        "flex items-center justify-center size-7 rounded-md",
-                                        "transition-all duration-300",
-                                        "group-hover/item:scale-110 group-hover/item:rotate-6",
-                                        selectedModel === model.value
-                                            ? "bg-white/20 dark:bg-white/10"
-                                            : "bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700"
-                                    )}>
-                                        {typeof model.icon === 'string' ? (
-                                            <img
-                                                src={model.icon}
-                                                alt={model.label}
-                                                className={cn(
-                                                    "w-4 h-4 object-contain",
-                                                    "transition-all duration-300",
-                                                    "group-hover/item:scale-110 group-hover/item:rotate-12",
-                                                    model.iconClass,
-                                                    model.value === "scira-optimus" && "invert"
-                                                )}
-                                            />
-                                        ) : (
-                                            <model.icon
-                                                className={cn(
-                                                    "size-4",
-                                                    "transition-all duration-300",
-                                                    "group-hover/item:scale-110 group-hover/item:rotate-12",
-                                                    model.iconClass
-                                                )}
-                                            />
+                                        className={cn(
+                                            "flex items-center justify-between p-3 rounded-lg cursor-pointer transition-all duration-200",
+                                            "hover:bg-neutral-800 focus:bg-neutral-800",
+                                            selectedModel === model.value
+                                                ? "bg-neutral-800 border border-neutral-700"
+                                                : "bg-transparent hover:bg-neutral-800/50"
                                         )}
-                                    </div>
-                                    <div className="flex flex-col gap-0 min-w-0 flex-1">
-                                        <div className="font-medium truncate text-[11px] flex items-center">
-                                            {model.label}
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className="flex items-center justify-center w-6 h-6">
+                                                {typeof model.icon === 'string' ? (
+                                                    <img
+                                                        src={model.icon}
+                                                        alt={model.label}
+                                                        className="w-5 h-5 object-contain"
+                                                    />
+                                                ) : (
+                                                    <model.icon className="w-5 h-5 text-white" />
+                                                )}
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-medium text-white leading-none">
+                                                    {model.label}
+                                                </p>
+                                            </div>
                                         </div>
-                                        <div className="text-[9px] opacity-70 truncate leading-tight">
-                                            {model.description}
-                                        </div>
-                                        <div className="flex items-center gap-1 mt-0.5">
-                                            {(model.vision || model.reasoning || model.pdf || model.fast || model.web || model.imageGeneration) && (
-                                                <div className="flex gap-1 flex-wrap">
-                                                    {model.vision && (
-                                                        <div className={cn(
-                                                            "flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-medium",
-                                                            getCapabilityColors("vision")
-                                                        )}>
-                                                            <EyeCapabilityIcon className="size-2.5" />
-                                                            <span>Vision</span>
+                                        
+                                        <div className="flex items-center gap-2">
+                                            {model.vision && (
+                                                <Tooltip delayDuration={300}>
+                                                    <TooltipTrigger asChild>
+                                                        <div className="w-5 h-5 rounded bg-teal-500/20 flex items-center justify-center">
+                                                            <EyeCapabilityIcon className="w-3 h-3 text-teal-400" />
                                                         </div>
-                                                    )}
-                                                    {model.reasoning && (
-                                                        <div className={cn(
-                                                            "flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-medium",
-                                                            getCapabilityColors("reasoning")
-                                                        )}>
-                                                            <BrainCapabilityIcon className="size-2.5" />
-                                                            <span>Reasoning</span>
-                                                        </div>
-                                                    )}
-                                                    {model.pdf && (
-                                                        <div className={cn(
-                                                            "flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-medium",
-                                                            getCapabilityColors("pdf")
-                                                        )}>
-                                                            <FileTextIcon className="size-2.5" />
-                                                            <span>PDF</span>
-                                                        </div>
-                                                    )}
-                                                    {model.fast && (
-                                                        <div className={cn(
-                                                            "flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-medium",
-                                                            getCapabilityColors("fast")
-                                                        )}>
-                                                            <ZapIcon className="size-2.5" />
-                                                            <span>Fast</span>
-                                                </div>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent side="top" className="bg-neutral-800 border-neutral-700">
+                                                        <span className="text-xs text-white">Vision</span>
+                                                    </TooltipContent>
+                                                </Tooltip>
                                             )}
-                                                    {model.web && (
-                                                        <div className={cn(
-                                                            "flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-medium",
-                                                            getCapabilityColors("web")
-                                                        )}>
-                                                            <GlobeCapabilityIcon className="size-2.5" />
-                                                            <span>Web</span>
+                                            {model.web && (
+                                                <Tooltip delayDuration={300}>
+                                                    <TooltipTrigger asChild>
+                                                        <div className="w-5 h-5 rounded bg-blue-500/20 flex items-center justify-center">
+                                                            <GlobeCapabilityIcon className="w-3 h-3 text-blue-400" />
                                                         </div>
-                                                    )}
-                                                    {model.imageGeneration && (
-                                                        <div className={cn(
-                                                            "flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-medium",
-                                                            getCapabilityColors("imageGeneration")
-                                                        )}>
-                                                            <ImagePlusIcon className="size-2.5" />
-                                                            <span>Image Gen</span>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent side="top" className="bg-neutral-800 border-neutral-700">
+                                                        <span className="text-xs text-white">Web Search</span>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            )}
+                                            {model.pdf && (
+                                                <Tooltip delayDuration={300}>
+                                                    <TooltipTrigger asChild>
+                                                        <div className="w-5 h-5 rounded bg-purple-500/20 flex items-center justify-center">
+                                                            <FileTextIcon className="w-3 h-3 text-purple-400" />
                                                         </div>
-                                                    )}
-                                                </div>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent side="top" className="bg-neutral-800 border-neutral-700">
+                                                        <span className="text-xs text-white">PDF Support</span>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            )}
+                                            {model.reasoning && (
+                                                <Tooltip delayDuration={300}>
+                                                    <TooltipTrigger asChild>
+                                                        <div className="w-5 h-5 rounded bg-violet-500/20 flex items-center justify-center">
+                                                            <BrainCapabilityIcon className="w-3 h-3 text-violet-400" />
+                                                        </div>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent side="top" className="bg-neutral-800 border-neutral-700">
+                                                        <span className="text-xs text-white">Reasoning</span>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            )}
+                                            {model.imageGeneration && (
+                                                <Tooltip delayDuration={300}>
+                                                    <TooltipTrigger asChild>
+                                                        <div className="w-5 h-5 rounded bg-orange-500/20 flex items-center justify-center">
+                                                            <ImagePlusIcon className="w-3 h-3 text-orange-400" />
+                                                        </div>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent side="top" className="bg-neutral-800 border-neutral-700">
+                                                        <span className="text-xs text-white">Image Generation</span>
+                                                    </TooltipContent>
+                                                </Tooltip>
                                             )}
                                         </div>
-                                    </div>
-                                </DropdownMenuItem>
-                                    </motion.div>
-                            ))}
-                        </div>
-                        </motion.div>
+                                    </DropdownMenuItem>
+                                ))}
+                            </div>
                 ))}
                 </AnimatePresence>
                 </div>
@@ -588,13 +535,6 @@ const ModelSwitcher: React.FC<ModelSwitcherProps> = memo(({ selectedModel, setSe
         </DropdownMenu>
     );
 });
-
-interface Attachment {
-    url: string;
-    name: string;
-    contentType: string;
-    size: number;
-}
 
 interface UploadingAttachment {
     file: File;
@@ -950,12 +890,15 @@ const SwitchNotification: React.FC<SwitchNotificationProps> = memo(({
                         useModelColor ? "text-white" : "text-neutral-900 dark:text-neutral-100"
                     )}>
                         {icon && (
-                            <span className={cn(
-                                "shrink-0 size-3.5 sm:size-4",
+                            <div className={cn(
+                                "shrink-0 flex items-center justify-center",
+                                "w-3.5 h-3.5 sm:w-4 sm:h-4",
                                 useModelColor ? getIconColorClass() : "text-primary",
                             )}>
-                                {icon}
-                            </span>
+                                <div className="w-full h-full flex items-center justify-center [&>svg]:w-full [&>svg]:h-full [&>svg]:max-w-3 [&>svg]:max-h-3 sm:[&>svg]:max-w-3.5 sm:[&>svg]:max-h-3.5 [&>img]:w-full [&>img]:h-full [&>img]:object-contain">
+                                    {icon}
+                                </div>
+                            </div>
                         )}
                         <div className="flex flex-col items-start sm:flex-row sm:items-center sm:flex-wrap gap-x-1.5 gap-y-0.5">
                             <span className={cn(
@@ -1112,16 +1055,16 @@ const FormComponent: React.FC<FormComponentProps> = ({
                 'group'
             );
         } else {
-            setSelectedGroup(group.id);
+        setSelectedGroup(group.id);
             inputRef.current?.focus();
 
-            showSwitchNotification(
-                group.name,
-                group.description,
-                <group.icon className="size-4" />,
-                group.id, // Use the group ID directly as the color code
-                'group'   // Specify this is a group notification
-            );
+        showSwitchNotification(
+            group.name,
+            group.description,
+            <group.icon className="size-4" />,
+            group.id || undefined, // Use the group ID directly as the color code
+            'group'   // Specify this is a group notification
+        );
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedGroup, setSelectedGroup, inputRef]);
@@ -1222,11 +1165,11 @@ const FormComponent: React.FC<FormComponentProps> = ({
                         isVisible={switchNotification.show}
                         modelColor={switchNotification.notificationType === 'model' ?
                             models.find(m => m.value === selectedModel)?.color :
-                            selectedGroup}
+                            selectedGroup || undefined}
                         notificationType={switchNotification.notificationType}
                     />
 
-                    {/* Hidden file inputs */}
+                                         {/* Hidden file inputs */}
                     <input
                         type="file"
                         className="hidden"
@@ -1265,55 +1208,54 @@ const FormComponent: React.FC<FormComponentProps> = ({
                      />
 
                         <div className="rounded-t-3xl p-2 backdrop-blur-lg bg-background border border-border/50" style={{
-                            paddingBottom: "0px",
-                            marginBottom: "0px"
-                        } as React.CSSProperties} suppressHydrationWarning>
+                         paddingBottom: "0px",
+                         marginBottom: "0px"
+                     } as React.CSSProperties} suppressHydrationWarning>
                             <div className="border-reflect rounded-t-2xl backdrop-blur-lg" style={{
                                 "--gradientBorder-gradient": "linear-gradient(180deg, var(--min), var(--max), var(--min)), linear-gradient(15deg, var(--min) 50%, var(--max))",
                                 "--start": "#000000e0",
                                 "--opacity": "0.6"
                             } as React.CSSProperties}>
-                                <div className="relative flex w-full flex-col items-stretch gap-2 rounded-t-2xl border-0 backdrop-blur-md px-3 pt-3 pb-safe text-secondary-foreground outline-0 sm:max-w-3xl" style={{
-                                    backgroundColor: "rgb(44, 38, 48)",
-                                    marginBottom: "0px",
-                                    paddingBottom: "max(12px, env(safe-area-inset-bottom))"
-                                }} suppressHydrationWarning>
+                                <div className="relative flex w-full flex-col items-stretch gap-2 rounded-t-2xl border-0 backdrop-blur-md px-3 pt-3 pb-safe text-secondary-foreground outline-0 sm:max-w-3xl bg-[rgb(249,239,250)] dark:bg-[rgb(40,34,44)]" style={{
+                            marginBottom: "0px",
+                            paddingBottom: "max(12px, env(safe-area-inset-bottom))"
+                        }} suppressHydrationWarning>
                             <Textarea
-                                    ref={inputRef}
-                                    placeholder={hasInteracted ? "Ask a new question..." : "Type your message here..."}
-                                    value={input}
-                                    onChange={handleInput}
-                                    disabled={isProcessing}
-                                    onFocus={handleFocus}
-                                    onBlur={handleBlur}
-                                    className={cn(
-                                        "w-full rounded-lg rounded-b-none md:text-base!",
-                                        "text-base leading-relaxed",
-                                    "bg-transparent",
-                                    "border-0! outline-0! shadow-none! ring-0!",
-                                    "text-foreground",
-                                    "focus:ring-0! focus-visible:ring-0! focus:border-0! focus:outline-0! focus:shadow-none! focus:ring-offset-0!",
-                                    "active:ring-0! active:border-0! active:outline-0! active:shadow-none! active:ring-offset-0!",
-                                    "hover:ring-0! hover:border-0! hover:outline-0! hover:shadow-none! hover:ring-offset-0!",
-                                    "px-0! py-0!",
-                                        "touch-manipulation",
-                                    "whatsize",
-                                    "[&:focus]:ring-0! [&:focus]:border-0! [&:focus]:outline-0! [&:focus]:shadow-none!",
-                                    "[&:active]:ring-0! [&:active]:border-0! [&:active]:outline-0! [&:active]:shadow-none!"
-                                    )}
-                                    style={{
-                                        WebkitUserSelect: 'text',
-                                        WebkitTouchCallout: 'none',
-                                        minHeight: width && width < 768 ? '40px' : undefined,
-                                        resize: 'none',
-                                    }}
-                                    rows={1}
-                                    autoFocus={width ? width > 768 : true}
-                                    onCompositionStart={() => isCompositionActive.current = true}
-                                    onCompositionEnd={() => isCompositionActive.current = false}
-                                    onKeyDown={handleKeyDown}
-                                suppressHydrationWarning
-                                />
+                                ref={inputRef}
+                                placeholder={hasInteracted ? "Ask a new question..." : "Type your message here..."}
+                                value={input}
+                                onChange={handleInput}
+                                disabled={isProcessing}
+                                onFocus={handleFocus}
+                                onBlur={handleBlur}
+                                className={cn(
+                                    "w-full rounded-lg rounded-b-none md:text-base!",
+                                    "text-base leading-relaxed",
+                                "bg-[#f9effa] dark:bg-transparent",
+                                "border-0! outline-0! shadow-none! ring-0!",
+                                "text-foreground",
+                                "focus:ring-0! focus-visible:ring-0! focus:border-0! focus:outline-0! focus:shadow-none! focus:ring-offset-0!",
+                                "active:ring-0! active:border-0! active:outline-0! active:shadow-none! active:ring-offset-0!",
+                                "hover:ring-0! hover:border-0! hover:outline-0! hover:shadow-none! hover:ring-offset-0!",
+                                "px-0! py-0!",
+                                    "touch-manipulation",
+                                "whatsize",
+                                "[&:focus]:ring-0! [&:focus]:border-0! [&:focus]:outline-0! [&:focus]:shadow-none!",
+                                "[&:active]:ring-0! [&:active]:border-0! [&:active]:outline-0! [&:active]:shadow-none!"
+                                )}
+                                style={{
+                                    WebkitUserSelect: 'text',
+                                    WebkitTouchCallout: 'none',
+                                    minHeight: width && width < 768 ? '40px' : undefined,
+                                    resize: 'none',
+                                }}
+                                rows={1}
+                                autoFocus={width ? width > 768 : true}
+                                onCompositionStart={() => isCompositionActive.current = true}
+                                onCompositionEnd={() => isCompositionActive.current = false}
+                                onKeyDown={handleKeyDown}
+                            suppressHydrationWarning
+                            />
 
                         {/* Toolbar */}
                             <div
@@ -1348,7 +1290,7 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                      />
                                  </Button>
 
-                                 <AnimatePresence>
+                                     <AnimatePresence>
                                      {showGroupSelector && (
                                          <motion.div
                                              initial={{ opacity: 0, scale: 0.95, y: 10 }}
@@ -1409,9 +1351,9 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                                          </Tooltip>
                                                      </motion.div>
                                                  ))}
-                                             </div>
+                                    </div>
                                          </motion.div>
-                                     )}
+                                 )}
                                  </AnimatePresence>
 
                                     <div className={cn(
@@ -1438,8 +1380,10 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                                         ? 'Vision model enabled - you can now attach images and PDFs'
                                                         : model.description,
                                                     typeof model.icon === 'string' ?
-                                                        <img src={model.icon} alt={model.label} className="size-4 object-contain" /> :
-                                                        <model.icon className="size-4" />,
+                                                        <img src={model.icon} alt={model.label} className="w-4 h-4 object-contain flex-shrink-0" /> :
+                                                        <div className="w-4 h-4 flex items-center justify-center flex-shrink-0">
+                                                            <model.icon className="w-full h-full max-w-4 max-h-4" />
+                                                        </div>,
                                                     model.color,
                                                  'model'
                                                 );
@@ -1646,19 +1590,21 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                         !isMobile ? (
                                             <Tooltip delayDuration={300}>
                                                 <TooltipTrigger asChild>
-                                                    <Button
-                                                        className="rounded-full p-1.5 h-8 w-8 bg-white dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-300 dark:hover:bg-neutral-600"
+                                                    <button
+                                                        className="inline-flex items-center justify-center whitespace-nowrap font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-muted/40 hover:text-foreground disabled:hover:bg-transparent disabled:hover:text-foreground/50 text-xs -mb-1.5 h-auto gap-2 rounded-full border border-solid border-secondary-foreground/10 px-2 py-1.5 pr-2.5 text-muted-foreground max-sm:p-2"
                                                         onClick={(event) => {
                                                             event.preventDefault();
                                                             event.stopPropagation();
                                                             triggerFileInput();
                                                         }}
-                                                        variant="outline"
                                                         disabled={isProcessing}
-                                                     suppressHydrationWarning
+                                                        suppressHydrationWarning
                                                     >
-                                                     <PaperclipIcon size={14} className="-rotate-45" />
-                                                    </Button>
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-paperclip size-4">
+                                                            <path d="M13.234 20.252 21 12.3"></path>
+                                                            <path d="m16 6-8.414 8.586a2 2 0 0 0 0 2.828 2 2 0 0 0 2.828 0l8.414-8.586a4 4 0 0 0 0-5.656 4 4 0 0 0-5.656 0l-8.415 8.585a6 6 0 1 0 8.486 8.486"></path>
+                                                        </svg>
+                                                    </button>
                                                 </TooltipTrigger>
                                                 <TooltipContent
                                                     side="bottom"
@@ -1676,19 +1622,21 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                                 </TooltipContent>
                                             </Tooltip>
                                         ) : (
-                                            <Button
-                                                className="rounded-full p-1.5 h-8 w-8 bg-white dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-300 dark:hover:bg-neutral-600"
+                                            <button
+                                                className="inline-flex items-center justify-center whitespace-nowrap font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-muted/40 hover:text-foreground disabled:hover:bg-transparent disabled:hover:text-foreground/50 text-xs -mb-1.5 h-auto gap-2 rounded-full border border-solid border-secondary-foreground/10 px-2 py-1.5 pr-2.5 text-muted-foreground max-sm:p-2"
                                                 onClick={(event) => {
                                                     event.preventDefault();
                                                     event.stopPropagation();
                                                     triggerFileInput();
                                                 }}
-                                                variant="outline"
                                                 disabled={isProcessing}
-                                             suppressHydrationWarning
+                                                suppressHydrationWarning
                                             >
-                                             <PaperclipIcon size={14} className="-rotate-45" />
-                                            </Button>
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-paperclip size-4">
+                                                    <path d="M13.234 20.252 21 12.3"></path>
+                                                    <path d="m16 6-8.414 8.586a2 2 0 0 0 0 2.828 2 2 0 0 0 2.828 0l8.414-8.586a4 4 0 0 0 0-5.656 4 4 0 0 0-5.656 0l-8.415 8.585a6 6 0 1 0 8.486 8.486"></path>
+                                                </svg>
+                                            </button>
                                         )
                                     )}
 
@@ -1785,7 +1733,7 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                      </Button>
                                  )}
                                 </div>
-                                                            </div>
+                                </div>
                             </div>
                         </div>
                     </div>

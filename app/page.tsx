@@ -5,7 +5,7 @@ import { TextScramble } from "@/components/text-scramble";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 export default function LandingPage() {
-	return (
+  return (
 		<div className="relative flex h-screen flex-col overflow-hidden bg-background text-foreground">
 			{/* Theme Toggle - positioned in top right */}
 			<div className="absolute top-4 right-4 z-20">
@@ -53,8 +53,8 @@ export default function LandingPage() {
 					<div className="size-40">
 						<T0Keycap />
 					</div>
-				</div>
-			</main>
-		</div>
-	);
+        </div>
+      </main>
+    </div>
+  );
 }
