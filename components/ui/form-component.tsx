@@ -1606,7 +1606,7 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                              >
                                                  <div className="flex flex-col gap-0.5">
                                                      <span className="font-medium text-[11px]">Web Search</span>
-                                                     <span className="text-[10px] text-foreground/70 leading-tight">Search the web for information</span>
+                                                                                                             <span className="text-[10px] text-muted-foreground leading-tight">Search the web for information</span>
                                                  </div>
                                              </TooltipContent>
                                          </Tooltip>
@@ -1699,7 +1699,7 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                                 >
                                                     <div className="flex flex-col gap-0.5">
                                                         <span className="font-medium text-[11px]">Extreme Mode</span>
-                                                        <span className="text-[10px] text-foreground/70 leading-tight">Deep research with multiple sources and analysis</span>
+                                                        <span className="text-[10px] text-muted-foreground leading-tight">Deep research with multiple sources and analysis</span>
                                                     </div>
                                                 </TooltipContent>
                                             </Tooltip>
@@ -1773,7 +1773,7 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                                 >
                                                     <div className="flex flex-col gap-0.5">
                                                         <span className="font-medium text-[11px]">Attach File</span>
-                                                        <span className="text-[10px] text-foreground/70 leading-tight">
+                                                        <span className="text-[10px] text-muted-foreground leading-tight">
                                                             {supportsPdfAttachments(selectedModel)
                                                                 ? "Upload an image or PDF document"
                                                                 : "Upload an image"}
