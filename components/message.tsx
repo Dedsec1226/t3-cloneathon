@@ -472,7 +472,7 @@ export const Message: React.FC<MessageProps> = ({
     const isLastAssistantMessage = isLastMessage && message.role === 'assistant';
 
     return (
-      <div className={isLastAssistantMessage ? 'min-h-[calc(100vh-18rem)]' : ''}>
+      <div className={isLastAssistantMessage ? 'min-h-[calc(50vh-14rem)]' : ''}>
         {message.parts?.map((part: MessagePart, partIndex: number) =>
           renderPart(
             part,

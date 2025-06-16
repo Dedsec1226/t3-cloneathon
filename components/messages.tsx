@@ -159,8 +159,8 @@ const Messages: React.FC<MessagesProps> = ({
       // For empty text parts in a streaming message, show loading animation
       if ((!part.text || part.text.trim() === "") && status === 'streaming') {
         
-        return (
-          <div key={`${messageIndex}-${partIndex}-loading`} className="flex flex-col min-h-[calc(100vh-18rem)]">
+                        return (
+          <div key={`${messageIndex}-${partIndex}-loading`} className="flex flex-col min-h-[calc(50vh-14rem)]">
             <T3LogoHeader />
             <div className="flex space-x-2 ml-8 mt-2">
               <div className="w-2 h-2 rounded-full bg-neutral-400 dark:bg-neutral-600 animate-bounce" style={{ animationDelay: '0ms' }}></div>
@@ -491,7 +491,7 @@ const Messages: React.FC<MessagesProps> = ({
 
       {/* Loading animation when status is submitted with min-height to reserve space */}
       {status === 'submitted' && (
-        <div className="flex items-start min-h-[calc(100vh-18rem)]">
+        <div className="flex items-start min-h-[calc(50vh-14rem)]">
           <div className="w-full">
             <T3LogoHeader />
             <div className="flex space-x-2 ml-8 mt-2">
@@ -505,7 +505,7 @@ const Messages: React.FC<MessagesProps> = ({
 
       {/* Reserve space for empty/streaming assistant message */}
       {status === 'streaming' && isWaitingForResponse && (
-        <div className="min-h-[calc(100vh-18rem)] mt-2">
+        <div className="min-h-[calc(50vh-14rem)] mt-2">
           <T3LogoHeader />
           {/* Content will be populated by the streaming message */}
         </div>
