@@ -1,14 +1,14 @@
-import 'katex/dist/katex.min.css';
+// KaTeX CSS loaded dynamically when LaTeX is detected
 
 import { Geist_Mono } from 'next/font/google';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { oneLight, oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
+// Dynamic import for syntax highlighter - only load when needed
 import { useTheme } from 'next-themes';
 import Image from 'next/image';
 import Link from 'next/link';
-import Latex from 'react-latex-next';
+// Dynamic LaTeX import
+const LaTeX = lazy(() => import('react-latex-next'));
 import Marked, { ReactRenderer } from 'marked-react';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState, lazy, Suspense } from 'react';
 import type { JSX } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -20,6 +20,13 @@ import {
 import { cn } from '@/lib/utils';
 import { Check, Copy, WrapText, ArrowLeftRight } from 'lucide-react';
 import { toast } from 'sonner';
+
+// Lazy load syntax highlighter to reduce initial bundle
+const SyntaxHighlighter = lazy(() => 
+  import('react-syntax-highlighter').then(module => ({ 
+    default: module.Prism 
+  }))
+);
 
 interface MarkdownRendererProps {
   content: string;
@@ -317,46 +324,54 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
               </button>
             </div>
           </div>
-          <SyntaxHighlighter
-            language={language || 'text'}
-            style={theme === 'dark' ? oneDark : oneLight}
-            customStyle={{
-              margin: 0,
-              padding: '0.75rem 0.25rem 0.75rem',
-              backgroundColor: theme === 'dark' ? '#171717' : 'transparent',
-              borderRadius: 0,
-              borderBottomLeftRadius: '0.375rem',
-              borderBottomRightRadius: '0.375rem',
-              fontFamily: geistMono.style.fontFamily,
-            }}
-            showLineNumbers={true}
-            lineNumberStyle={{
-              textAlign: 'right',
-              color: theme === 'dark' ? '#6b7280' : '#808080',
-              backgroundColor: 'transparent',
-              fontStyle: 'normal',
-              marginRight: '1em',
-              paddingRight: '0.5em',
-              fontFamily: geistMono.style.fontFamily,
-              minWidth: '2em'
-            }}
-            lineNumberContainerStyle={{
-              backgroundColor: theme === 'dark' ? '#171717' : '#f5f5f5',
-              float: 'left'
-            }}
-            wrapLongLines={isWrapped}
-            codeTagProps={{
-              style: {
-                fontFamily: geistMono.style.fontFamily, 
-                fontSize: '0.85em',
-                whiteSpace: isWrapped ? 'pre-wrap' : 'pre',
-                overflowWrap: isWrapped ? 'break-word' : 'normal',
-                wordBreak: isWrapped ? 'break-word' : 'keep-all'
-              }
-            }}
-          >
-            {children}
-          </SyntaxHighlighter>
+          <Suspense fallback={
+            <pre className={cn(
+              "overflow-x-auto p-3 rounded-b-md text-sm font-mono",
+              theme === 'dark' ? 'bg-neutral-900 text-neutral-100' : 'bg-gray-50 text-gray-900'
+            )}>
+              <code>{children}</code>
+            </pre>
+          }>
+            <SyntaxHighlighter
+              language={language || 'text'}
+              customStyle={{
+                margin: 0,
+                padding: '0.75rem 0.25rem 0.75rem',
+                backgroundColor: theme === 'dark' ? '#171717' : 'transparent',
+                borderRadius: 0,
+                borderBottomLeftRadius: '0.375rem',
+                borderBottomRightRadius: '0.375rem',
+                fontFamily: geistMono.style.fontFamily,
+              }}
+              showLineNumbers={true}
+              lineNumberStyle={{
+                textAlign: 'right',
+                color: theme === 'dark' ? '#6b7280' : '#808080',
+                backgroundColor: 'transparent',
+                fontStyle: 'normal',
+                marginRight: '1em',
+                paddingRight: '0.5em',
+                fontFamily: geistMono.style.fontFamily,
+                minWidth: '2em'
+              }}
+              lineNumberContainerStyle={{
+                backgroundColor: theme === 'dark' ? '#171717' : '#f5f5f5',
+                float: 'left'
+              }}
+              wrapLongLines={isWrapped}
+              codeTagProps={{
+                style: {
+                  fontFamily: geistMono.style.fontFamily, 
+                  fontSize: '0.85em',
+                  whiteSpace: isWrapped ? 'pre-wrap' : 'pre',
+                  overflowWrap: isWrapped ? 'break-word' : 'normal',
+                  wordBreak: isWrapped ? 'break-word' : 'keep-all'
+                }
+              }}
+            >
+              {children}
+            </SyntaxHighlighter>
+          </Suspense>
         </div>
       </div>
     );
@@ -448,7 +463,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
           if (latexBlock.isBlock) {
             return (
               <div className="my-6 text-center" key={generateKey()}>
-                <Latex
+                <LaTeX
                   delimiters={[
                     { left: '$$', right: '$$', display: true },
                     { left: '\\[', right: '\\]', display: true }
@@ -456,12 +471,12 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
                   strict={false}
                 >
                   {latexBlock.content}
-                </Latex>
+                </LaTeX>
               </div>
             );
           } else {
             return (
-              <Latex
+              <LaTeX
                 delimiters={[
                   { left: '$', right: '$', display: false },
                   { left: '\\(', right: '\\)', display: false }
@@ -470,7 +485,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
                 key={generateKey()}
               >
                 {latexBlock.content}
-              </Latex>
+              </LaTeX>
             );
           }
         }
@@ -484,14 +499,14 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
         matches.forEach((match, index) => {
           // Add text before the LaTeX placeholder
           if (match.index! > lastIndex) {
-            parts.push(text.slice(lastIndex, match.index));
+            parts.push(<span key={`text-before-${index}`}>{text.slice(lastIndex, match.index)}</span>);
           }
           
           // Add the LaTeX component
           const latexBlock = latexBlocks.find(block => block.id === match[0]);
           if (latexBlock) {
             parts.push(
-              <Latex
+              <LaTeX
                 key={`latex-${index}-${generateKey()}`}
                 delimiters={[
                   { left: '$', right: '$', display: false },
@@ -500,10 +515,10 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
                 strict={false}
               >
                 {latexBlock.content}
-              </Latex>
+              </LaTeX>
             );
           } else {
-            parts.push(match[0]); // fallback to placeholder text
+            parts.push(<span key={`fallback-${index}`}>{match[0]}</span>); // fallback to placeholder text
           }
           
           lastIndex = match.index! + match[0].length;
@@ -511,7 +526,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
         
         // Add any remaining text after the last LaTeX placeholder
         if (lastIndex < text.length) {
-          parts.push(text.slice(lastIndex));
+          parts.push(<span key="text-after">{text.slice(lastIndex)}</span>);
         }
         
         return <>{parts}</>;
@@ -529,22 +544,22 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
             // Render block equations outside of paragraph tags
             return (
               <div className="my-6 text-center" key={generateKey()}>
-                <Latex
-                  delimiters={[
-                    { left: '$$', right: '$$', display: true },
-                    { left: '\\[', right: '\\]', display: true }
-                  ]}
-                  strict={false}
-                >
-                  {latexBlock.content}
-                </Latex>
+                          <LaTeX
+            delimiters={[
+              { left: '$$', right: '$$', display: true },
+              { left: '\\[', right: '\\]', display: true }
+            ]}
+            strict={false}
+          >
+            {latexBlock.content}
+          </LaTeX>
               </div>
             );
           }
         }
       }
       
-      return <p className="my-5 leading-relaxed text-neutral-700 dark:text-neutral-300">{children}</p>;
+      return <p key={generateKey()} className="my-5 leading-relaxed text-neutral-700 dark:text-neutral-300">{children}</p>;
     },
     code(children, language) {
       return <CodeBlock language={language} key={generateKey()}>{String(children)}</CodeBlock>;

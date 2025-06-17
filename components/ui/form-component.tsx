@@ -50,21 +50,7 @@ interface ModelSwitcherProps {
     selectedFilters?: Set<string>;
 }
 
-const XAIIcon = ({ className }: { className?: string }) => (
-    <svg
-        width="440"
-        height="483"
-        viewBox="0 0 440 483"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        className={className}
-    >
-        <path d="M356.09 155.99L364.4 482.36H430.96L439.28 37.18L356.09 155.99Z" fill="currentColor" />
-        <path d="M439.28 0.910004H337.72L178.35 228.53L229.13 301.05L439.28 0.910004Z" fill="currentColor" />
-        <path d="M0.609985 482.36H102.17L152.96 409.84L102.17 337.31L0.609985 482.36Z" fill="currentColor" />
-        <path d="M0.609985 155.99L229.13 482.36H330.69L102.17 155.99H0.609985Z" fill="currentColor" />
-    </svg>
-);
+
 
 const OpenAIIcon = ({ className }: { className?: string }) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="118 120 480 480" fill="currentColor" className={`size-7 text-[--model-primary] ${className}`}>
@@ -181,17 +167,57 @@ const ImagePlusIcon = (props: SVGProps<SVGSVGElement>) => (
 );
 
 const models = [
-    { value: "t3-default", label: "Grok 3.0 Mini", icon: XAIIcon, iconClass: "text-current", description: "xAI's most efficient reasoning model", color: "black", vision: false, reasoning: true, experimental: false, category: "Stable", pdf: false, fast: true, web: false, imageGeneration: false },
-    { value: "t3-grok-3", label: "Grok 3.0", icon: XAIIcon, iconClass: "text-current", description: "xAI's most intelligent model", color: "gray", vision: false, reasoning: false, experimental: false, category: "Stable", pdf: false, fast: false, web: true, imageGeneration: false },
-    { value: "t3-vision", label: "Grok 2.0 Vision", icon: XAIIcon, iconClass: "text-current", description: "xAI's advanced vision model", color: "indigo", vision: true, reasoning: false, experimental: false, category: "Stable", pdf: false, fast: false, web: false, imageGeneration: false },
-    { value: "t3-anthropic", label: "Claude 4 Sonnet", icon: AnthropicIcon, iconClass: "text-current", description: "Anthropic's most advanced model", color: "violet", vision: true, reasoning: false, experimental: false, category: "Stable", pdf: true, fast: false, web: false, imageGeneration: false },
-    { value: "t3-anthropic-thinking", label: "Claude 4 Sonnet Thinking", icon: AnthropicIcon, iconClass: "text-current", description: "Anthropic's most advanced reasoning model", color: "violet", vision: true, reasoning: true, experimental: false, category: "Stable", pdf: true, fast: false, web: false, imageGeneration: false },
-    { value: "t3-google", label: "Gemini 2.5 Flash (Thinking)", icon: GeminiIcon, iconClass: "text-current", description: "Google's advanced small reasoning model", color: "gemini", vision: true, reasoning: true, experimental: false, category: "Stable", pdf: true, fast: true, web: false, imageGeneration: false },
-    { value: "t3-google-pro", label: "Gemini 2.5 Pro (Preview)", icon: GeminiIcon, iconClass: "text-current", description: "Google's advanced reasoning model", color: "gemini", vision: true, reasoning: true, experimental: false, category: "Stable", pdf: true, fast: false, web: false, imageGeneration: false },
-    { value: "t3-4o", label: "GPT 4o", icon: OpenAIIcon, iconClass: "text-current", description: "OpenAI's flagship model", color: "blue", vision: true, reasoning: false, experimental: false, category: "Stable", pdf: true, fast: false, web: true, imageGeneration: true },
-    { value: "t3-o4-mini", label: "o4 mini", icon: OpenAIIcon, iconClass: "text-current", description: "OpenAI's faster mini reasoning model", color: "blue", vision: true, reasoning: true, experimental: false, category: "Stable", pdf: false, fast: true, web: false, imageGeneration: false },
-    { value: "t3-llama-4", label: "Llama 4 Maverick", icon: GroqIcon, iconClass: "text-current", description: "Meta's latest model", color: "blue", vision: true, reasoning: false, experimental: true, category: "Experimental", pdf: false, fast: true, web: false, imageGeneration: false },
-    { value: "t3-qwq", label: "QWQ 32B", icon: QwenIcon, iconClass: "text-current", description: "Alibaba's advanced reasoning model", color: "purple", vision: false, reasoning: true, experimental: true, category: "Experimental", pdf: false, fast: false, web: false, imageGeneration: false },
+    // ===== FAVORITES (Most Popular) - In your preferred order =====
+    // OpenAI Popular Models
+    { value: "t3-4o", label: "GPT 4o", icon: OpenAIIcon, iconClass: "text-current", description: "OpenAI's flagship multimodal model", color: "blue", vision: true, reasoning: false, experimental: false, category: "Favorites", pdf: true, fast: false, web: true, imageGeneration: true },
+    { value: "t3-o3-mini", label: "o3 mini", icon: OpenAIIcon, iconClass: "text-current", description: "Latest reasoning model from OpenAI", color: "blue", vision: true, reasoning: true, experimental: false, category: "Favorites", pdf: true, fast: true, web: false, imageGeneration: false },
+    { value: "t3-o1", label: "o1", icon: OpenAIIcon, iconClass: "text-current", description: "Advanced reasoning model", color: "blue", vision: false, reasoning: true, experimental: false, category: "Favorites", pdf: false, fast: false, web: false, imageGeneration: false },
+    
+    // Anthropic Popular Models
+    { value: "t3-claude-3-5-sonnet", label: "Claude 3.5 Sonnet", icon: AnthropicIcon, iconClass: "text-current", description: "Anthropic's most capable model", color: "violet", vision: true, reasoning: false, experimental: false, category: "Favorites", pdf: true, fast: false, web: false, imageGeneration: false },
+    { value: "t3-claude-3-opus", label: "Claude 3 Opus", icon: AnthropicIcon, iconClass: "text-current", description: "Most powerful Claude model available", color: "violet", vision: true, reasoning: false, experimental: false, category: "Favorites", pdf: true, fast: false, web: false, imageGeneration: false },
+    { value: "t3-claude-3-5-haiku", label: "Claude 3.5 Haiku", icon: AnthropicIcon, iconClass: "text-current", description: "Fast and lightweight Claude", color: "violet", vision: true, reasoning: false, experimental: false, category: "Favorites", pdf: true, fast: true, web: false, imageGeneration: false },
+    
+    // Gemini Popular Models
+    { value: "t3-gemini-2-5-flash", label: "Gemini 2.5 Flash", icon: GeminiIcon, iconClass: "text-current", description: "Latest fast Gemini model", color: "gemini", vision: true, reasoning: true, experimental: false, category: "Favorites", pdf: true, fast: true, web: true, imageGeneration: false },
+    { value: "t3-gemini-1-5-pro", label: "Gemini 1.5 Pro", icon: GeminiIcon, iconClass: "text-current", description: "Professional Gemini model", color: "gemini", vision: true, reasoning: false, experimental: false, category: "Favorites", pdf: true, fast: false, web: false, imageGeneration: false },
+    
+    // Default model
+    { value: "t3-default", label: "Gemini 2.5 Flash", icon: GeminiIcon, iconClass: "text-current", description: "Default model - fast and capable", color: "gemini", vision: true, reasoning: true, experimental: false, category: "Favorites", pdf: true, fast: true, web: true, imageGeneration: false },
+
+    // ===== OPENAI MODELS =====
+    { value: "t3-4o-mini", label: "GPT 4o mini", icon: OpenAIIcon, iconClass: "text-current", description: "Fast and efficient OpenAI model", color: "blue", vision: true, reasoning: false, experimental: false, category: "OpenAI", pdf: true, fast: true, web: false, imageGeneration: false },
+    { value: "t3-o1", label: "o1", icon: OpenAIIcon, iconClass: "text-current", description: "Advanced reasoning model", color: "blue", vision: false, reasoning: true, experimental: false, category: "OpenAI", pdf: false, fast: false, web: false, imageGeneration: false },
+    { value: "t3-o1-mini", label: "o1 mini", icon: OpenAIIcon, iconClass: "text-current", description: "Compact reasoning model", color: "blue", vision: false, reasoning: true, experimental: false, category: "OpenAI", pdf: false, fast: true, web: false, imageGeneration: false },
+    { value: "t3-gpt-4-turbo", label: "GPT 4 Turbo", icon: OpenAIIcon, iconClass: "text-current", description: "High-performance GPT-4 variant", color: "blue", vision: true, reasoning: false, experimental: false, category: "OpenAI", pdf: true, fast: false, web: false, imageGeneration: false },
+
+
+    // ===== ANTHROPIC MODELS =====
+    { value: "t3-claude-3-5-sonnet", label: "Claude 3.5 Sonnet", icon: AnthropicIcon, iconClass: "text-current", description: "Previous generation Sonnet", color: "violet", vision: true, reasoning: false, experimental: false, category: "Anthropic", pdf: true, fast: false, web: false, imageGeneration: false },
+    { value: "t3-claude-3-5-haiku", label: "Claude 3.5 Haiku", icon: AnthropicIcon, iconClass: "text-current", description: "Fast and lightweight Claude", color: "violet", vision: true, reasoning: false, experimental: false, category: "Anthropic", pdf: true, fast: true, web: false, imageGeneration: false },
+    { value: "t3-claude-3-opus", label: "Claude 3 Opus", icon: AnthropicIcon, iconClass: "text-current", description: "Legacy powerful Claude model", color: "violet", vision: true, reasoning: false, experimental: false, category: "Anthropic", pdf: true, fast: false, web: false, imageGeneration: false },
+
+    // ===== GOOGLE MODELS =====
+    { value: "t3-gemini-2-0-flash", label: "Gemini 2.0 Flash", icon: GeminiIcon, iconClass: "text-current", description: "Latest Gemini model", color: "gemini", vision: true, reasoning: false, experimental: false, category: "Google", pdf: true, fast: true, web: true, imageGeneration: false },
+    { value: "t3-gemini-1-5-flash", label: "Gemini 1.5 Flash", icon: GeminiIcon, iconClass: "text-current", description: "Fast Gemini model", color: "gemini", vision: true, reasoning: false, experimental: false, category: "Google", pdf: true, fast: true, web: false, imageGeneration: false },
+    { value: "t3-gemini-1-5-pro", label: "Gemini 1.5 Pro", icon: GeminiIcon, iconClass: "text-current", description: "Professional Gemini model", color: "gemini", vision: true, reasoning: false, experimental: false, category: "Google", pdf: true, fast: false, web: false, imageGeneration: false },
+
+
+
+    // ===== SPECIALIZED MODELS =====
+    { value: "t3-reasoning-best", label: "Best Reasoning", icon: BrainCapabilityIcon, iconClass: "text-current", description: "Best hybrid reasoning model", color: "purple", vision: true, reasoning: true, experimental: false, category: "Specialized", pdf: true, fast: false, web: false, imageGeneration: false },
+    { value: "t3-vision-best", label: "Best Vision", icon: EyeCapabilityIcon, iconClass: "text-current", description: "Best vision understanding", color: "indigo", vision: true, reasoning: false, experimental: false, category: "Specialized", pdf: true, fast: false, web: false, imageGeneration: false },
+    { value: "t3-code-best", label: "Best Coding", icon: OpenAIIcon, iconClass: "text-current", description: "Best for coding tasks", color: "green", vision: true, reasoning: true, experimental: false, category: "Specialized", pdf: true, fast: false, web: false, imageGeneration: false },
+    { value: "t3-multimodal-best", label: "Best Multimodal", icon: AnthropicIcon, iconClass: "text-current", description: "Best multimodal capabilities", color: "violet", vision: true, reasoning: true, experimental: false, category: "Specialized", pdf: true, fast: false, web: true, imageGeneration: false },
+    
+    // ===== FAST MODELS =====
+    { value: "t3-fast", label: "Fast (GPT-4o mini)", icon: ZapIcon, iconClass: "text-current", description: "Quick responses", color: "yellow", vision: true, reasoning: false, experimental: false, category: "Fast", pdf: true, fast: true, web: false, imageGeneration: false },
+    { value: "t3-fast-haiku", label: "Fast (Claude Haiku)", icon: ZapIcon, iconClass: "text-current", description: "Lightning fast Claude", color: "yellow", vision: true, reasoning: false, experimental: false, category: "Fast", pdf: true, fast: true, web: false, imageGeneration: false },
+    { value: "t3-fast-flash", label: "Fast (Gemini Flash)", icon: ZapIcon, iconClass: "text-current", description: "Super fast Gemini", color: "yellow", vision: true, reasoning: false, experimental: false, category: "Fast", pdf: true, fast: true, web: false, imageGeneration: false },
+
+    // ===== IMAGE GENERATION =====
+    { value: "t3-dall-e-3", label: "DALL-E 3", icon: ImagePlusIcon, iconClass: "text-current", description: "High quality image generation", color: "pink", vision: false, reasoning: false, experimental: false, category: "Image Generation", pdf: false, fast: false, web: false, imageGeneration: true },
+    { value: "t3-dall-e-2", label: "DALL-E 2", icon: ImagePlusIcon, iconClass: "text-current", description: "Standard image generation", color: "pink", vision: false, reasoning: false, experimental: false, category: "Image Generation", pdf: false, fast: true, web: false, imageGeneration: true },
 ];
 
 const getColorClasses = (color: string, isSelected: boolean = false) => {
@@ -219,6 +245,12 @@ const getColorClasses = (color: string, isSelected: boolean = false) => {
                 return `${baseClasses} ${selectedClasses} bg-accent! dark:bg-accent/80! text-accent-foreground! hover:bg-accent/80! dark:hover:bg-accent/70! border-accent! dark:border-accent/80!`;
         case 'vercel-gray':
                 return `${baseClasses} ${selectedClasses} bg-secondary! dark:bg-secondary/80! text-secondary-foreground! hover:bg-secondary/80! dark:hover:bg-secondary/70! border-secondary! dark:border-secondary/80!`;
+        case 'green':
+                return `${baseClasses} ${selectedClasses} bg-accent! dark:bg-accent/80! text-accent-foreground! hover:bg-accent/80! dark:hover:bg-accent/70! border-accent! dark:border-accent/80!`;
+        case 'yellow':
+                return `${baseClasses} ${selectedClasses} bg-secondary! dark:bg-secondary/80! text-secondary-foreground! hover:bg-secondary/80! dark:hover:bg-secondary/70! border-secondary! dark:border-secondary/80!`;
+        case 'pink':
+                return `${baseClasses} ${selectedClasses} bg-accent! dark:bg-accent/80! text-accent-foreground! hover:bg-accent/80! dark:hover:bg-accent/70! border-accent! dark:border-accent/80!`;
         default:
                 return `${baseClasses} ${selectedClasses} bg-accent! dark:bg-accent/80! text-accent-foreground! hover:bg-accent/80! dark:hover:bg-accent/70! border-accent! dark:border-accent/80!`;
         }
@@ -243,6 +275,12 @@ const getColorClasses = (color: string, isSelected: boolean = false) => {
                 return `${baseClasses} text-accent-foreground! dark:text-accent! hover:bg-accent! hover:text-accent-foreground! dark:hover:bg-accent/80! dark:hover:text-white!`;
             case 'vercel-gray':
                 return `${baseClasses} text-secondary-foreground! dark:text-secondary! hover:bg-secondary! hover:text-secondary-foreground! dark:hover:bg-secondary/80! dark:hover:text-white!`;
+            case 'green':
+                return `${baseClasses} text-accent-foreground! dark:text-accent! hover:bg-accent! hover:text-accent-foreground! dark:hover:bg-accent/80! dark:hover:text-white!`;
+            case 'yellow':
+                return `${baseClasses} text-secondary-foreground! dark:text-secondary! hover:bg-secondary! hover:text-secondary-foreground! dark:hover:bg-secondary/80! dark:hover:text-white!`;
+            case 'pink':
+                return `${baseClasses} text-accent-foreground! dark:text-accent! hover:bg-accent! hover:text-accent-foreground! dark:hover:bg-accent/80! dark:hover:text-white!`;
             default:
                 return `${baseClasses} text-accent-foreground! dark:text-accent! hover:bg-accent! hover:text-accent-foreground! dark:hover:bg-accent/80! dark:hover:text-white!`;
         }
@@ -351,6 +389,17 @@ const ModelSwitcher: React.FC<ModelSwitcherProps & {
         return acc;
     }, {} as Record<string, typeof models>);
 
+    // Ensure Specialized category appears first in the "Show All" section
+    const orderedGroupedModels = {} as Record<string, typeof models>;
+    if (allGroupedModels['Specialized']) {
+        orderedGroupedModels['Specialized'] = allGroupedModels['Specialized'];
+    }
+    Object.keys(allGroupedModels).forEach(category => {
+        if (category !== 'Specialized') {
+            orderedGroupedModels[category] = allGroupedModels[category];
+        }
+    });
+
     // Get hover color classes using consistent theme colors like Gemini and OpenAI
     const getHoverColorClasses = (modelColor: string) => {
         switch (modelColor) {
@@ -362,6 +411,9 @@ const ModelSwitcher: React.FC<ModelSwitcherProps & {
             case 'gemini': return 'hover:bg-accent/20! dark:hover:bg-accent/15!';
             case 'blue': return 'hover:bg-secondary/20! dark:hover:bg-secondary/15!';
             case 'vercel-gray': return 'hover:bg-secondary/20! dark:hover:bg-secondary/15!';
+            case 'green': return 'hover:bg-accent/20! dark:hover:bg-accent/15!';
+            case 'yellow': return 'hover:bg-secondary/20! dark:hover:bg-secondary/15!';
+            case 'pink': return 'hover:bg-accent/20! dark:hover:bg-accent/15!';
             default: return 'hover:bg-accent/20! dark:hover:bg-accent/15!';
         }
     };
@@ -646,7 +698,7 @@ const ModelSwitcher: React.FC<ModelSwitcherProps & {
                             // Expanded view with all models in grid layout
                             <div className="space-y-6">
                                 {/* All Models Section */}
-                                {Object.entries(allGroupedModels).map(([category, categoryModels], categoryIndex) => {
+                                {Object.entries(orderedGroupedModels).map(([category, categoryModels], categoryIndex) => {
                                     return (
                                         <motion.div
                                             key={category}

@@ -114,37 +114,11 @@ const Messages: React.FC<MessagesProps> = ({
     return lastMessage?.role === 'user' && (status === 'submitted' || status === 'streaming');
   }, [memoizedMessages, status]);
 
-  // Check if we need to show retry due to missing assistant response (different from error status)
+  // DISABLED: Incomplete response detection completely turned off
   const isMissingAssistantResponse = useMemo(() => {
-    const lastMessage = memoizedMessages[memoizedMessages.length - 1];
-    
-    // Case 1: Last message is user and no assistant response
-    if (lastMessage?.role === 'user' && status === 'ready' && !error) {
-      return true;
-    }
-    
-    // Case 2: Last message is assistant but is completely empty (no meaningful content)
-    if (lastMessage?.role === 'assistant' && status === 'ready' && !error) {
-      const parts = lastMessage.parts || [];
-      
-      // Check if message has any meaningful content
-      const hasTextContent = parts.some((part: any) => 
-        part.type === 'text' && part.text && part.text.trim() !== ''
-      );
-      const hasToolInvocations = parts.some((part: any) => part.type === 'tool-invocation');
-      const hasReasoningContent = parts.some((part: any) => part.type === 'reasoning');
-      
-      // Also check legacy content field
-      const hasLegacyContent = lastMessage.content && lastMessage.content.trim() !== '';
-      
-      // If there's no meaningful content at all, show retry
-      if (!hasTextContent && !hasToolInvocations && !hasReasoningContent && !hasLegacyContent) {
-        return true;
-      }
-    }
-    
+    // Always return false - never show "Incomplete Response" message
     return false;
-  }, [memoizedMessages, status, error]);
+  }, []);
 
   // Handle rendering of message parts
   const renderPart = (

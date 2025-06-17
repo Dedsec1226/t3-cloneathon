@@ -100,6 +100,7 @@ const Navbar = memo(({
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, ease: "easeOut" }}
+            style={{ opacity: 1 }}
             className={cn(
             "fixed top-0 left-0 right-0 z-30 flex justify-between items-center p-3 transition-colors duration-200",
             isDialogOpen
@@ -122,6 +123,7 @@ const Navbar = memo(({
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.9 }}
                             transition={{ duration: 0.2 }}
+                            style={{ opacity: 1 }}
                         >
                                 {selectedVisibilityType === 'public' ? (
                                     /* Public chat - show dropdown for copying link */
@@ -150,6 +152,7 @@ const Navbar = memo(({
                                             initial={{ opacity: 0, y: -10 }}
                                             animate={{ opacity: 1, y: 0 }}
                                             transition={{ duration: 0.2 }}
+                                            style={{ opacity: 1 }}
                                             className="space-y-4"
                                         >
                                                 <header className="flex justify-between items-center">
@@ -267,6 +270,7 @@ const Navbar = memo(({
                                             initial={{ opacity: 0, y: -10 }}
                                             animate={{ opacity: 1, y: 0 }}
                                             transition={{ duration: 0.2 }}
+                                            style={{ opacity: 1 }}
                                             className="space-y-4"
                                         >
                                             <header className="text-center">
@@ -313,7 +317,7 @@ const Navbar = memo(({
                 {/* Settings and theme toggle group - always visible */}
                 <div className="pointer-events-auto">
                     <div className="flex flex-row items-center bg-gradient-noise-top text-muted-foreground gap-0.5 rounded-md p-1 transition-all rounded-bl-xl">
-                        <a aria-label="Go to settings" role="button" data-state="closed" href="/settings/customization" data-discover="true">
+                        <a aria-label="Go to settings" role="button" data-state="closed" href="/settings" data-discover="true">
                             <button className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-muted/40 hover:text-foreground disabled:hover:bg-transparent disabled:hover:text-foreground/50 size-8 rounded-bl-xl">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-settings2 size-4">
                                     <path d="M20 7h-9"></path>
@@ -333,6 +337,7 @@ const Navbar = memo(({
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.3, delay: 0.1 }}
+                        style={{ opacity: 1 }}
                     >
                 <UserProfile user={user} />
                     </motion.div>

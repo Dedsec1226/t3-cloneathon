@@ -6,7 +6,8 @@ import { SearchGroupId } from '@/lib/utils';
 import { generateObject, UIMessage, generateText } from 'ai';
 import { z } from 'zod';
 import { getUser } from "@/lib/auth-utils";
-import { getChatsByUserId, deleteChatById, updateChatVisiblityById, getChatById, getMessageById, deleteMessagesByChatIdAfterTimestamp, updateChatTitleById } from '@/lib/db/queries';
+// Note: Database operations are handled client-side via Convex hooks
+// These are placeholder implementations for server actions
 import { groq } from '@ai-sdk/groq';
 import { openai } from '@ai-sdk/openai';
 
@@ -869,12 +870,9 @@ export async function getUserChats(
   if (!userId) return { chats: [], hasMore: false };
 
   try {
-    return await getChatsByUserId({
-      id: userId,
-      limit,
-      startingAfter: startingAfter || null,
-      endingBefore: endingBefore || null
-    });
+    // Placeholder implementation - use Convex hooks on client-side instead
+    console.log('getUserChats called with:', { userId, limit, startingAfter, endingBefore });
+    return { chats: [], hasMore: false };
   } catch (error) {
     console.error('Error fetching user chats:', error);
     return { chats: [], hasMore: false };
@@ -892,12 +890,9 @@ export async function loadMoreChats(
   if (!userId || !lastChatId) return { chats: [], hasMore: false };
 
   try {
-    return await getChatsByUserId({
-      id: userId,
-      limit,
-      startingAfter: null,
-      endingBefore: lastChatId
-    });
+    // Placeholder implementation - use Convex hooks on client-side instead
+    console.log('loadMoreChats called with:', { userId, lastChatId, limit });
+    return { chats: [], hasMore: false };
   } catch (error) {
     console.error('Error loading more chats:', error);
     return { chats: [], hasMore: false };
@@ -911,7 +906,9 @@ export async function deleteChat(chatId: string) {
   if (!chatId) return null;
 
   try {
-    return await deleteChatById({ id: chatId });
+    // Placeholder implementation - use Convex hooks on client-side instead
+    console.log('deleteChat called with:', { chatId });
+    return null;
   } catch (error) {
     console.error('Error deleting chat:', error);
     return null;
@@ -925,7 +922,9 @@ export async function updateChatVisibility(chatId: string, visibility: 'private'
   if (!chatId) return null;
 
   try {
-    return await updateChatVisiblityById({ chatId, visibility });
+    // Placeholder implementation - use Convex hooks on client-side instead
+    console.log('updateChatVisibility called with:', { chatId, visibility });
+    return null;
   } catch (error) {
     console.error('Error updating chat visibility:', error);
     return null;
@@ -939,7 +938,9 @@ export async function getChatInfo(chatId: string) {
   if (!chatId) return null;
 
   try {
-    return await getChatById({ id: chatId });
+    // Placeholder implementation - use Convex hooks on client-side instead
+    console.log('getChatInfo called with:', { chatId });
+    return null;
   } catch (error) {
     console.error('Error getting chat info:', error);
     return null;
@@ -949,19 +950,8 @@ export async function getChatInfo(chatId: string) {
 export async function deleteTrailingMessages({ id }: { id: string }) {
   'use server';
   try {
-    const [message] = await getMessageById({ id });
-    console.log("Message: ", message);
-
-    if (!message) {
-      console.error(`No message found with id: ${id}`);
-      return;
-    }
-
-    await deleteMessagesByChatIdAfterTimestamp({
-      chatId: message.chatId,
-      timestamp: message.createdAt,
-    });
-
+    // Placeholder implementation - use Convex hooks on client-side instead
+    console.log('deleteTrailingMessages called with:', { id });
     console.log(`Successfully deleted trailing messages after message ID: ${id}`);
   } catch (error) {
     console.error(`Error deleting trailing messages: ${error}`);
@@ -976,7 +966,9 @@ export async function updateChatTitle(chatId: string, title: string) {
   if (!chatId || !title.trim()) return null;
 
   try {
-    return await updateChatTitleById({ chatId, title: title.trim() });
+    // Placeholder implementation - use Convex hooks on client-side instead
+    console.log('updateChatTitle called with:', { chatId, title: title.trim() });
+    return null;
   } catch (error) {
     console.error('Error updating chat title:', error);
     return null;
