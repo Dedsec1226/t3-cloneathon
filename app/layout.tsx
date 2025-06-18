@@ -1,7 +1,8 @@
+import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { Providers } from '@/components/providers';
+
 
 const geistSans = Geist({
 	variable: "--font-geist-sans",
@@ -14,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-	title: "T3 – The AI-Native Personal Text Editor",
+	title: "T3 Chat – The Best AI Assistant & ChatGPT Alternative",
 	description:
 		"T3 is your personal thinking partner. It completes your thoughts, remembers your context, and adapts the interface as you write. Built for developers, powered by AI, and integrated with your tools.",
 	keywords: [
@@ -72,9 +73,9 @@ export default function RootLayout({
 			<body
 				className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}
 			>
-				<Providers>
-					{children}
-				</Providers>
+			<ClerkProvider>
+        	{children}
+        	</ClerkProvider>
 			</body>
 		</html>
 	);
