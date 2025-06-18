@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-	title: "T3 – The AI-Native Personal Text Editor",
+	title: "T3 Chat – The Best AI Assistant & ChatGPT Alternative",
 	description:
 		"T3 is your personal thinking partner. It completes your thoughts, remembers your context, and adapts the interface as you write. Built for developers, powered by AI, and integrated with your tools.",
 	keywords: [
