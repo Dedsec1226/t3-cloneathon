@@ -146,10 +146,19 @@ export const T0Keycap: React.FC = () => {
 	}, [isNavigating]);
 
 	const handleNavigation = useCallback(() => {
+		if (isNavigating) return; // Prevent multiple simultaneous navigations
+		
+		console.log("🔄 Keycap navigation to /home initiated");
 		setIsNavigating(true);
-		// Use push for better navigation tracking
-		router.push("/home");
-	}, [router]);
+		
+		try {
+			// Use push for better navigation tracking
+			router.push("/home");
+		} catch (error) {
+			console.error("❌ Navigation error:", error);
+			setIsNavigating(false);
+		}
+	}, [router, isNavigating]);
 
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
@@ -207,8 +216,10 @@ export const T0Keycap: React.FC = () => {
 		add(char);
 		stop();
 		play();
-		// Start navigation immediately, don't remove char state
-		handleNavigation();
+		// Start navigation immediately with slight delay for animation
+		setTimeout(() => {
+			handleNavigation();
+		}, 100);
 	};
 
 	const handleMouseDown = (char: string) => {
@@ -267,8 +278,10 @@ export const T0Keycap: React.FC = () => {
 			<button
 				disabled={!isMobile}
 				className="-inset-30 absolute z-10 bg-transparent sm:hidden"
-				onClick={() => {
-					if (isMobile) {
+				onClick={(e) => {
+					e.preventDefault();
+					e.stopPropagation();
+					if (isMobile && !isNavigating) {
 						handleNavigation();
 					}
 				}}

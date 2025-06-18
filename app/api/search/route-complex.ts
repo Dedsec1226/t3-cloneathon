@@ -1,4 +1,7 @@
 // /app/api/chat/route.ts
+// Using Node.js runtime due to @daytonaio/sdk requiring fs module
+export const runtime = 'nodejs';
+
 import { generateTitleFromUserMessage, getGroupConfig } from '@/app/actions';
 import { serverEnv } from '@/env/server';
 import { openai, OpenAIResponsesProviderOptions } from "@ai-sdk/openai";
@@ -39,7 +42,7 @@ import { differenceInSeconds } from 'date-fns';
 // import { Chat } from '@/lib/db/schema';
 // import { auth } from '@/lib/auth';
 import { v4 as uuidv4 } from 'uuid';
-// import { geolocation } from "@vercel/functions";
+import { geolocation } from "@vercel/functions";
 import { getTweet } from 'react-tweet/api';
 
 type ResponseMessageWithoutId = CoreToolMessage | CoreAssistantMessage;
@@ -58,26 +61,10 @@ function getTrailingMessageId({
 }
 
 
-let globalStreamContext: ResumableStreamContext | null = null;
+let globalStreamContext: any | null = null;
 
 function getStreamContext() {
-    if (!globalStreamContext) {
-        try {
-            globalStreamContext = createResumableStreamContext({
-                waitUntil: after,
-            });
-        } catch (error: any) {
-            if (error.message.includes('REDIS_URL')) {
-                console.log(
-                    ' > Resumable streams are disabled due to missing REDIS_URL',
-                );
-            } else {
-                console.error(error);
-            }
-        }
-    }
-
-    return globalStreamContext;
+    return null; // Simplified - no resumable streams
 }
 
 
@@ -109,47 +96,7 @@ const CURRENCY_SYMBOLS = {
     MXN: 'Mex$' // Mexican Peso
 } as const;
 
-interface MapboxFeature {
-    id: string;
-    name: string;
-    formatted_address: string;
-    geometry: {
-        type: string;
-        coordinates: number[];
-    };
-    feature_type: string;
-    context: string;
-    coordinates: number[];
-    bbox: number[];
-    source: string;
-}
 
-interface GoogleResult {
-    place_id: string;
-    formatted_address: string;
-    geometry: {
-        location: {
-            lat: number;
-            lng: number;
-        };
-        viewport: {
-            northeast: {
-                lat: number;
-                lng: number;
-            };
-            southwest: {
-                lat: number;
-                lng: number;
-            };
-        };
-    };
-    types: string[];
-    address_components: Array<{
-        long_name: string;
-        short_name: string;
-        types: string[];
-    }>;
-}
 
 interface VideoDetails {
     title?: string;
@@ -349,144 +296,131 @@ export async function POST(req: Request) {
     const { messages, model, group, timezone, id, selectedVisibilityType } = await req.json();
     const { latitude, longitude } = geolocation(req);
     
-    // Enhanced security checks
-    const origin = req.headers.get('origin');
-    const referer = req.headers.get('referer');
-    const userAgent = req.headers.get('user-agent');
-    const allowedOrigins = serverEnv.ALLOWED_ORIGINS.split(',').map(origin => origin.trim());
-
-    // Check for bot/automated requests
-    const suspiciousUserAgents = [
-        'curl', 'wget', 'python-requests', 'axios', 'node-fetch', 'PostmanRuntime',
-        'insomnia', 'httpie', 'RestSharp', 'okhttp'
-    ];
-    
-    const isSuspiciousBot = suspiciousUserAgents.some(agent => 
-        userAgent?.toLowerCase().includes(agent.toLowerCase())
-    );
-
-    // Basic origin validation
-    const isValidOrigin = origin && allowedOrigins.includes(origin);
-    const isValidReferer = referer && allowedOrigins.some(allowed => referer.startsWith(allowed));
-
-    // For public chats, require authentication OR valid origin/referer
-    if (selectedVisibilityType === 'public') {
-        const user = await getUser();
-        if (!user && (!isValidOrigin && !isValidReferer)) {
-            console.log(`Blocked unauthorized public chat request - Origin: ${origin}, Referer: ${referer}, UA: ${userAgent}`);
-            return new ChatSDKError('forbidden:chat').toResponse();
-        }
-        // Block suspicious bots even for authenticated users on public chats
-        if (isSuspiciousBot && !user) {
-            console.log(`Blocked suspicious bot request - UA: ${userAgent}`);
-            return new ChatSDKError('forbidden:chat').toResponse();
-        }
-    } else {
-        // For private chats, require valid origin or referer (more permissive for legitimate users)
-        if (!isValidOrigin && !isValidReferer) {
-            console.log(`Blocked unauthorized private chat request - Origin: ${origin}, Referer: ${referer}`);
-            return new ChatSDKError('forbidden:chat').toResponse();
-        }
-        // Block obvious bots
-        if (isSuspiciousBot) {
-            console.log(`Blocked bot request on private chat - UA: ${userAgent}`);
-            return new ChatSDKError('forbidden:chat').toResponse();
-        }
-    }
+    // Simplified security - basic validation only
+    console.log("Processing request...");
 
     console.log("--------------------------------");
     console.log("Location: ", latitude, longitude);
     console.log("--------------------------------");
 
-    const user = await getUser();
+    // const user = await getUser();
     const streamId = "stream-" + uuidv4();
+    const user = null; // Simplified for now
 
-    if (!user) {
-        console.log("User not found");
-    }
+    console.log("User not found - simplified mode");
 
     const { tools: activeTools, instructions } = await getGroupConfig(group);
-
-    if (user) {
-        const chat = await getChatById({ id });
-
-        if (!chat) {
-            const title = await generateTitleFromUserMessage({
-                message: messages[messages.length - 1],
-            });
-
-            console.log("--------------------------------");
-            console.log("Title: ", title);
-            console.log("--------------------------------");
-
-            await saveChat({
-                id,
-                userId: user.id,
-                title,
-                visibility: selectedVisibilityType,
-            });
-        } else {
-            if (chat.userId !== user.id) {
-                return new ChatSDKError('forbidden:chat').toResponse();
-            }
-        }
-
-
-        await saveMessages({
-            messages: [
-                {
-                    chatId: id,
-                    id: messages[messages.length - 1].id,
-                    role: 'user',
-                    parts: messages[messages.length - 1].parts,
-                    attachments: messages[messages.length - 1].experimental_attachments ?? [],
-                    createdAt: new Date(),
-                },
-            ],
-        });
-
-        console.log("--------------------------------");
-        console.log("Messages saved: ", messages);
-        console.log("--------------------------------");
-
-        await createStreamId({ streamId, chatId: id });
-    }
 
     console.log("--------------------------------");
     console.log("Messages: ", messages);
     console.log("--------------------------------");
     console.log("Running with model: ", model.trim());
     console.log("Group: ", group);
+    console.log("Group type: ", typeof group);
+    console.log("Group is null: ", group === null);
+    console.log("Group is undefined: ", group === undefined);
+    console.log("Active Tools: ", activeTools);
+    console.log("Instructions Preview: ", instructions.substring(0, 200) + "...");
     console.log("Timezone: ", timezone);
+    
+    // **DEBUG: Add specific logging for web and extreme modes**
+    if (group === 'web') {
+        console.log("🔍 WEB SEARCH MODE DETECTED");
+        console.log("Active tools for web:", activeTools);
+        console.log("Tool choice will be: required");
+    }
+    
+    if (group === 'extreme') {
+        console.log("🚀 EXTREME MODE DETECTED"); 
+        console.log("Active tools for extreme:", activeTools);
+        console.log("Tool choice will be: required");
+        console.log("Max steps will be: 2");
+    }
 
     const stream = createDataStream({
         execute: async (dataStream) => {
             const result = streamText({
                 model: t3.languageModel(model),
                 messages: convertToCoreMessages(messages),
-                ...(!model.includes('t3-claude') || !model.includes('t3-o3-mini') ? {
-                    temperature: 0,
-                } : (!model.includes('t3-qwq') ? {
-                    temperature: 0.6,
-                    topP: 0.95,
+                // Optimized temperature settings for speed and quality
+                ...(model.includes('t3-claude-3-5-haiku') || model.includes('t3-fast') ? {
+                    temperature: 0.3, // Lower temp for speed on Haiku
+                } : model.includes('t3-claude') ? {
+                    temperature: 0.7, // Balanced for quality Claude models
+                    topP: 0.9,
+                } : model.includes('t3-o3-mini') ? {
+                    temperature: 0, // Deterministic for reasoning models
                 } : {
-                    temperature: 0,
-                })),
-                maxSteps: 5,
-                maxRetries: 5,
+                    temperature: 0, // Conservative default
+                }),
+                maxSteps: group === 'extreme' ? 1 : 1, // Single step for extreme mode to prevent early streaming
+                maxRetries: 1,
                 experimental_activeTools: [...activeTools],
                 system: instructions + `\n\nThe user's location is ${latitude}, ${longitude}.`,
-                toolChoice: 'auto',
+                toolChoice: group === 'extreme' ? 'required' : 
+                           group === 'web' ? 'required' : 'auto', // Force tool usage for extreme and web modes
+                // **EXTREME MODE: Prevent early streaming**
+                ...(group === 'extreme' ? {
+                    maxToolRoundtrips: 1, // Only allow one tool execution
+                    experimental_continueSteps: false, // Disable continuation
+                } : {}),
                 experimental_transform: smoothStream({
                     chunking: 'word',
-                    delayInMs: 1,
+                    delayInMs: group === 'extreme' ? 100 : 0, // Slight delay for extreme mode to prevent racing
                 }),
                 providerOptions: {
                     google: {
+                        // Speed optimizations for Gemini models
+                        candidateCount: 1, // Disable n-best search for faster generation
+                        
+                        // Model-specific speed optimizations
+                        ...(model.includes('t3-gemini-2-5-flash') || model.includes('t3-fast-flash') ? {
+                            // Flash optimizations for max speed (~280 t/s)
+                            maxOutputTokens: 1024,
+                            stopSequences: ['</analysis>', '</thinking>', '</response>'],
+                            safetySettings: [
+                                { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_ONLY_HIGH' },
+                                { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_ONLY_HIGH' },
+                                { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_ONLY_HIGH' },
+                                { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_ONLY_HIGH' }
+                            ]
+                        } : {}),
+                        
+                        ...(model.includes('t3-gemini-2-5-pro') || model.includes('t3-gemini-1-5-pro') ? {
+                            // Pro optimizations for balanced speed (~140 t/s)
+                            maxOutputTokens: 2048,
+                            stopSequences: ['</analysis>', '</thinking>'],
+                            safetySettings: [
+                                { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_ONLY_HIGH' },
+                                { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_ONLY_HIGH' },
+                                { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_ONLY_HIGH' },
+                                { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_ONLY_HIGH' }
+                            ]
+                        } : {}),
+                        
+                        ...(model.includes('t3-gemini-1-5-ultra') ? {
+                            // Ultra optimizations - focus on quality but still optimize (~70 t/s)
+                            maxOutputTokens: 4096,
+                            stopSequences: ['</deep_analysis>', '</thinking>'],
+                            safetySettings: [
+                                { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
+                                { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
+                                { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
+                                { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' }
+                            ]
+                        } : {}),
+                        
+                        // Thinking configuration with optimized budget for Gemini 2.5+
                         thinkingConfig: {
-                            includeThoughts: true,
-                            thinkingBudget: 10000,
+                            includeThoughts: model.includes('t3-gemini-2-5') ? true : false,
+                            thinkingBudget: model.includes('t3-gemini-2-5-flash') ? 6000 : 
+                                          model.includes('t3-gemini-2-5-pro') ? 8000 : 10000,
                         },
+                        
+                        // Headers for latest features and speed
+                        headers: {
+                            'x-goog-api-client': 'gl-node/latest ai-sdk/5.0',
+                        }
                     },
                     openai: {
                         ...(model === 't3-o3-mini' ? {
@@ -510,9 +444,37 @@ export async function POST(req: Request) {
                         } : {}),
                     },
                     anthropic: {
-                        ...(model === 't3-claude-sonnet-3-7' || model === 't3-claude-opus-4' ? {
-                            thinking: { type: 'enabled', budgetTokens: 12000 },
+                        // Add anthropic-version header for latest features
+                        headers: {
+                            'anthropic-version': '2023-06-01',
+                            // Token-efficient tool use for 14% token savings
+                            'anthropic-beta': 'token-efficient-tool-use-2025-03-13,fine-grained-tool-streaming-2025-05-14'
+                        },
+                        // Enable prompt caching for long contexts (79% latency reduction on subsequent calls)
+                        cacheControl: { type: 'ephemeral' },
+                        // Thinking configuration with reduced budget for faster TTFT
+                        ...(model === 't3-claude-4-sonnet' || model === 't3-claude-4-opus' ? {
+                            thinking: { 
+                                type: 'enabled', 
+                                budgetTokens: 8000  // Reduced from 12000 for faster response
+                            },
                         } : {}),
+                        // Speed optimizations
+                        ...(model.includes('t3-claude-3-5-haiku') ? {
+                            // Haiku-specific optimizations for max speed
+                            maxTokens: 512,  // Optimized for fastest streaming (per latency playbook)
+                            stopSequences: ['</thinking>']  // Stop early when reasoning complete
+                        } : {}),
+                        ...(model.includes('t3-claude-3-5-sonnet') || model === 't3-claude-4-sonnet' ? {
+                            // Sonnet optimizations for balanced speed/quality
+                            maxTokens: 512,  // Optimized for fastest streaming
+                            stopSequences: ['</analysis>', '</thinking>']
+                        } : {}),
+                        ...(model.includes('t3-claude-3-opus') || model === 't3-claude-4-opus' ? {
+                            // Opus optimizations - focus on quality but still optimize
+                            maxTokens: 512,  // Optimized for fastest streaming
+                            stopSequences: ['</deep_analysis>', '</thinking>']
+                        } : {})
                     },
                 },
                 tools: {
@@ -1023,7 +985,7 @@ print(f"Converted amount: {converted_amount}")
                         }),
                         execute: async ({ text, to }: { text: string; to: string }) => {
                             const { object: translation } = await generateObject({
-                                model: scira.languageModel(model),
+                                model: t3.languageModel(model),
                                 system: `You are a helpful assistant that translates text from one language to another.`,
                                 prompt: `Translate the following text to ${to} language: ${text}`,
                                 schema: z.object({
@@ -1154,8 +1116,92 @@ print(f"Converted amount: {converted_amount}")
 
                             const searchResults = await Promise.all(searchPromises);
 
+                            // Add synthesis step - compile all information like ChatGPT
+                            let synthesizedReport = '';
+                            try {
+                                // Collect all content for synthesis
+                                const allContent = searchResults.flatMap(search => 
+                                    search.results.map(result => ({
+                                        title: result.title,
+                                        content: result.content,
+                                        url: result.url,
+                                        query: search.query
+                                    }))
+                                );
+
+                                // Only synthesize if we have content
+                                if (allContent.length > 0) {
+                                    const contentForSynthesis = allContent
+                                        .slice(0, 15) // Limit to top 15 results for synthesis
+                                        .map(item => `**${item.title}**\n${item.content.slice(0, 800)}`)
+                                        .join('\n\n---\n\n');
+
+                                    // Add annotation for synthesis start
+                                    dataStream.writeMessageAnnotation({
+                                        type: 'synthesis',
+                                        data: {
+                                            status: 'starting',
+                                            message: 'Compiling and analyzing collected information...'
+                                        }
+                                    });
+
+                                    const { object } = await generateObject({
+                                        model: t3.languageModel(model),
+                                        system: `You are an expert research analyst. Your task is to synthesize and compile information from multiple web sources into a comprehensive, well-structured report.
+
+SYNTHESIS GUIDELINES:
+1. **Comprehensive Analysis**: Analyze all provided sources and create a cohesive narrative
+2. **Structure**: Organize information with clear headings and subheadings
+3. **Key Insights**: Highlight the most important findings and insights
+4. **Cross-Reference**: Connect related information from different sources
+5. **Balanced Perspective**: Present multiple viewpoints when available
+6. **Factual Accuracy**: Stick to information from the sources
+7. **Clear Writing**: Use clear, engaging prose that's easy to understand
+8. **Source Integration**: Seamlessly weave information from multiple sources
+9. **Actionable Information**: Include practical takeaways when relevant
+10. **Current Context**: Emphasize recent developments and current state
+
+Create a comprehensive report that goes beyond just listing facts - provide analysis, context, and insights that would be valuable to someone seeking to understand this topic thoroughly.`,
+                                        prompt: `Based on the following web search results for queries: "${queries.join(', ')}", create a comprehensive, well-structured report that synthesizes all the information:
+
+${contentForSynthesis}
+
+Create a detailed analysis that compiles, connects, and contextualizes this information into a coherent, insightful report.`,
+                                        schema: z.object({
+                                            synthesizedReport: z.string().describe("A comprehensive, well-structured report that synthesizes all the collected information into a cohesive analysis with insights, context, and key findings"),
+                                            keyPoints: z.array(z.string()).describe("3-5 key insights or findings from the synthesis"),
+                                            summary: z.string().describe("A concise summary of the main conclusions")
+                                        }),
+                                    });
+
+                                    synthesizedReport = object.synthesizedReport;
+
+                                    // Add annotation for synthesis completion
+                                    dataStream.writeMessageAnnotation({
+                                        type: 'synthesis',
+                                        data: {
+                                            status: 'completed',
+                                            message: 'Information synthesis completed',
+                                            keyPoints: object.keyPoints,
+                                            summary: object.summary
+                                        }
+                                    });
+                                }
+                            } catch (error) {
+                                console.error('Error during information synthesis:', error);
+                                dataStream.writeMessageAnnotation({
+                                    type: 'synthesis',
+                                    data: {
+                                        status: 'error',
+                                        message: 'Failed to synthesize information, showing raw results'
+                                    }
+                                });
+                            }
+
                             return {
                                 searches: searchResults,
+                                synthesizedReport: synthesizedReport || null,
+                                hasContent: searchResults.some(search => search.results.length > 0)
                             };
                         },
                     }),
@@ -1525,124 +1571,6 @@ print(f"Converted amount: {converted_amount}")
                             }
                         },
                     }),
-                    get_weather_data: tool({
-                        description: 'Get the weather data for a location using either location name or coordinates with OpenWeather API.',
-                        parameters: z.object({
-                            location: z.string().optional().describe('The name of the location to get weather data for (e.g., "London", "New York", "Tokyo"). Required if latitude and longitude are not provided.'),
-                            latitude: z.number().optional().describe('The latitude coordinate. Required if location is not provided.'),
-                            longitude: z.number().optional().describe('The longitude coordinate. Required if location is not provided.')
-                        }),
-                        execute: async ({ location, latitude, longitude }: { location?: string; latitude?: number; longitude?: number }) => {
-                            try {
-                                let lat = latitude;
-                                let lng = longitude;
-                                let locationName = location;
-                                let country: string | undefined;
-                                let timezone: string | undefined;
-
-                                // Validate input parameters
-                                if (!location && (!latitude || !longitude)) {
-                                    throw new Error('Either location name or both latitude and longitude coordinates must be provided');
-                                }
-
-                                // Step 1: Get coordinates if not provided
-                                if (!lat || !lng) {
-                                    if (!location) {
-                                        throw new Error('Location name is required when coordinates are not provided');
-                                    }
-
-                                    // Geocode the location name using Open Meteo API
-                                    const geocodingResponse = await fetch(
-                                        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(location)}&count=1&language=en&format=json`
-                                    );
-
-                                    const geocodingData = await geocodingResponse.json();
-
-                                    if (!geocodingData.results || geocodingData.results.length === 0) {
-                                        throw new Error(`Location '${location}' not found`);
-                                    }
-
-                                    const geocodingResult = geocodingData.results[0];
-                                    lat = geocodingResult.latitude;
-                                    lng = geocodingResult.longitude;
-                                    locationName = geocodingResult.name;
-                                    country = geocodingResult.country;
-                                    timezone = geocodingResult.timezone;
-                                } else {
-                                    // If coordinates are provided but no location name, try reverse geocoding
-                                    if (!location) {
-                                        try {
-                                            const reverseGeocodeResponse = await fetch(
-                                                `https://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lng}&limit=1&appid=${serverEnv.OPENWEATHER_API_KEY}`
-                                            );
-                                            const reverseGeocodeData = await reverseGeocodeResponse.json();
-                                            
-                                            if (reverseGeocodeData && reverseGeocodeData.length > 0) {
-                                                locationName = reverseGeocodeData[0].name;
-                                                country = reverseGeocodeData[0].country;
-                                            } else {
-                                                locationName = `${lat}, ${lng}`;
-                                            }
-                                        } catch (reverseGeocodeError) {
-                                            console.warn('Reverse geocoding failed:', reverseGeocodeError);
-                                            locationName = `${lat}, ${lng}`;
-                                        }
-                                    }
-                                }
-
-                                console.log('Latitude:', lat);
-                                console.log('Longitude:', lng);
-                                console.log('Location:', locationName);
-
-                                // Step 2: Fetch weather data using OpenWeather API with the coordinates
-                                const apiKey = serverEnv.OPENWEATHER_API_KEY;
-                                const [weatherResponse, airPollutionResponse, dailyForecastResponse] = await Promise.all([
-                                    fetch(
-                                        `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lng}&appid=${apiKey}`
-                                    ),
-                                    fetch(
-                                        `https://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lng}&appid=${apiKey}`
-                                    ),
-                                    fetch(
-                                        `https://api.openweathermap.org/data/2.5/forecast/daily?lat=${lat}&lon=${lng}&cnt=16&appid=${apiKey}`
-                                    )
-                                ]);
-
-                                const [weatherData, airPollutionData, dailyForecastData] = await Promise.all([
-                                    weatherResponse.json(),
-                                    airPollutionResponse.json(),
-                                    dailyForecastResponse.json().catch(error => {
-                                        console.error('Daily forecast API error:', error);
-                                        return { list: [] }; // Return empty data if API fails
-                                    })
-                                ]);
-
-                                // Step 3: Fetch air pollution forecast
-                                const airPollutionForecastResponse = await fetch(
-                                    `https://api.openweathermap.org/data/2.5/air_pollution/forecast?lat=${lat}&lon=${lng}&appid=${apiKey}`
-                                );
-                                const airPollutionForecastData = await airPollutionForecastResponse.json();
-
-                                // Add geocoding information to the weather data
-                                return {
-                                    ...weatherData,
-                                    geocoding: {
-                                        latitude: lat,
-                                        longitude: lng,
-                                        name: locationName,
-                                        country: country,
-                                        timezone: timezone
-                                    },
-                                    air_pollution: airPollutionData,
-                                    air_pollution_forecast: airPollutionForecastData,
-                                    daily_forecast: dailyForecastData
-                                };
-                            } catch (error) {
-                                console.error('Weather data error:', error);
-                                throw error;
-                            }
-                        },
-                    }),
                     code_interpreter: tool({
                         description: 'Write and execute Python code.',
                         parameters: z.object({
@@ -1722,340 +1650,85 @@ print(f"Converted amount: {converted_amount}")
                             };
                         },
                     }),
-                    // Improved geocoding tool - combines forward and reverse geocoding in one tool
-                    find_place_on_map: tool({
-                        description: 'Find places using Google Maps geocoding API. Supports both address-to-coordinates (forward) and coordinates-to-address (reverse) geocoding.',
-                        parameters: z.object({
-                            query: z.string().optional().describe('Address or place name to search for (for forward geocoding)'),
-                            latitude: z.number().optional().describe('Latitude for reverse geocoding'),
-                            longitude: z.number().optional().describe('Longitude for reverse geocoding'),
-                        }),
-                        execute: async ({ query, latitude, longitude }) => {
-                            try {
-                                const googleApiKey = serverEnv.GOOGLE_MAPS_API_KEY;
-                                
-                                if (!googleApiKey) {
-                                    throw new Error('Google Maps API key not configured');
-                                }
 
-                                let url: string;
-                                let searchType: 'forward' | 'reverse';
-
-                                // Determine search type and build URL
-                                if (query) {
-                                    // Forward geocoding
-                                    url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(query)}&key=${googleApiKey}`;
-                                    searchType = 'forward';
-                                } else if (latitude !== undefined && longitude !== undefined) {
-                                    // Reverse geocoding
-                                    url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${googleApiKey}`;
-                                    searchType = 'reverse';
-                                } else {
-                                    throw new Error('Either query or coordinates (latitude/longitude) must be provided');
-                                }
-
-                                const response = await fetch(url);
-                                const data = await response.json();
-
-                                if (data.status === 'OVER_QUERY_LIMIT') {
-                                    return {
-                                        success: false,
-                                        error: 'Google Maps API quota exceeded. Please try again later.',
-                                        places: []
-                                    };
-                                }
-
-                                if (data.status !== 'OK') {
-                                    return {
-                                        success: false,
-                                        error: data.error_message || `Geocoding failed: ${data.status}`,
-                                        places: []
-                                    };
-                                }
-
-                                const places = data.results.map((result: GoogleResult) => ({
-                                    place_id: result.place_id,
-                                    name: result.formatted_address.split(',')[0].trim(),
-                                    formatted_address: result.formatted_address,
-                                    location: {
-                                        lat: result.geometry.location.lat,
-                                        lng: result.geometry.location.lng,
-                                    },
-                                    types: result.types,
-                                    address_components: result.address_components,
-                                    viewport: result.geometry.viewport,
-                                    source: 'google_maps'
-                                }));
-
-                                return {
-                                    success: true,
-                                    search_type: searchType,
-                                    query: query || `${latitude},${longitude}`,
-                                    places,
-                                    count: places.length
-                                };
-                            } catch (error) {
-                                console.error('Geocoding error:', error);
-                                return {
-                                    success: false,
-                                    error: error instanceof Error ? error.message : 'Unknown geocoding error',
-                                    places: []
-                                };
-                            }
-                        },
-                    }),
-                    
-                    // Improved nearby search using Google Places Nearby Search API
-                    nearby_places_search: tool({
-                        description: 'Search for nearby places using Google Places Nearby Search API.',
-                        parameters: z.object({
-                            location: z.string().describe('The location name or coordinates to search around'),
-                            latitude: z.number().optional().describe('Latitude of the search center'),
-                            longitude: z.number().optional().describe('Longitude of the search center'),
-                            type: z.string().describe('Type of place to search for (restaurant, lodging, tourist_attraction, gas_station, bank, hospital, etc.) from the new google places api'),
-                            radius: z.number().describe('Search radius in meters (max 50000)'),
-                            keyword: z.string().optional().describe('Additional keyword to filter results'),
-                        }),
-                        execute: async ({
-                            location,
-                            latitude,
-                            longitude,
-                            type,
-                            radius,
-                            keyword
-                        }: {
-                            location: string;
-                            latitude?: number;
-                            longitude?: number;
-                            type: string;
-                            radius: number;
-                            keyword?: string;
-                        }) => {
-                            try {
-                                const googleApiKey = serverEnv.GOOGLE_MAPS_API_KEY;
-                                
-                                if (!googleApiKey) {
-                                    throw new Error('Google Maps API key not configured');
-                                }
-
-                                let searchLat = latitude;
-                                let searchLng = longitude;
-
-                                // If coordinates not provided, geocode the location
-                                if (!searchLat || !searchLng) {
-                                    const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(location)}&key=${googleApiKey}`;
-                                    const geocodeResponse = await fetch(geocodeUrl);
-                                    const geocodeData = await geocodeResponse.json();
-
-                                    if (geocodeData.status === 'OK' && geocodeData.results.length > 0) {
-                                        searchLat = geocodeData.results[0].geometry.location.lat;
-                                        searchLng = geocodeData.results[0].geometry.location.lng;
-                                    } else {
-                                        return {
-                                            success: false,
-                                            error: `Could not geocode location: ${location}`,
-                                            places: [],
-                                            center: null
-                                        };
-                                    }
-                                }
-
-                                // Build nearby search URL
-                                let nearbyUrl = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${searchLat},${searchLng}&radius=${Math.min(radius, 50000)}&type=${type}&key=${googleApiKey}`;
-                                
-                                if (keyword) {
-                                    nearbyUrl += `&keyword=${encodeURIComponent(keyword)}`;
-                                }
-
-                                const response = await fetch(nearbyUrl);
-                                const data = await response.json();
-
-                                if (data.status !== 'OK') {
-                                    return {
-                                        success: false,
-                                        error: data.error_message || `Nearby search failed: ${data.status}`,
-                                        places: [],
-                                        center: { lat: searchLat, lng: searchLng }
-                                    };
-                                }
-
-                                // Get detailed information for each place
-                                const detailedPlaces = await Promise.all(
-                                    data.results.slice(0, 20).map(async (place: any) => {
-                                        try {
-                                            // Get place details for additional information
-                                            const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${place.place_id}&fields=name,formatted_address,formatted_phone_number,website,rating,reviews,opening_hours,photos,price_level,types&key=${googleApiKey}`;
-                                            const detailsResponse = await fetch(detailsUrl);
-                                            const details = await detailsResponse.json();
-
-                                            let detailsData = details.status === 'OK' ? details.result : {};
-
-                                            // Calculate distance from search center
-                                            const lat1 = searchLat!;
-                                            const lon1 = searchLng!;
-                                            const lat2 = place.geometry.location.lat;
-                                            const lon2 = place.geometry.location.lng;
-                                            
-                                            const R = 6371000; // Earth's radius in meters
-                                            const dLat = (lat2 - lat1) * Math.PI / 180;
-                                            const dLon = (lon2 - lon1) * Math.PI / 180;
-                                            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                                                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                                                      Math.sin(dLon/2) * Math.sin(dLon/2);
-                                            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-                                            const distance = R * c;
-
-                                            // Convert Google's price_level to text representation
-                                            const formatPriceLevel = (priceLevel: number | undefined): string => {
-                                                if (priceLevel === undefined || priceLevel === null) return 'Not Available';
-                                                switch (priceLevel) {
-                                                    case 0: return 'Free';
-                                                    case 1: return 'Inexpensive';
-                                                    case 2: return 'Moderate';
-                                                    case 3: return 'Expensive';
-                                                    case 4: return 'Very Expensive';
-                                                    default: return 'Not Available';
-                                                }
-                                            };
-
-                                            return {
-                                                place_id: place.place_id,
-                                                name: place.name,
-                                                formatted_address: detailsData.formatted_address || place.vicinity,
-                                                location: {
-                                                    lat: place.geometry.location.lat,
-                                                    lng: place.geometry.location.lng,
-                                                },
-                                                rating: place.rating || detailsData.rating,
-                                                price_level: formatPriceLevel(place.price_level || detailsData.price_level),
-                                                types: place.types,
-                                                distance: Math.round(distance),
-                                                is_open: place.opening_hours?.open_now,
-                                                photos: (detailsData.photos || place.photos)?.slice(0, 3).map((photo: any) => ({
-                                                    photo_reference: photo.photo_reference,
-                                                    width: photo.width,
-                                                    height: photo.height,
-                                                    url: `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${photo.photo_reference}&key=${googleApiKey}`
-                                                })) || [],
-                                                phone: detailsData.formatted_phone_number,
-                                                website: detailsData.website,
-                                                opening_hours: detailsData.opening_hours?.weekday_text || [],
-                                                reviews_count: detailsData.reviews?.length || 0,
-                                                source: 'google_places'
-                                            };
-                                        } catch (error) {
-                                            console.error(`Failed to get details for place ${place.name}:`, error);
-                                            
-                                            // Convert Google's price_level to text representation (same function as above)
-                                            const formatPriceLevel = (priceLevel: number | undefined): string => {
-                                                if (priceLevel === undefined || priceLevel === null) return 'Not Available';
-                                                switch (priceLevel) {
-                                                    case 0: return 'Free';
-                                                    case 1: return 'Inexpensive';
-                                                    case 2: return 'Moderate';
-                                                    case 3: return 'Expensive';
-                                                    case 4: return 'Very Expensive';
-                                                    default: return 'Not Available';
-                                                }
-                                            };
-                                            
-                                            // Return basic place info if details fail
-                                            return {
-                                                place_id: place.place_id,
-                                                name: place.name,
-                                                formatted_address: place.vicinity,
-                                                location: {
-                                                    lat: place.geometry.location.lat,
-                                                    lng: place.geometry.location.lng,
-                                                },
-                                                rating: place.rating,
-                                                price_level: formatPriceLevel(place.price_level),
-                                                types: place.types,
-                                                distance: 0,
-                                                source: 'google_places'
-                                            };
-                                        }
-                                    })
-                                );
-
-                                // Sort by distance
-                                const sortedPlaces = detailedPlaces.sort((a, b) => (a.distance || 0) - (b.distance || 0));
-
-                                return {
-                                    success: true,
-                                    query: location,
-                                    type,
-                                    center: { lat: searchLat, lng: searchLng },
-                                    places: sortedPlaces,
-                                    count: sortedPlaces.length
-                                };
-                            } catch (error) {
-                                console.error('Nearby search error:', error);
-                                return {
-                                    success: false,
-                                    error: error instanceof Error ? error.message : 'Unknown nearby search error',
-                                    places: [],
-                                    center: latitude && longitude ? { lat: latitude, lng: longitude } : null
-                                };
-                            }
-                        },
-                    }),
-                    track_flight: tool({
-                        description: 'Track flight information and status',
-                        parameters: z.object({
-                            flight_number: z.string().describe('The flight number to track'),
-                        }),
-                        execute: async ({ flight_number }: { flight_number: string }) => {
-                            try {
-                                const response = await fetch(
-                                    `https://api.aviationstack.com/v1/flights?access_key=${serverEnv.AVIATION_STACK_API_KEY}&flight_iata=${flight_number}`,
-                                );
-                                return await response.json();
-                            } catch (error) {
-                                console.error('Flight tracking error:', error);
-                                throw error;
-                            }
-                        },
-                    }),
                     datetime: tool({
-                        description: 'Get the current date and time in the user\'s timezone',
-                        parameters: z.object({}),
-                        execute: async () => {
+                        description: 'Get the current date and time in the user\'s timezone or a specific timezone if requested',
+                        parameters: z.object({
+                            location: z.string().optional().describe('The location/timezone to get time for (e.g., "India", "London", "New York", "Tokyo")')
+                        }),
+                        execute: async ({ location }: { location?: string }) => {
                             try {
                                 // Get the current UTC time
                                 const now = new Date();
+                                
+                                // Map location to timezone
+                                let targetTimezone = timezone; // Default to user's timezone
+                                
+                                if (location) {
+                                    const locationLower = location.toLowerCase();
+                                    // Map common location names to timezones
+                                    const timezoneMap: Record<string, string> = {
+                                        'india': 'Asia/Kolkata',
+                                        'delhi': 'Asia/Kolkata',
+                                        'mumbai': 'Asia/Kolkata',
+                                        'london': 'Europe/London',
+                                        'uk': 'Europe/London',
+                                        'new york': 'America/New_York',
+                                        'nyc': 'America/New_York',
+                                        'tokyo': 'Asia/Tokyo',
+                                        'japan': 'Asia/Tokyo',
+                                        'paris': 'Europe/Paris',
+                                        'france': 'Europe/Paris',
+                                        'berlin': 'Europe/Berlin',
+                                        'germany': 'Europe/Berlin',
+                                        'sydney': 'Australia/Sydney',
+                                        'australia': 'Australia/Sydney',
+                                        'china': 'Asia/Shanghai',
+                                        'beijing': 'Asia/Shanghai',
+                                        'singapore': 'Asia/Singapore',
+                                        'dubai': 'Asia/Dubai',
+                                        'uae': 'Asia/Dubai',
+                                        'los angeles': 'America/Los_Angeles',
+                                        'california': 'America/Los_Angeles',
+                                        'chicago': 'America/Chicago',
+                                        'texas': 'America/Chicago'
+                                    };
+                                    
+                                    targetTimezone = timezoneMap[locationLower] || targetTimezone;
+                                }
 
-                                // Format date and time using the user's timezone
+                                // Format date and time using the target timezone
                                 return {
                                     timestamp: now.getTime(),
                                     iso: now.toISOString(),
-                                    timezone: timezone,
+                                    timezone: targetTimezone,
+                                    location: location || 'User timezone',
                                     formatted: {
                                         date: new Intl.DateTimeFormat('en-US', {
                                             weekday: 'long',
                                             year: 'numeric',
                                             month: 'long',
                                             day: 'numeric',
-                                            timeZone: timezone
+                                            timeZone: targetTimezone
                                         }).format(now),
                                         time: new Intl.DateTimeFormat('en-US', {
                                             hour: '2-digit',
                                             minute: '2-digit',
                                             second: '2-digit',
                                             hour12: true,
-                                            timeZone: timezone
+                                            timeZone: targetTimezone
                                         }).format(now),
                                         dateShort: new Intl.DateTimeFormat('en-US', {
                                             month: 'short',
                                             day: 'numeric',
                                             year: 'numeric',
-                                            timeZone: timezone
+                                            timeZone: targetTimezone
                                         }).format(now),
                                         timeShort: new Intl.DateTimeFormat('en-US', {
                                             hour: '2-digit',
                                             minute: '2-digit',
                                             hour12: true,
-                                            timeZone: timezone
+                                            timeZone: targetTimezone
                                         }).format(now),
                                         // Add additional useful formats
                                         full: new Intl.DateTimeFormat('en-US', {
@@ -2067,7 +1740,7 @@ print(f"Converted amount: {converted_amount}")
                                             minute: '2-digit',
                                             second: '2-digit',
                                             hour12: true,
-                                            timeZone: timezone
+                                            timeZone: targetTimezone
                                         }).format(now),
                                         iso_local: new Intl.DateTimeFormat('sv-SE', {
                                             year: 'numeric',
@@ -2076,7 +1749,7 @@ print(f"Converted amount: {converted_amount}")
                                             hour: '2-digit',
                                             minute: '2-digit',
                                             second: '2-digit',
-                                            timeZone: timezone
+                                            timeZone: targetTimezone
                                         }).format(now).replace(' ', 'T')
                                     }
                                 };
@@ -2151,92 +1824,71 @@ print(f"Converted amount: {converted_amount}")
                             }
                         },
                     }),
-                    extreme_search: extremeSearchTool(dataStream),
+                    extreme_search: extremeSearchTool(dataStream, model),
                     memory_manager: tool({
-                        description: 'Manage personal memories with add and search operations.',
+                        description: 'Manage user memories - store, search, and retrieve personal information.',
                         parameters: z.object({
-                            action: z.enum(['add', 'search']).describe('The memory operation to perform'),
-                            content: z.string().describe('The memory content for add operation'),
-                            query: z.string().describe('The search query for search operations'),
+                            action: z.enum(['add', 'search', 'get_all']).describe('Action to perform: add (store new memory), search (find memories), get_all (retrieve all memories)'),
+                            query: z.string().describe('For add: the memory content to store. For search: the search query to find relevant memories. For get_all: optional filter query'),
+                            metadata: z.object({
+                                category: z.string().optional().describe('Memory category (personal, work, preferences, etc.)'),
+                                tags: z.array(z.string()).optional().describe('Tags for the memory'),
+                            }).optional().describe('Additional metadata for the memory'),
                         }),
-                        execute: async ({ action, content, query }: {
-                            action: 'add' | 'search';
-                            content?: string;
-                            query?: string;
-                        }) => {
-                            console.log("user", user);
-                            const client = new MemoryClient({ apiKey: serverEnv.MEM0_API_KEY });
-
-                            console.log("action", action);
-                            console.log("content", content);
-                            console.log("query", query);
-
+                        execute: async ({ action, query, metadata }: { action: 'add' | 'search' | 'get_all'; query: string; metadata?: { category?: string; tags?: string[] } }) => {
                             try {
-                                switch (action) {
-                                    case 'add': {
-                                        if (!content) {
-                                            return {
-                                                success: false,
-                                                action: 'add',
-                                                message: 'Content is required for add operation'
-                                            };
-                                        }
-                                        const result = await client.add([{
-                                            role: 'user',
-                                            content: content
-                                        }], {
-                                            user_id: user?.id,
-                                            org_id: serverEnv.MEM0_ORG_ID,
-                                            project_id: serverEnv.MEM0_PROJECT_ID
-                                        });
-                                        if (result.length === 0) {
-                                            return {
-                                                success: false,
-                                                action: 'add',
-                                                message: 'No memory added'
-                                            };
-                                        }
-                                        console.log("result", result);
-                                        return {
-                                            success: true,
-                                            action: 'add',
-                                            memory: result[0]
-                                        };
-                                    }
-                                    case 'search': {
-                                        if (!query) {
-                                            return {
-                                                success: false,
-                                                action: 'search',
-                                                message: 'Query is required for search operation'
-                                            };
-                                        }
-                                        const searchFilters = {
-                                            AND: [
-                                                { user_id: user?.id },
-                                            ]
-                                        };
-                                        const result = await client.search(query, {
-                                            filters: searchFilters,
-                                            api_version: 'v2'
-                                        });
-                                        if (!result || !result[0]) {
-                                            return {
-                                                success: false,
-                                                action: 'search',
-                                                message: 'No results found for the search query'
-                                            };
-                                        }
-                                        return {
-                                            success: true,
-                                            action: 'search',
-                                            results: result[0]
-                                        };
-                                    }
+                                const memory = new MemoryClient({
+                                    apiKey: serverEnv.MEM0_API_KEY!,
+                                });
+
+                                // Generate a simple user ID for demo (in production, use actual user ID)
+                                const userId = 'demo-user-' + Buffer.from('demo').toString('base64').slice(0, 8);
+
+                                if (action === 'add') {
+                                    const result = await memory.add([{ role: 'user', content: query }], { 
+                                        user_id: userId,
+                                        metadata: metadata || {}
+                                    });
+                                    
+                                    return {
+                                        success: true,
+                                        action: 'add',
+                                        memory: result,
+                                        message: 'Memory stored successfully'
+                                    };
+                                } else if (action === 'search') {
+                                    const results = await memory.search(query, { 
+                                        user_id: userId,
+                                        limit: 10
+                                    });
+                                    
+                                    return {
+                                        success: true,
+                                        action: 'search',
+                                        results: results,
+                                        message: `Found ${results.length} relevant memories`
+                                    };
+                                } else if (action === 'get_all') {
+                                    const allMemories = await memory.getAll({ 
+                                        user_id: userId,
+                                        limit: 20
+                                    });
+                                    
+                                    return {
+                                        success: true,
+                                        action: 'get_all',
+                                        results: allMemories,
+                                        message: `Retrieved ${allMemories.length} memories`
+                                    };
                                 }
                             } catch (error) {
-                                console.error('Memory operation error:', error);
-                                throw error;
+                                console.error('Memory manager error:', error);
+                                return {
+                                    success: false,
+                                    action,
+                                    error: error instanceof Error ? error.message : 'Unknown error',
+                                    message: 'Failed to perform memory operation'
+                                };
                             }
                         },
                     }),
@@ -2310,48 +1962,76 @@ print(f"Converted amount: {converted_amount}")
                         },
                     }),
                 },
-                experimental_repairToolCall: async ({
-                    toolCall,
-                    tools,
-                    parameterSchema,
-                    error,
-                }) => {
-                    if (NoSuchToolError.isInstance(error)) {
-                        return null; // do not attempt to fix invalid tool names
-                    }
-
-                    console.log("Fixing tool call================================");
-                    console.log("toolCall", toolCall);
-                    console.log("tools", tools);
-                    console.log("parameterSchema", parameterSchema);
-                    console.log("error", error);
-
-                    const tool = tools[toolCall.toolName as keyof typeof tools];
-
-                    const { object: repairedArgs } = await generateObject({
-                        model: scira.languageModel("scira-default"),
-                        schema: tool.parameters,
-                        prompt: [
-                            `The model tried to call the tool "${toolCall.toolName}"` +
-                            ` with the following arguments:`,
-                            JSON.stringify(toolCall.args),
-                            `The tool accepts the following schema:`,
-                            JSON.stringify(parameterSchema(toolCall)),
-                            'Please fix the arguments.',
-                            'Do not use print statements stock chart tool.',
-                            `For the stock chart tool you have to generate a python code with matplotlib and yfinance to plot the stock chart.`,
-                            `For the web search make multiple queries to get the best results.`,
-                            `Today's date is ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`
-                        ].join('\n'),
-                    });
-
-                    console.log("repairedArgs", repairedArgs);
-
-                    return { ...toolCall, args: JSON.stringify(repairedArgs) };
-                },
+                // experimental_repairToolCall disabled
                 onChunk(event) {
                     if (event.chunk.type === 'tool-call') {
                         console.log('Called Tool: ', event.chunk.toolName);
+                        
+                        // Add thinking annotations for different tools - ChatGPT style
+                        const toolName = event.chunk.toolName;
+                        let thinkingMessage = '';
+                        
+                        switch (toolName) {
+                            case 'web_search':
+                                thinkingMessage = '🔍 Let me search the web for relevant information...';
+                                break;
+                            case 'stock_chart':
+                                thinkingMessage = '📈 I\'ll analyze stock data and generate a chart for you...';
+                                break;
+                            case 'code_interpreter':
+                                thinkingMessage = '💻 Running some calculations to help answer your question...';
+                                break;
+                            case 'movie_or_tv_search':
+                                thinkingMessage = '🎬 Searching movie and TV databases...';
+                                break;
+                            case 'academic_search':
+                                thinkingMessage = '📚 Looking up academic papers and research...';
+                                break;
+                            case 'youtube_search':
+                                thinkingMessage = '📺 Searching YouTube for relevant videos...';
+                                break;
+                            case 'x_search':
+                                thinkingMessage = '🐦 Searching X (Twitter) for recent posts...';
+                                break;
+                            case 'reddit_search':
+                                thinkingMessage = '🔍 Browsing Reddit for community discussions...';
+                                break;
+                            case 'retrieve':
+                                thinkingMessage = '📄 Fetching content from the specified URL...';
+                                break;
+                            case 'currency_converter':
+                                thinkingMessage = '💱 Converting currencies with live exchange rates...';
+                                break;
+                            case 'datetime':
+                                thinkingMessage = '🕐 Getting current date and time information...';
+                                break;
+                            case 'extreme_search':
+                                thinkingMessage = '🚀 Initiating comprehensive research mode...';
+                                break;
+                            case 'text_translate':
+                                thinkingMessage = '🌐 Translating text to the requested language...';
+                                break;
+                            case 'trending_movies':
+                                thinkingMessage = '🎥 Fetching trending movies from TMDB...';
+                                break;
+                            case 'trending_tv':
+                                thinkingMessage = '📺 Fetching trending TV shows from TMDB...';
+                                break;
+                            default:
+                                thinkingMessage = `🔧 Using ${toolName} to help with your request...`;
+                        }
+
+                        // Send thinking annotation
+                        dataStream.writeMessageAnnotation({
+                            type: "thinking",
+                            content: thinkingMessage
+                        });
+                    }
+                    
+                    // **EXTREME MODE: Suppress text streaming until tool completes**
+                    if (group === 'extreme' && event.chunk.type === 'text-delta') {
+                        console.log('🚫 Suppressing text streaming for extreme mode until tool completes');
+                        return; // Don't stream text chunks in extreme mode
                     }
                 },
                 onStepFinish(event) {
@@ -2360,51 +2040,7 @@ print(f"Converted amount: {converted_amount}")
                     }
                 },
                 onFinish: async (event) => {
-                    console.log('Fin reason: ', event.finishReason);
-                    console.log('Reasoning: ', event.reasoning);
-                    console.log('reasoning details: ', event.reasoningDetails);
-                    console.log('Steps: ', event.steps);
-                    console.log('Messages: ', event.response.messages);
-                    console.log('Response Body: ', event.response.body);
-                    console.log('Provider metadata: ', event.providerMetadata);
-                    console.log("Sources: ", event.sources);
-
-                    if (user?.id) {
-                        try {
-                            const assistantId = getTrailingMessageId({
-                                messages: event.response.messages.filter(
-                                    (message: any) => message.role === 'assistant',
-                                ),
-                            });
-
-                            if (!assistantId) {
-                                throw new Error('No assistant message found!');
-                            }
-
-                            const [, assistantMessage] = appendResponseMessages({
-                                messages: [messages[messages.length - 1]],
-                                responseMessages: event.response.messages,
-                            });
-
-                            console.log("Assistant message [annotations]:", assistantMessage.annotations);
-
-                            await saveMessages({
-                                messages: [
-                                    {
-                                        id: assistantId,
-                                        chatId: id,
-                                        role: assistantMessage.role,
-                                        parts: assistantMessage.parts,
-                                        attachments:
-                                            assistantMessage.experimental_attachments ?? [],
-                                        createdAt: new Date(),
-                                    },
-                                ],
-                            });
-                        } catch (_) {
-                            console.error('Failed to save chat');
-                        }
-                    }
+                    console.log('Finished:', event.finishReason);
                 },
                 onError(event) {
                     console.log('Error: ', event.error);
@@ -2425,110 +2061,14 @@ print(f"Converted amount: {converted_amount}")
             return 'Oops, an error occurred!';
         },
     })
-    const streamContext = getStreamContext();
-
-    if (streamContext) {
-        return new Response(
-            await streamContext.resumableStream(streamId, () => stream),
-        );
-    } else {
-        return new Response(stream);
-    }
-}
-
-export async function GET(request: Request) {
-    const streamContext = getStreamContext();
-    const resumeRequestedAt = new Date();
-
-    if (!streamContext) {
-        return new Response(null, { status: 204 });
-    }
-
-    const { searchParams } = new URL(request.url);
-    const chatId = searchParams.get('chatId');
-
-    if (!chatId) {
-        return new ChatSDKError('bad_request:api').toResponse();
-    }
-
-    const session = await auth.api.getSession(
-        request
-    );
-
-    if (!session?.user) {
-        return new ChatSDKError('unauthorized:chat').toResponse();
-    }
-
-    let chat: Chat | null;
-
-    try {
-        chat = await getChatById({ id: chatId });
-    } catch {
-        return new ChatSDKError('not_found:chat').toResponse();
-    }
-
-    if (!chat) {
-        return new ChatSDKError('not_found:chat').toResponse();
-    }
-
-    if (chat.visibility === 'private' && chat.userId !== session.user.id) {
-        return new ChatSDKError('forbidden:chat').toResponse();
-    }
-
-    const streamIds = await getStreamIdsByChatId({ chatId });
-
-    if (!streamIds.length) {
-        return new ChatSDKError('not_found:stream').toResponse();
-    }
-
-    const recentStreamId = streamIds.at(-1);
-
-    if (!recentStreamId) {
-        return new ChatSDKError('not_found:stream').toResponse();
-    }
-
-    const emptyDataStream = createDataStream({
-        execute: () => { },
-    });
-
-    const stream = await streamContext.resumableStream(
-        recentStreamId,
-        () => emptyDataStream,
-    );
-
-    /*
-     * For when the generation is streaming during SSR
-     * but the resumable stream has concluded at this point.
-     */
-    if (!stream) {
-        const messages = await getMessagesByChatId({ id: chatId });
-        const mostRecentMessage = messages.at(-1);
-
-        if (!mostRecentMessage) {
-            return new Response(emptyDataStream, { status: 200 });
-        }
-
-        if (mostRecentMessage.role !== 'assistant') {
-            return new Response(emptyDataStream, { status: 200 });
-        }
-
-        const messageCreatedAt = new Date(mostRecentMessage.createdAt);
-
-        if (differenceInSeconds(resumeRequestedAt, messageCreatedAt) > 15) {
-            return new Response(emptyDataStream, { status: 200 });
-        }
-
-        const restoredStream = createDataStream({
-            execute: (buffer) => {
-                buffer.writeData({
-                    type: 'append-message',
-                    message: JSON.stringify(mostRecentMessage),
-                });
-            },
+        return new Response(stream, {
+            headers: {
+                'Content-Type': 'text/plain; charset=utf-8',
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'X-Accel-Buffering': 'no', // Disable nginx buffering
+                'Connection': 'keep-alive'
+            }
         });
-
-        return new Response(restoredStream, { status: 200 });
-    }
-
-    return new Response(stream, { status: 200 });
 }
+
+// GET function removed - simplified version

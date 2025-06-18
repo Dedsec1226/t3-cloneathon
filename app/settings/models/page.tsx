@@ -15,18 +15,26 @@ export default function ModelsPage() {
       description: 'Models optimized for complex reasoning and problem-solving',
       models: [
         {
-          name: 'Claude 3 Opus',
-          id: 't3-claude-3-opus',
+          name: 'Claude 4 Opus',
+          id: 't3-claude-4-opus',
           provider: 'Anthropic',
-          description: 'Most powerful Claude model available',
+          description: 'Most powerful Claude 4 model available',
           features: ['Advanced Reasoning', 'Long Context', 'Multimodal'],
-          isNew: false
+          isNew: true
+        },
+        {
+          name: 'Claude 4 Sonnet',
+          id: 't3-claude-4-sonnet',
+          provider: 'Anthropic',
+          description: 'Latest Claude 4 with enhanced capabilities',
+          features: ['Fast Processing', 'Code Generation', 'Analysis'],
+          isNew: true
         },
         {
           name: 'Claude 3.5 Sonnet',
           id: 't3-claude-3-5-sonnet',
           provider: 'Anthropic',
-          description: 'High performance with balanced capabilities',
+          description: 'Legacy high performance model',
           features: ['Fast Processing', 'Code Generation', 'Analysis'],
           isNew: false
         },
@@ -78,18 +86,18 @@ export default function ModelsPage() {
       description: 'Models optimized for programming and development tasks',
       models: [
         {
-          name: 'Claude Sonnet 4 (Code)',
-          id: 't3-code-best',
+          name: 'Claude 4 Sonnet (Code)',
+          id: 't3-claude-4-sonnet',
           provider: 'Anthropic',
-          description: 'Best coding assistant with advanced capabilities',
+          description: 'Best coding assistant with Claude 4 capabilities',
           features: ['Code Generation', 'Debugging', 'Architecture'],
           isNew: true
         },
         {
-          name: 'Claude 3.7 Reasoning',
-          id: 't3-code-reasoning',
+          name: 'Claude 4 Opus (Code)',
+          id: 't3-claude-4-opus',
           provider: 'Anthropic',
-          description: 'Coding with step-by-step reasoning',
+          description: 'Most powerful coding with step-by-step reasoning',
           features: ['Code Reasoning', 'Problem Analysis', 'Optimization'],
           isNew: true
         },
@@ -235,9 +243,7 @@ export default function ModelsPage() {
                         </Badge>
                       ))}
                     </div>
-                    <Button variant="outline" className="w-full text-sm">
-                      Use {model.name}
-                    </Button>
+
                   </CardContent>
                 </Card>
               ))}
@@ -260,8 +266,8 @@ export default function ModelsPage() {
         <CardContent>
           <div className="grid gap-4 md:grid-cols-4">
             <div className="text-center p-4 bg-muted/50 rounded-lg">
-              <div className="text-2xl font-bold text-primary">60+</div>
-              <div className="text-sm text-muted-foreground">Available Models</div>
+              <div className="text-2xl font-bold text-primary">25+</div>
+              <div className="text-sm text-muted-foreground">AI Models</div>
             </div>
             <div className="text-center p-4 bg-muted/50 rounded-lg">
               <div className="text-2xl font-bold text-primary">5</div>

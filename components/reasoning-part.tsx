@@ -54,7 +54,15 @@ const MarkdownRenderer = React.memo(({ content }: { content: string }) => {
       );
     },
     paragraph(text: ReactNode) {
-      return <p className="mb-3 last:mb-0">{text}</p>;
+      const textWithKeys = Array.isArray(text) 
+        ? text.map((child, index) => (
+            React.isValidElement(child) 
+              ? React.cloneElement(child as React.ReactElement, { key: `paragraph-${index}` })
+              : <span key={`paragraph-${index}`}>{child}</span>
+          ))
+        : text;
+        
+      return <p className="mb-3 last:mb-0">{textWithKeys}</p>;
     },
     heading(text: ReactNode, level: number) {
       const Tag = `h${level}` as keyof JSX.IntrinsicElements;
@@ -67,10 +75,26 @@ const MarkdownRenderer = React.memo(({ content }: { content: string }) => {
         h6: "text-xs font-medium mb-1 mt-2",
       };
       
+      const textWithKeys = Array.isArray(text) 
+        ? text.map((child, index) => (
+            React.isValidElement(child) 
+              ? React.cloneElement(child as React.ReactElement, { key: `heading-${index}` })
+              : <span key={`heading-${index}`}>{child}</span>
+          ))
+        : text;
+      
       const className = classes[`h${level}` as keyof typeof classes] || "";
-      return <Tag className={className}>{text}</Tag>;
+      return <Tag className={className}>{textWithKeys}</Tag>;
     },
     link(href: string, text: ReactNode) {
+      const textWithKeys = Array.isArray(text) 
+        ? text.map((child, index) => (
+            React.isValidElement(child) 
+              ? React.cloneElement(child as React.ReactElement, { key: `link-${index}` })
+              : <span key={`link-${index}`}>{child}</span>
+          ))
+        : text;
+        
       return (
         <a 
           href={href}
@@ -78,21 +102,45 @@ const MarkdownRenderer = React.memo(({ content }: { content: string }) => {
           rel="noopener noreferrer"
           className="text-blue-600 dark:text-blue-400 hover:underline"
         >
-          {text}
+          {textWithKeys}
         </a>
       );
     },
     list(body: ReactNode, ordered: boolean) {
       const Type = ordered ? 'ol' : 'ul';
-      return <Type className={`${ordered ? "list-decimal" : "list-disc"} pl-5 mb-3 last:mb-1`}>{body}</Type>;
+      const bodyWithKeys = Array.isArray(body) 
+        ? body.map((child, index) => (
+            React.isValidElement(child) 
+              ? React.cloneElement(child as React.ReactElement, { key: `list-${index}` })
+              : <span key={`list-${index}`}>{child}</span>
+          ))
+        : body;
+        
+      return <Type className={`${ordered ? "list-decimal" : "list-disc"} pl-5 mb-3 last:mb-1`}>{bodyWithKeys}</Type>;
     },
     listItem(text: ReactNode) {
-      return <li className="mb-1">{text}</li>;
+      const textWithKeys = Array.isArray(text) 
+        ? text.map((child, index) => (
+            React.isValidElement(child) 
+              ? React.cloneElement(child as React.ReactElement, { key: `listitem-${index}` })
+              : <span key={`listitem-${index}`}>{child}</span>
+          ))
+        : text;
+        
+      return <li className="mb-1">{textWithKeys}</li>;
     },
     blockquote(text: ReactNode) {
+      const textWithKeys = Array.isArray(text) 
+        ? text.map((child, index) => (
+            React.isValidElement(child) 
+              ? React.cloneElement(child as React.ReactElement, { key: `blockquote-${index}` })
+              : <span key={`blockquote-${index}`}>{child}</span>
+          ))
+        : text;
+        
       return (
         <blockquote className="border-l-2 border-neutral-300 dark:border-neutral-700 pl-3 py-1 my-3 italic">
-          {text}
+          {textWithKeys}
         </blockquote>
       );
     },
@@ -100,25 +148,49 @@ const MarkdownRenderer = React.memo(({ content }: { content: string }) => {
       return <hr className="my-4 border-t border-neutral-200 dark:border-neutral-800" />;
     },
     table(children: ReactNode[]) {
+      const childrenWithKeys = Array.isArray(children) 
+        ? children.map((child, index) => (
+            React.isValidElement(child) 
+              ? React.cloneElement(child as React.ReactElement, { key: `table-${index}` })
+              : <span key={`table-${index}`}>{child}</span>
+          ))
+        : children;
+        
       return (
         <div className="overflow-x-auto mb-3">
           <table className="min-w-full border-collapse text-xs">
-            {children}
+            {childrenWithKeys}
           </table>
         </div>
       );
     },
     tableRow(content: ReactNode) {
-      return <tr className="border-b border-neutral-200 dark:border-neutral-800">{content}</tr>;
+      const contentWithKeys = Array.isArray(content) 
+        ? content.map((child, index) => (
+            React.isValidElement(child) 
+              ? React.cloneElement(child as React.ReactElement, { key: `tablerow-${index}` })
+              : <span key={`tablerow-${index}`}>{child}</span>
+          ))
+        : content;
+        
+      return <tr className="border-b border-neutral-200 dark:border-neutral-800">{contentWithKeys}</tr>;
     },
     tableCell(children: ReactNode[], flags: TableFlags) {
       const align = flags.align ? `text-${flags.align}` : '';
+      const childrenWithKeys = Array.isArray(children) 
+        ? children.map((child, index) => (
+            React.isValidElement(child) 
+              ? React.cloneElement(child as React.ReactElement, { key: `table-cell-${index}` })
+              : <span key={`table-cell-${index}`}>{child}</span>
+          ))
+        : children;
+      
       return flags.header ? (
         <th className={`px-2 py-1 font-semibold bg-neutral-100 dark:bg-neutral-800 ${align}`}>
-          {children}
+          {childrenWithKeys}
         </th>
       ) : (
-        <td className={`px-2 py-1 ${align}`}>{children}</td>
+        <td className={`px-2 py-1 ${align}`}>{childrenWithKeys}</td>
       );
     }
   };

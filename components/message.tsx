@@ -543,12 +543,12 @@ export const Message: React.FC<MessageProps> = ({
               <AlignLeft size={16} className="text-neutral-600 dark:text-neutral-400" />
               <h2 className="font-medium text-sm text-neutral-700 dark:text-neutral-300">Suggested questions</h2>
             </div>
-            <div className="flex flex-col border-t border-neutral-200 dark:border-neutral-800">
+            <div className="flex flex-col">
               {suggestedQuestions.map((question, i) => (
                 <button
                   key={i}
                   onClick={() => handleSuggestedQuestionClick(question)}
-                  className="w-full py-2.5 px-3 text-left flex justify-between items-center border-b border-neutral-200 dark:border-neutral-800 hover:bg-neutral-50/50 dark:hover:bg-neutral-900/50 transition-colors"
+                  className="w-full py-2.5 px-3 text-left flex justify-between items-center hover:bg-neutral-50/50 dark:hover:bg-neutral-900/50 transition-colors"
                 >
                   <span className="text-neutral-700 dark:text-neutral-300 text-sm font-normal pr-3">{question}</span>
                   <Plus size={14} className="text-neutral-600 dark:text-neutral-400 flex-shrink-0" />

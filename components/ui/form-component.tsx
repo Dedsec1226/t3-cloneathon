@@ -26,7 +26,7 @@ const RouteIcon = ({ size = 14, className }: { size?: number; className?: string
         <circle cx="18" cy="5" r="3"/>
     </svg>
 );
-import { checkImageModeration } from '@/app/actions';
+
 
 interface Attachment {
     url: string;
@@ -170,20 +170,16 @@ const models = [
     // ===== FAVORITES (Most Popular) - In your preferred order =====
     // OpenAI Popular Models
     { value: "t3-4o", label: "GPT 4o", icon: OpenAIIcon, iconClass: "text-current", description: "OpenAI's flagship multimodal model", color: "blue", vision: true, reasoning: false, experimental: false, category: "Favorites", pdf: true, fast: false, web: true, imageGeneration: true },
-    { value: "t3-o3-mini", label: "o3 mini", icon: OpenAIIcon, iconClass: "text-current", description: "Latest reasoning model from OpenAI", color: "blue", vision: true, reasoning: true, experimental: false, category: "Favorites", pdf: true, fast: true, web: false, imageGeneration: false },
-    { value: "t3-o1", label: "o1", icon: OpenAIIcon, iconClass: "text-current", description: "Advanced reasoning model", color: "blue", vision: false, reasoning: true, experimental: false, category: "Favorites", pdf: false, fast: false, web: false, imageGeneration: false },
+    { value: "t3-dall-e-3", label: "DALL-E 3", icon: OpenAIIcon, iconClass: "text-current", description: "Advanced AI image generation", color: "blue", vision: false, reasoning: false, experimental: false, category: "Favorites", pdf: false, fast: false, web: false, imageGeneration: true },
     
-    // Anthropic Popular Models
-    { value: "t3-claude-3-5-sonnet", label: "Claude 3.5 Sonnet", icon: AnthropicIcon, iconClass: "text-current", description: "Anthropic's most capable model", color: "violet", vision: true, reasoning: false, experimental: false, category: "Favorites", pdf: true, fast: false, web: false, imageGeneration: false },
-    { value: "t3-claude-3-opus", label: "Claude 3 Opus", icon: AnthropicIcon, iconClass: "text-current", description: "Most powerful Claude model available", color: "violet", vision: true, reasoning: false, experimental: false, category: "Favorites", pdf: true, fast: false, web: false, imageGeneration: false },
-    { value: "t3-claude-3-5-haiku", label: "Claude 3.5 Haiku", icon: AnthropicIcon, iconClass: "text-current", description: "Fast and lightweight Claude", color: "violet", vision: true, reasoning: false, experimental: false, category: "Favorites", pdf: true, fast: true, web: false, imageGeneration: false },
+    // Anthropic Latest Models (Claude 4)
+    { value: "t3-claude-4-sonnet", label: "Claude 4 Sonnet", icon: AnthropicIcon, iconClass: "text-current", description: "Latest Claude 4 Sonnet model", color: "violet", vision: true, reasoning: true, experimental: false, category: "Favorites", pdf: true, fast: false, web: false, imageGeneration: false },
+    { value: "t3-claude-4-opus", label: "Claude 4 Opus", icon: AnthropicIcon, iconClass: "text-current", description: "Most powerful Claude 4 model", color: "violet", vision: true, reasoning: true, experimental: false, category: "Favorites", pdf: true, fast: false, web: false, imageGeneration: false },
+    { value: "t3-claude-3-opus", label: "Claude 3 Opus", icon: AnthropicIcon, iconClass: "text-current", description: "Legacy powerful Claude model", color: "violet", vision: true, reasoning: false, experimental: false, category: "Favorites", pdf: true, fast: false, web: false, imageGeneration: false },
     
-    // Gemini Popular Models
-    { value: "t3-gemini-2-5-flash", label: "Gemini 2.5 Flash", icon: GeminiIcon, iconClass: "text-current", description: "Latest fast Gemini model", color: "gemini", vision: true, reasoning: true, experimental: false, category: "Favorites", pdf: true, fast: true, web: true, imageGeneration: false },
+    // Google Gemini Models
+    { value: "t3-gemini-2-5-flash", label: "Gemini 2.5 Flash", icon: GeminiIcon, iconClass: "text-current", description: "Latest Gemini model with optimized streaming", color: "gemini", vision: true, reasoning: false, experimental: false, category: "Favorites", pdf: true, fast: true, web: true, imageGeneration: false },
     { value: "t3-gemini-1-5-pro", label: "Gemini 1.5 Pro", icon: GeminiIcon, iconClass: "text-current", description: "Professional Gemini model", color: "gemini", vision: true, reasoning: false, experimental: false, category: "Favorites", pdf: true, fast: false, web: false, imageGeneration: false },
-    
-    // Default model
-    { value: "t3-default", label: "Gemini 2.5 Flash", icon: GeminiIcon, iconClass: "text-current", description: "Default model - fast and capable", color: "gemini", vision: true, reasoning: true, experimental: false, category: "Favorites", pdf: true, fast: true, web: true, imageGeneration: false },
 
     // ===== OPENAI MODELS =====
     { value: "t3-4o-mini", label: "GPT 4o mini", icon: OpenAIIcon, iconClass: "text-current", description: "Fast and efficient OpenAI model", color: "blue", vision: true, reasoning: false, experimental: false, category: "OpenAI", pdf: true, fast: true, web: false, imageGeneration: false },
@@ -193,12 +189,14 @@ const models = [
 
 
     // ===== ANTHROPIC MODELS =====
+    { value: "t3-claude-4-sonnet", label: "Claude 4 Sonnet", icon: AnthropicIcon, iconClass: "text-current", description: "Latest Claude 4 Sonnet model", color: "violet", vision: true, reasoning: true, experimental: false, category: "Anthropic", pdf: true, fast: false, web: false, imageGeneration: false },
+    { value: "t3-claude-4-opus", label: "Claude 4 Opus", icon: AnthropicIcon, iconClass: "text-current", description: "Most powerful Claude 4 model", color: "violet", vision: true, reasoning: true, experimental: false, category: "Anthropic", pdf: true, fast: false, web: false, imageGeneration: false },
     { value: "t3-claude-3-5-sonnet", label: "Claude 3.5 Sonnet", icon: AnthropicIcon, iconClass: "text-current", description: "Previous generation Sonnet", color: "violet", vision: true, reasoning: false, experimental: false, category: "Anthropic", pdf: true, fast: false, web: false, imageGeneration: false },
     { value: "t3-claude-3-5-haiku", label: "Claude 3.5 Haiku", icon: AnthropicIcon, iconClass: "text-current", description: "Fast and lightweight Claude", color: "violet", vision: true, reasoning: false, experimental: false, category: "Anthropic", pdf: true, fast: true, web: false, imageGeneration: false },
     { value: "t3-claude-3-opus", label: "Claude 3 Opus", icon: AnthropicIcon, iconClass: "text-current", description: "Legacy powerful Claude model", color: "violet", vision: true, reasoning: false, experimental: false, category: "Anthropic", pdf: true, fast: false, web: false, imageGeneration: false },
 
     // ===== GOOGLE MODELS =====
-    { value: "t3-gemini-2-0-flash", label: "Gemini 2.0 Flash", icon: GeminiIcon, iconClass: "text-current", description: "Latest Gemini model", color: "gemini", vision: true, reasoning: false, experimental: false, category: "Google", pdf: true, fast: true, web: true, imageGeneration: false },
+    { value: "t3-gemini-2-5-flash", label: "Gemini 2.5 Flash", icon: GeminiIcon, iconClass: "text-current", description: "Latest Gemini model with optimized streaming", color: "gemini", vision: true, reasoning: false, experimental: false, category: "Google", pdf: true, fast: true, web: true, imageGeneration: false },
     { value: "t3-gemini-1-5-flash", label: "Gemini 1.5 Flash", icon: GeminiIcon, iconClass: "text-current", description: "Fast Gemini model", color: "gemini", vision: true, reasoning: false, experimental: false, category: "Google", pdf: true, fast: true, web: false, imageGeneration: false },
     { value: "t3-gemini-1-5-pro", label: "Gemini 1.5 Pro", icon: GeminiIcon, iconClass: "text-current", description: "Professional Gemini model", color: "gemini", vision: true, reasoning: false, experimental: false, category: "Google", pdf: true, fast: false, web: false, imageGeneration: false },
 
@@ -296,7 +294,7 @@ const ModelSwitcher: React.FC<ModelSwitcherProps & {
     const [searchQuery, setSearchQuery] = useState('');
     const [showAllModels, setShowAllModels] = useState(false);
     const [internalSelectedFilters, setInternalSelectedFilters] = useState<Set<string>>(new Set());
-    const [showFilters, setShowFilters] = useState(false);
+    const [showFilters, setShowFilters] = useState(true); // Default to true so filters are visible
 
     const isProcessing = status === 'submitted' || status === 'streaming';
     
@@ -587,6 +585,12 @@ const ModelSwitcher: React.FC<ModelSwitcherProps & {
                                 setSearchQuery(e.target.value);
                             }}
                         />
+                        {/* Model count indicator */}
+                        {(activeFilters.size > 0 || searchQuery.trim() !== '') && (
+                            <div className="ml-2 px-2 py-1 rounded-md bg-white/10 text-xs text-white/70">
+                                {capabilityFilteredModels.length} model{capabilityFilteredModels.length !== 1 ? 's' : ''}
+                            </div>
+                        )}
                     </div>
                     
                     {/* Filter Chips */}
@@ -656,6 +660,26 @@ const ModelSwitcher: React.FC<ModelSwitcherProps & {
                                     )}
                                 </motion.button>
                             ))}
+                            {/* Clear all filters button */}
+                            {activeFilters.size > 0 && (
+                                <motion.button
+                                    initial={{ opacity: 0, scale: 0.8 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.8 }}
+                                    transition={{ duration: 0.15 }}
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        setSelectedFilters(new Set());
+                                    }}
+                                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 hover:scale-105 border text-white/60 hover:text-white/80 bg-white/5 border-white/20 hover:border-white/30"
+                                >
+                                    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <path d="M18 6L6 18M6 6l12 12" />
+                                    </svg>
+                                    Clear all
+                                </motion.button>
+                            )}
                         </motion.div>
                     )}
                     
@@ -1229,14 +1253,19 @@ const ModelSwitcher: React.FC<ModelSwitcherProps & {
                             }}
                             data-filter-button
                             className={cn(
-                                "inline-flex items-center justify-center whitespace-nowrap font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent disabled:cursor-not-allowed disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-accent/20 hover:text-accent-foreground disabled:hover:bg-transparent disabled:hover:text-muted-foreground/50 h-8 rounded-md text-xs gap-2 px-2 text-muted-foreground",
-                                showFilters && "bg-accent/20 text-accent-foreground"
+                                "inline-flex items-center justify-center whitespace-nowrap font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent disabled:cursor-not-allowed disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-accent/20 hover:text-accent-foreground disabled:hover:bg-transparent disabled:hover:text-muted-foreground/50 h-8 rounded-md text-xs gap-2 px-2 text-muted-foreground relative",
+                                (showFilters || activeFilters.size > 0) && "bg-accent/20 text-accent-foreground"
                             )}
                             type="button"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-filter h-4 w-4">
                                 <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
                             </svg>
+                            {activeFilters.size > 0 && (
+                                <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full flex items-center justify-center">
+                                    <span className="text-[10px] font-bold text-white">{activeFilters.size}</span>
+                                </div>
+                            )}
                         </button>
                     </div>
                 )}
@@ -1266,14 +1295,19 @@ const ModelSwitcher: React.FC<ModelSwitcherProps & {
                             }}
                             data-filter-button
                             className={cn(
-                                "inline-flex items-center justify-center whitespace-nowrap font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent disabled:cursor-not-allowed disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-accent/20 hover:text-accent-foreground disabled:hover:bg-transparent disabled:hover:text-muted-foreground/50 h-8 rounded-md text-xs gap-2 px-2 text-muted-foreground",
-                                showFilters && "bg-accent/20 text-accent-foreground"
+                                "inline-flex items-center justify-center whitespace-nowrap font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent disabled:cursor-not-allowed disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-accent/20 hover:text-accent-foreground disabled:hover:bg-transparent disabled:hover:text-muted-foreground/50 h-8 rounded-md text-xs gap-2 px-2 text-muted-foreground relative",
+                                (showFilters || activeFilters.size > 0) && "bg-accent/20 text-accent-foreground"
                             )}
                             type="button"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-filter h-4 w-4">
                                 <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
                             </svg>
+                            {activeFilters.size > 0 && (
+                                <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full flex items-center justify-center">
+                                    <span className="text-[10px] font-bold text-white">{activeFilters.size}</span>
+                                </div>
+                            )}
                                         </button>
                                 </div>
                 )}
@@ -1847,13 +1881,24 @@ const FormComponent: React.FC<FormComponentProps> = ({
         setMounted(true);
     }, []);
 
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Reset submitting state when status changes to ready
+    useEffect(() => {
+        if (status === 'ready') {
+            setIsSubmitting(false);
+        }
+    }, [status]);
+
     const onSubmit = useCallback((event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
-        if (status !== 'ready') {
+        if (status !== 'ready' || isSubmitting) {
             toast.error("Please wait for the current response to complete!");
             return;
         }
+
+        setIsSubmitting(true);
 
         // Check if input exceeds character limit
         if (input.length > MAX_INPUT_CHARS) {
@@ -1877,11 +1922,14 @@ const FormComponent: React.FC<FormComponentProps> = ({
             if (fileInputRef.current) {
                 fileInputRef.current.value = '';
             }
+
+            // Reset submitting state after a delay
+            setTimeout(() => setIsSubmitting(false), 2000);
         } else {
             toast.error("Please enter a search query or attach an image.");
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [input, attachments, handleSubmit, setAttachments, fileInputRef, lastSubmittedQueryRef, status, selectedModel, setHasSubmitted]);
+    }, [input, attachments, handleSubmit, setAttachments, fileInputRef, lastSubmittedQueryRef, status, selectedModel, setHasSubmitted, isSubmitting]);
 
     const submitForm = useCallback(() => {
         onSubmit({ preventDefault: () => { }, stopPropagation: () => { } } as React.FormEvent<HTMLFormElement>);
@@ -1974,7 +2022,7 @@ const FormComponent: React.FC<FormComponentProps> = ({
                          suppressHydrationWarning
                      />
 
-                        <div className="rounded-t-3xl p-2 backdrop-blur-lg bg-background border border-border/50" style={{
+                        <div className="rounded-t-3xl pt-2 px-2 backdrop-blur-lg bg-background" style={{
                          paddingBottom: "0px",
                          marginBottom: "0px"
                      } as React.CSSProperties} suppressHydrationWarning>
@@ -1983,9 +2031,9 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                 "--start": "#000000e0",
                                 "--opacity": "0.6"
                             } as React.CSSProperties}>
-                                <div className="relative flex w-full flex-col items-stretch gap-2 rounded-t-2xl border-0 backdrop-blur-md px-3 pt-3 pb-safe text-secondary-foreground outline-0 sm:max-w-3xl bg-[rgb(249,239,250)] dark:bg-[rgb(40,34,44)]" style={{
+                                <div className="relative flex w-full flex-col items-stretch gap-2 rounded-t-2xl border-0 backdrop-blur-md px-3 pt-3 text-secondary-foreground outline-0 sm:max-w-3xl bg-[rgb(249,239,250)] dark:bg-[rgb(40,34,44)]" style={{
                             marginBottom: "0px",
-                            paddingBottom: "max(12px, env(safe-area-inset-bottom))"
+                            paddingBottom: "env(safe-area-inset-bottom)"
                         }} suppressHydrationWarning>
                             <Textarea
                                 ref={inputRef}
@@ -2027,7 +2075,7 @@ const FormComponent: React.FC<FormComponentProps> = ({
                         {/* Toolbar */}
                             <div
                                 className={cn(
-                                "flex justify-between items-center pt-3 mt-2",
+                                "flex justify-between items-center pt-3 mt-2 pb-3",
                                     isProcessing ? "opacity-20! cursor-not-allowed!" : ""
                                 )}
                             suppressHydrationWarning
@@ -2045,7 +2093,7 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                          setShowGroupSelector(!showGroupSelector);
                                          // Close model selector if it's open
                                          setModelSelectorOpen(false);
-                                     }}
+                                     }} 
                                      suppressHydrationWarning
                                  >
                                      <RouteIcon 
@@ -2069,7 +2117,7 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                                  damping: 30,
                                                  duration: 0.2
                                              }}
-                                             className="absolute bottom-full left-0 mb-3 backdrop-blur-md rounded-xl shadow-xl border p-3 z-50 min-w-[220px]"
+                                             className="absolute bottom-full left-0 mb-3 backdrop-blur-md rounded-xl shadow-xl border p-3 z-50 min-w-[220px] fix-pointer-events fix-z-index-higher"
                                              style={{
                                                  backgroundColor: 'rgb(15, 10, 14)',
                                                  borderColor: 'rgb(35, 30, 34)'
@@ -2229,7 +2277,7 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                              >
                                                  <div className="flex flex-col gap-0.5">
                                                      <span className="font-medium text-[11px]">Web Search</span>
-                                                                                                             <span className="text-[10px] text-muted-foreground leading-tight">Search the web for information</span>
+                                                     <span className="text-[10px] text-white leading-tight">Search the web for information</span>
                                                  </div>
                                              </TooltipContent>
                                          </Tooltip>
@@ -2283,7 +2331,7 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                                          e.stopPropagation();
                                                          if (selectedGroup === 'extreme') {
                                                              setSelectedGroup(null);
-                                                            showSwitchNotification(
+                                                             showSwitchNotification(
                                                                  'Chat Mode',
                                                                  'No group selected - default chat mode',
                                                                  <MessageCircle className="size-4" />,
@@ -2294,46 +2342,46 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                                              setSelectedGroup('extreme');
                                                              showSwitchNotification(
                                                                  'Extreme Mode',
-                                                                 'Extreme mode is now active',
+                                                                 'Deep research mode is now active',
                                                                  <Telescope className="size-4" />,
                                                                  'extreme',
                                                                  'group'
                                                              );
                                                          }
-                                                        }}
-                                                        className={cn(
+                                                     }}
+                                                     className={cn(
                                                          "flex items-center gap-1.5 h-8 transition-all duration-300",
                                                          "rounded-full border border-secondary-foreground/10",
-                                                            "hover:shadow-md",
-                                                            selectedGroup === 'extreme'
+                                                         "hover:shadow-md",
+                                                         selectedGroup === 'extreme'
                                                              ? "bg-purple-500 dark:bg-purple-500 text-white px-2"
                                                              : "bg-background text-muted-foreground hover:bg-muted/40 hover:text-foreground px-1.5 w-8",
-                                                        )}
+                                                     )}
                                                      suppressHydrationWarning
-                                                    >
-                                                     <Telescope className="h-3.5 w-3.5" />
+                                                 >
+                                                     <Telescope className="h-3.5 w-3.5 mx-auto" />
                                                      {selectedGroup === 'extreme' && <span className="text-xs font-medium">Extreme Mode</span>}
-                                                    </button>
-                                                </TooltipTrigger>
-                                                <TooltipContent
-                                                    side="bottom"
-                                                    sideOffset={6}
+                                                 </button>
+                                             </TooltipTrigger>
+                                             <TooltipContent
+                                                 side="bottom"
+                                                 sideOffset={6}
                                                  className="border-0 shadow-lg backdrop-blur-xs py-2 px-3"
-                                                >
-                                                    <div className="flex flex-col gap-0.5">
-                                                        <span className="font-medium text-[11px]">Extreme Mode</span>
-                                                        <span className="text-[10px] text-muted-foreground leading-tight">Deep research with multiple sources and analysis</span>
-                                                    </div>
-                                                </TooltipContent>
-                                            </Tooltip>
-                                        ) : (
-                                            <button
-                                                onClick={(e) => {
-                                                    e.preventDefault();
-                                                    e.stopPropagation();
+                                             >
+                                                 <div className="flex flex-col gap-0.5">
+                                                     <span className="font-medium text-[11px]">Extreme Mode</span>
+                                                     <span className="text-[10px] text-white leading-tight">Deep research mode</span>
+                                                 </div>
+                                             </TooltipContent>
+                                         </Tooltip>
+                                     ) : (
+                                         <button
+                                             onClick={(e) => {
+                                                 e.preventDefault();
+                                                 e.stopPropagation();
                                                  if (selectedGroup === 'extreme') {
                                                      setSelectedGroup(null);
-                                                    showSwitchNotification(
+                                                     showSwitchNotification(
                                                          'Chat Mode',
                                                          'No group selected - default chat mode',
                                                          <MessageCircle className="size-4" />,
@@ -2344,27 +2392,29 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                                      setSelectedGroup('extreme');
                                                      showSwitchNotification(
                                                          'Extreme Mode',
-                                                         'Extreme mode is now active',
+                                                         'Deep research mode is now active',
                                                          <Telescope className="size-4" />,
                                                          'extreme',
                                                          'group'
                                                      );
                                                  }
-                                                }}
-                                                className={cn(
+                                             }}
+                                             className={cn(
                                                  "flex items-center gap-1.5 h-8 transition-all duration-300",
                                                  "rounded-full border border-secondary-foreground/10",
-                                                    "hover:shadow-md",
-                                                    selectedGroup === 'extreme'
+                                                 "hover:shadow-md",
+                                                 selectedGroup === 'extreme'
                                                      ? "bg-purple-500 dark:bg-purple-500 text-white px-2"
                                                      : "bg-background text-muted-foreground hover:bg-muted/40 hover:text-foreground px-1.5 w-8",
-                                                )}
+                                             )}
                                              suppressHydrationWarning
-                                            >
-                                             <Telescope className="h-3.5 w-3.5" />
-                                             {selectedGroup === 'extreme' && <span className="text-xs font-medium">Extreme Mode</span>}
-                                            </button>
-                                        )}
+                                         >
+                                             <Telescope className="h-3.5 w-3.5 mx-auto" />
+                                             {selectedGroup === 'extreme' && <span className="text-xs font-medium">Extreme</span>}
+                                         </button>
+                                     )}
+
+
                                     </div>
                                 </div>
 

@@ -2,8 +2,15 @@ import { t3 } from '@/ai/providers';
 import { streamText, CoreMessage } from 'ai';
 import { NextRequest } from 'next/server';
 import { serverEnv } from '@/env/server';
+import { measureTTFB } from './debug-gemini';
+
+// Using Node.js runtime due to web search requiring Node.js modules (http, https)
+export const runtime = 'nodejs';
 
 export async function POST(request: NextRequest) {
+  // Start TTFB measurement for Gemini models
+  const ttfbTracker = measureTTFB();
+  
   try {
     const body = await request.json();
     const { messages, model, group, id, timezone, selectedVisibilityType } = body;
@@ -11,14 +18,64 @@ export async function POST(request: NextRequest) {
     console.log('API Request received:', { 
       model, 
       group, 
-      messagesCount: messages?.length,
+      groupType: typeof group,
+      groupIsNull: group === null,
+      groupIsUndefined: group === undefined,
+      messagesLength: messages?.length,
       chatId: id 
     });
 
-    // Default to t3-gemini-2-5-flash if no model specified
-    const selectedModel = model || 't3-gemini-2-5-flash';
+    // Handle web search with simplified API
+    if (group === 'web') {
+      console.log(`🔍 ROUTING TO WEB SEARCH: Using simplified web search API for group: ${group}`);
+      
+      // Use the simplified web search route - pass the already parsed body
+      const { POST: webPost } = await import('./web/route');
+      
+      // Create a new request with the parsed body
+      const newRequest = new Request(request.url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...Object.fromEntries(request.headers.entries())
+        },
+        body: JSON.stringify(body)
+      });
+      
+      console.log(`✅ WEB SEARCH: Successfully routed to web/route.ts`);
+      return await webPost(newRequest as any);
+    }
+
+    // Handle extreme mode and other complex features
+    if (group === 'extreme' || group === 'academic' || group === 'youtube' || group === 'reddit' || group === 'x' || group === 'analysis') {
+      console.log(`🚀 ROUTING TO COMPLEX: Using complex route logic directly for group: ${group}`);
+      
+      // Import and use the complex route directly to maintain chat context
+      const { POST: complexPost } = await import('./route-complex');
+      
+      // Create a new request with the same body for the complex route
+      const newRequest = new Request(request.url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...Object.fromEntries(request.headers.entries())
+        },
+        body: JSON.stringify(body)
+      });
+      
+      console.log(`✅ COMPLEX: Successfully routed to route-complex.ts for ${group}`);
+      return await complexPost(newRequest as any);
+    }
+
+    // Log TTFB for Gemini models
+    if (model?.includes('gemini')) {
+      ttfbTracker.logFirstByte();
+    }
+
+    // Default to t3-4o if no model specified
+    const selectedModel = model || 't3-4o';
     
-    // Use the selected model or fallback to t3-gemini-2-5-flash
+    // Use the selected model or fallback to t3-4o
     const modelToUse = selectedModel;
     
     console.log(`Using model: ${modelToUse}`);
@@ -54,22 +111,33 @@ export async function POST(request: NextRequest) {
       const languageModel = t3.languageModel(modelToUse);
       console.log('Language model created successfully for:', modelToUse);
       
-      // Stream the response
+      // Stream the response with ChatGPT-like behavior
       const result = await streamText({
         model: languageModel,
         messages: finalMessages,
-        maxTokens: 4000,
+        maxTokens: 512, // Optimized for faster streaming (per playbook)
         temperature: 0.7,
+        // Optimizations for OpenAI models
+        ...(modelToUse.includes('gpt') && {
+          // Add timeout for faster responses
+          timeout: 10000,
+        }),
+        // Throttle Gemini models for ChatGPT-like streaming experience
+        ...(modelToUse.includes('gemini') && {
+          experimental_streamingChunks: false, // Disable super-fast chunks for natural appearance
+        }),
       });
       
       console.log('StreamText result created successfully');
       
-      // Create the response with proper headers
+      // Create the response with proper streaming headers
       const response = result.toDataStreamResponse({
         headers: {
-          'Content-Type': 'text/plain; charset=utf-8',
-          'Cache-Control': 'no-cache',
+          'Content-Type': 'text/event-stream',
+          'Cache-Control': 'no-cache, no-transform',
           'Connection': 'keep-alive',
+          'Transfer-Encoding': 'chunked',
+          'X-Accel-Buffering': 'no', // Disable nginx buffering
         },
       });
       
@@ -121,6 +189,14 @@ function getSystemPrompt(group: string | null): string {
   const basePrompt = `You are T3 Chat, an advanced AI assistant. You are helpful, informative, and engaging. Always provide accurate, well-structured responses.`;
   
   switch (group) {
+    case 'web':
+      return `${basePrompt} You have access to real-time web search capabilities. When users ask questions that require current information, recent data, or specific facts that might have changed, you should search the web to provide accurate, up-to-date answers. Use web search proactively for:
+      - Current events and news
+      - Recent data, statistics, or research
+      - Real-time information (prices, weather, stock prices)
+      - Specific facts about people, companies, or events
+      - Any information that might have changed recently
+      Always cite your sources and provide links when using web search results.`;
     case 'search':
       return `${basePrompt} You specialize in information discovery and comprehensive search results. Help users find exactly what they're looking for with detailed, relevant information.`;
     case 'academic':
@@ -131,6 +207,8 @@ function getSystemPrompt(group: string | null): string {
       return `${basePrompt} You excel at creative tasks including writing, brainstorming, storytelling, and artistic endeavors. Be imaginative and inspiring while maintaining quality.`;
     case 'analysis':
       return `${basePrompt} You specialize in data analysis, critical thinking, and detailed examination of complex topics. Break down problems systematically and provide thorough insights.`;
+    case 'extreme':
+      return `${basePrompt} You are in extreme research mode. You have access to advanced research tools and can perform deep, multi-step analysis. Use the extreme_search tool for comprehensive research tasks that require detailed investigation and analysis.`;
     case null:
     case undefined:
       return basePrompt;

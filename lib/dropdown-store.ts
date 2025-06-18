@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 
+
+
 interface DropdownState {
   modelSelectorOpen: boolean;
   filterDropdownOpen: boolean;
@@ -11,6 +13,8 @@ interface DropdownState {
   forceModelSelectorOpen: () => void;
   handleFilterInteraction: () => void;
 }
+
+
 
 export const useDropdownStore = create<DropdownState>((set, get) => ({
   modelSelectorOpen: false,
@@ -50,3 +54,4 @@ export const useDropdownStore = create<DropdownState>((set, get) => ({
       filterDropdownOpen: true // Keep filter dropdown open too
     })),
 })); 
+

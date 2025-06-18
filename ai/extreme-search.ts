@@ -92,19 +92,24 @@ const searchWeb = async (
     query: string,
     category?: SearchCategory
 ) => {
-    const { results } = await exa.searchAndContents(query, {
-        numResults: 5,
-        type: "keyword",
-        ...(category ? {
-            category: category as SearchCategory
-        } : {}),
+    // Enhance query based on category
+    const enhancedQuery = category ? `${query} ${category}` : query;
+    
+    const { results } = await exa.searchAndContents(enhancedQuery, {
+        numResults: 2, // Reduced to 2 for rate limit optimization
+        type: "auto", 
+        text: {
+            maxCharacters: 800, // Reduced content per result for faster processing
+            includeHtmlTags: false
+        },
+        livecrawl: "always",
     });
     return results.map((r) => ({
         title: r.title,
         url: r.url,
-        content: r.text,
-        publishedDate: r.publishedDate,
-        favicon: r.favicon,
+        content: r.text || "",
+        publishedDate: r.publishedDate || "",
+        favicon: r.favicon || "",
     })) as SearchResult[];
 };
 
@@ -112,10 +117,10 @@ const getContents = async (links: string[]) => {
     const result = await exa.getContents(
         links,
         {
-            text: {
-                maxCharacters: 3000,
-                includeHtmlTags: false
-            },
+                    text: {
+            maxCharacters: 1500,
+            includeHtmlTags: false
+        },
             livecrawl: "always",
         },
     )
@@ -132,6 +137,7 @@ const getContents = async (links: string[]) => {
 const extremeSearch = async (
     prompt: string,
     dataStream: DataStreamWriter,
+    selectedModel: string = "t3-default",
 ): Promise<Research> => {
     dataStream.writeMessageAnnotation({
         status: { title: "Beginning autonomous research" },
@@ -149,31 +155,33 @@ const extremeSearch = async (
 
     // plan out the research
     const { object: plan } = await generateObject({
-        model: t3.languageModel("t3-grok-3"),
+        model: t3.languageModel(selectedModel),
         schema: z.object({
             plan: z.array(
                 z.object({
                     title: z.string().min(10).max(70).describe("A title for the research topic"),
-                    todos: z.array(z.string()).min(3).max(5).describe("A list of what to research for the given title"),
+                    todos: z.array(z.string()).min(1).max(1).describe("Exactly 1 specific, focused search query for the given title"),
                 })
-            ).min(1).max(5),
+            ).min(2).max(3),
         }),
         prompt: `
-Plan out the research for the following topic: ${prompt}. 
+Create a comprehensive research plan for: ${prompt}
 
-Plan Guidelines:
-- Break down the topic into key aspects to research
-- Generate specific, diverse search queries for each aspect
-- Search for relevant information using the web search tool
-- Analyze the results and identify important facts and insights
-- The plan is limited to 15 actions, do not exceed this limit
-- Follow up with more specific queries as you learn more
-- No need to synthesize your findings into a comprehensive response, just return the results
-- The plan should be concise and to the point, no more than 10 items
-- Keep the titles concise and to the point, no more than 70 characters
-- Add todos for code execution if it is relevant to the user's prompt
-- Mention any need for visualizations in the plan
-- Make the plan technical and specific to the topic`,
+REQUIREMENTS:
+- Generate 2-3 research sections covering the most essential aspects only
+- Each section should have 1 focused search query
+- Focus on authoritative sources and key concepts
+- Target 2-3 total search actions for efficient coverage (rate limit optimization)
+- Make each search query unique and concise (avoid duplicates)
+- Cover core concepts and practical applications
+- Keep searches highly focused and specific
+- Prioritize quality over quantity - fewer, better searches
+
+SEARCH QUERY STYLE:
+- Be specific and technical
+- Include measurement units, specific terms, recent years
+- Vary between broad concepts and detailed specifics
+- Target different types of sources (academic, news, technical)`,
     });
 
     console.log(plan.plan);
@@ -187,48 +195,25 @@ Plan Guidelines:
         plan: plan.plan
     });
 
+    // Add explicit instruction annotations
+    dataStream.writeMessageAnnotation({
+        status: { title: `Starting systematic research execution - ${totalTodos} searches planned` },
+    });
+
     let toolResults: any[] = [];
 
     // Create the autonomous research agent with tools
     const { text } = await generateText({
-        model: t3.languageModel("t3-default"),
-        maxSteps: totalTodos + 2,
-        system: `
-You are an autonomous deep research analyst. Your goal is to research the given research plan thoroughly with the given tools.
+        model: t3.languageModel(selectedModel),
+        maxSteps: Math.min(totalTodos, 4), // Limit to number of planned searches
+        system: `Execute ALL ${totalTodos} searches using webSearch tool:
 
-Today is ${new Date().toISOString()}.
+${plan.plan.map((item, idx) => `${idx + 1}. "${item.todos[0]}"`).join('\n')}
 
-For searching:
-- Make your search queries specific and concise
-- Search queries should be concise and to the point, no more than 10 words
-- Call the tool one time for each todo not all at once
-- Vary your queries to explore different perspectives
-- The search queries should be concise and to the point, no more than 10 words
-- Include exact metrics, dates, or technical terms when relevant
-- As you learn from results, make follow-up queries more specific
-- Try to be a little technical and specific in your queries
-- Do not use the same query twice to avoid duplicates
-- Do not use the same category twice to avoid duplicates
-- Use the category if it is relevant to the query
-
-For code:
-- Use the code runner tool to run code for any data analysis or calculations
-- There are pre installed libraries in the sandbox like pandas, numpy, scipy, keras, seaborn and matplotlib.
-- If the code is related to the research plan, use the code runner tool
-- No need save the plot images or run any sort of file operations, just do a plt.show()
-- The best charts to plot are line charts.
-- the previous code is not in scope or imported, so you will have to reimpement the code and reimport the libraries
-
-For research:
-- Carefully follow the plan, do not skip any steps
-- Do not use the same query twice to avoid duplicates
-- Plan is limited to ${totalTodos} actions with 2 extra actions in case of errors, do not exceed this limit
-
-Research Plan:
-${JSON.stringify(plan.plan)}
-`,
+CRITICAL: Complete all ${totalTodos} searches systematically. Use categories: research paper, news, company. STOP immediately after completing all ${totalTodos} searches - do not call additional tools.`,
         prompt,
         temperature: 0,
+        toolChoice: 'required', // Ensure searches are executed
         tools: {
             codeRunner: {
                 description: 'Run Python code in a sandbox',
@@ -286,6 +271,12 @@ ${JSON.stringify(plan.plan)}
                     console.log("Web search query:", query);
                     console.log("Category:", category);
 
+                    // Add thinking annotation - ChatGPT style
+                    dataStream.writeMessageAnnotation({
+                        type: "thinking",
+                        content: `🔍 Searching for information about "${query}"${category ? ` in ${category} sources` : ''}...`
+                    });
+
                     dataStream.writeMessageAnnotation({
                         status: { title: `Searching the web for "${query}"` },
                     });
@@ -300,6 +291,12 @@ ${JSON.stringify(plan.plan)}
 
                     let results = await searchWeb(query, category);
                     console.log(`Found ${results.length} results for query "${query}"`);
+
+                    // Add thinking annotation about results found
+                    dataStream.writeMessageAnnotation({
+                        type: "thinking",
+                        content: `📊 Found ${results.length} relevant sources. Analyzing content...`
+                    });
 
                     // Add these sources to our total collection
                     allSources.push(...results);
@@ -367,12 +364,77 @@ ${JSON.stringify(plan.plan)}
             console.log("Step:", step.stepType);
             if (step.toolResults) {
                 toolResults.push(...step.toolResults);
+                
+                // Add progress annotation
+                const completedSearches = toolResults.filter(r => r.toolName === "webSearch").length;
+                dataStream.writeMessageAnnotation({
+                    type: "thinking",
+                    content: `✅ Search ${completedSearches}/${totalTodos} complete`
+                });
             }
         },
     });
 
     dataStream.writeMessageAnnotation({
-        status: { title: "Research completed" },
+        status: { title: "Synthesizing research findings..." },
+    });
+
+    // Add thinking annotation for synthesis
+    dataStream.writeMessageAnnotation({
+        type: "thinking",
+        content: `🧠 Analyzing ${allSources.length} sources and compiling comprehensive research report...`
+    });
+
+    // Deduplicate sources
+    const uniqueSources = Array.from(
+        new Map(
+            allSources.map((s) => [s.url, s])
+        ).values()
+    );
+
+    // Create a comprehensive research synthesis
+    const { text: synthesizedReport } = await generateText({
+        model: t3.languageModel(selectedModel),
+        system: SYSTEM_PROMPT + `
+
+CRITICAL SYNTHESIS INSTRUCTIONS:
+- You are now in the SYNTHESIS PHASE of extreme research
+- Compile ALL collected sources into a comprehensive, well-structured research report
+- Use markdown formatting with clear headers, subheaders, and bullet points
+- Include inline citations with [source title](url) format
+- Provide executive summary, key findings, detailed analysis, and conclusions
+- Be thorough but concise - this is the final deliverable
+- Synthesize information across sources to identify patterns and insights
+- Present conflicting viewpoints if they exist
+- Include specific data, statistics, and examples from the sources`,
+        prompt: `Based on the research conducted for: "${prompt}"
+
+SOURCES COLLECTED (${uniqueSources.length} total):
+${uniqueSources.map((source, i) => `
+${i + 1}. **${source.title}**
+   URL: ${source.url}
+   Content: ${source.content.slice(0, 1000)}${source.content.length > 1000 ? '...' : ''}
+   Published: ${source.publishedDate || 'Unknown'}
+`).join('\n')}
+
+RESEARCH PLAN EXECUTED:
+${plan.plan.map((item, idx) => `${idx + 1}. ${item.title}: "${item.todos[0]}"`).join('\n')}
+
+Please synthesize this research into a comprehensive report that addresses the original query: "${prompt}"
+
+Structure your response as a complete research report with:
+1. Executive Summary
+2. Key Findings
+3. Detailed Analysis (with subsections as needed)
+4. Sources and Evidence
+5. Conclusions and Implications
+
+Use proper markdown formatting and include inline citations.`,
+        temperature: 0.3,
+    });
+
+    dataStream.writeMessageAnnotation({
+        status: { title: "Research synthesis completed" },
     });
 
     const chartResults = toolResults.filter(result =>
@@ -388,24 +450,20 @@ ${JSON.stringify(plan.plan)}
 
     console.log("Tool results:", toolResults);
     console.log("Charts:", charts);
-    console.log("Sources:", allSources[2]);
+    console.log("Unique sources:", uniqueSources.length);
 
     return {
-        text,
+        text: synthesizedReport, // Return the synthesized report instead of raw agent text
         toolResults,
-        sources: Array.from(
-            new Map(
-                allSources.map((s) => [
-                    s.url,
-                    { ...s, content: s.content.slice(0, 3000) + "..." },
-                ]),
-            ).values(),
-        ),
+        sources: uniqueSources.map(s => ({
+            ...s,
+            content: s.content.slice(0, 1500) + (s.content.length > 1500 ? "..." : "")
+        })),
         charts,
     };
 };
 
-export const extremeSearchTool = (dataStream: DataStreamWriter) =>
+export const extremeSearchTool = (dataStream: DataStreamWriter, selectedModel: string = "t3-default") =>
     tool({
         description: "Use this tool to conduct an extreme search on a given topic.",
         parameters: z.object({
@@ -418,7 +476,7 @@ export const extremeSearchTool = (dataStream: DataStreamWriter) =>
         execute: async ({ prompt }) => {
             console.log({ prompt });
 
-            const research = await extremeSearch(prompt, dataStream);
+            const research = await extremeSearch(prompt, dataStream, selectedModel);
 
             return {
                 research: {

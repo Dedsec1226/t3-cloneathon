@@ -2,7 +2,7 @@
 /* eslint-disable @next/next/no-img-element */
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Globe, Search, ExternalLink, Calendar, ImageIcon, X, ChevronLeft, ChevronRight, Check } from 'lucide-react';
+import { Globe, Search, ExternalLink, Calendar, ImageIcon, X, ChevronLeft, ChevronRight, Check, Brain, FileText } from 'lucide-react';
 import {
     Accordion,
     AccordionContent,
@@ -17,6 +17,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import Image from 'next/image';
 import PlaceholderImage from './placeholder-image';
+import { MarkdownRenderer } from './markdown';
 
 type SearchImage = {
     url: string;
@@ -39,6 +40,8 @@ type SearchQueryResult = {
 
 type MultiSearchResponse = {
     searches: SearchQueryResult[];
+    synthesizedReport?: string | null;
+    hasContent?: boolean;
 };
 
 type MultiSearchArgs = {
@@ -524,6 +527,15 @@ const ImageGrid = ({ images, showAll = false }: ImageGridProps) => {
     );
 };
 
+// Synthesized Report Component
+const SynthesizedReport = ({ report }: { report: string }) => {
+    return (
+        <div className="w-full mb-4 prose prose-sm max-w-none dark:prose-invert">
+            <MarkdownRenderer content={report} />
+        </div>
+    );
+};
+
 const MultiSearch: React.FC<{ 
     result: MultiSearchResponse | null; 
     args: MultiSearchArgs;
@@ -546,6 +558,11 @@ const MultiSearch: React.FC<{
 
     return (
         <div className="w-full space-y-3">
+            {/* Display synthesized report at the top */}
+            {result.synthesizedReport && (
+                <SynthesizedReport report={result.synthesizedReport} />
+            )}
+
             <Accordion type="single" collapsible defaultValue="search" className="w-full">
                 <AccordionItem value="search" className="border-none">
                     <AccordionTrigger

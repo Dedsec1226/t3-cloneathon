@@ -103,7 +103,7 @@ export function CurrencyConverter({ toolInvocation, result }: any) {
   );
 }
 
-export function ExtremeSearch({ toolInvocation, annotations }: any) {
+export function ExtremeSearchPlaceholder({ toolInvocation, annotations }: any) {
   return (
     <div className="p-4 border rounded-lg">
       <h3 className="font-medium">Extreme Search</h3>
@@ -121,14 +121,7 @@ export function MemoryManager({ result }: { result: any }) {
   );
 }
 
-export function MCPServerList({ servers, query, error }: any) {
-  return (
-    <div className="p-4 border rounded-lg">
-      <h3 className="font-medium">MCP Servers</h3>
-      <p className="text-sm text-neutral-600">MCP server list would be displayed here</p>
-    </div>
-  );
-}
+
 
 export function RedditSearch({ result, args }: any) {
   return (
