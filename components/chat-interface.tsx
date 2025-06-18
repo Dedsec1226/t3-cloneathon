@@ -68,11 +68,6 @@ const ChatInterface = memo(({ initialChatId, initialMessages, initialVisibility 
     const [selectedCategoryButton, setSelectedCategoryButton] = useState<string | null>(null);
     const [hasSubmitted, setHasSubmitted] = React.useState(false);
     
-    // **DEBUG: Log selectedGroup changes**
-    useEffect(() => {
-        console.log("🔄 SELECTED GROUP CHANGED:", selectedGroup);
-    }, [selectedGroup]);
-
     const [hasManuallyScrolled, setHasManuallyScrolled] = useState(false);
     const [showScrollToBottom, setShowScrollToBottom] = useState(false);
     const isAutoScrollingRef = useRef(false);
@@ -297,7 +292,7 @@ const ChatInterface = memo(({ initialChatId, initialMessages, initialVisibility 
         },
         initialMessages: initialMessages,
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }), [chatId, selectedModel, selectedGroup, selectedVisibilityType, initialChatId]);
+    }), [chatId, initialChatId]); // Only recreate useChat when chatId changes, not on model/group changes
 
     // Wrap useChat in try-catch to prevent any internal errors from bubbling up
     let chatHookResult;
@@ -336,6 +331,16 @@ const ChatInterface = memo(({ initialChatId, initialMessages, initialVisibility 
         error,
         experimental_resume
     } = chatHookResult;
+
+    // **DEBUG: Log selectedGroup changes**
+    useEffect(() => {
+        console.log("🔄 SELECTED GROUP CHANGED:", selectedGroup, "Messages count:", messages.length);
+    }, [selectedGroup, messages.length]);
+    
+    // **DEBUG: Log when useChat would have been recreated (but now shouldn't be)**
+    useEffect(() => {
+        console.log("🔧 Model/Group changed, but useChat should NOT reset:", { selectedModel, selectedGroup, selectedVisibilityType });
+    }, [selectedModel, selectedGroup, selectedVisibilityType]);
 
     useAutoResume({
         autoResume: true,
@@ -419,6 +424,17 @@ const ChatInterface = memo(({ initialChatId, initialMessages, initialVisibility 
             setSuggestedQuestions([]);
         }
     }, [status]);
+
+    // Auto-focus input field when streaming ends
+    useEffect(() => {
+        // Focus input when streaming ends and there are messages
+        if (status === 'ready' && messages.length > 0 && inputRef.current) {
+            // Small delay to ensure the streaming animation is complete
+            setTimeout(() => {
+                inputRef.current?.focus();
+            }, 100);
+        }
+    }, [status, messages.length]);
 
     const lastUserMessageIndex = useMemo(() => {
         for (let i = messages.length - 1; i >= 0; i--) {
@@ -514,6 +530,12 @@ const ChatInterface = memo(({ initialChatId, initialMessages, initialVisibility 
         setAnyDialogOpen(commandDialogOpen);
     }, [commandDialogOpen]);
 
+    // Force reset dialog states on mount to clear any stuck states
+    useEffect(() => {
+        setCommandDialogOpen(false);
+        setAnyDialogOpen(false);
+    }, []);
+
     // Keyboard shortcut for command dialog
     useEffect(() => {
         const down = (e: KeyboardEvent) => {
@@ -584,14 +606,16 @@ const ChatInterface = memo(({ initialChatId, initialMessages, initialVisibility 
                 />
 
                 {/* Chat History Dialog */}
-                <ChatHistoryDialog
-                    open={commandDialogOpen}
-                    onOpenChange={(open: boolean) => {
-                        setCommandDialogOpen(open);
-                        setAnyDialogOpen(open);
-                    }}
-                    user={user}
-                />
+                <div className="dialog-layer">
+                    <ChatHistoryDialog
+                        open={commandDialogOpen}
+                        onOpenChange={(open: boolean) => {
+                            setCommandDialogOpen(open);
+                            setAnyDialogOpen(open);
+                        }}
+                        user={user}
+                    />
+                </div>
 
                 {/* Sign-in Prompt Dialog */}
                 {/* <SignInPromptDialog
@@ -605,7 +629,7 @@ const ChatInterface = memo(({ initialChatId, initialMessages, initialVisibility 
                 /> */}
 
                 {/* FIXED: Use consistent layout that doesn't jump between states */}
-                <div className="flex-1 w-full relative overflow-hidden">
+                <div className="flex-1 w-full relative overflow-hidden content-layer">
                     {/* Main scrollable content area with consistent positioning */}
                     <div className={`h-full ${
                         status === 'ready' && messages.length === 0
@@ -814,7 +838,7 @@ const ChatInterface = memo(({ initialChatId, initialMessages, initialVisibility 
                     {((user && isOwner) || 
                       !initialChatId || 
                       (!user && selectedVisibilityType === 'private')) && (
-                        <div className="fixed bottom-0 left-0 right-0 z-30 bg-gradient-to-t from-background via-background/95 to-background/80 backdrop-blur-sm border-t border-border/30">
+                        <div className="fixed bottom-0 left-0 right-0 form-layer bg-gradient-to-t from-background via-background/95 to-background/80 backdrop-blur-sm border-t border-border/30 force-pointer-events fix-hit-testing">
                             <div className="w-full max-w-3xl mx-auto px-4 pt-3">
                             <FormComponent
                                 chatId={chatId}

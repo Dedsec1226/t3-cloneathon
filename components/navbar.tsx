@@ -325,8 +325,8 @@ const Navbar = memo(({
 
             {/* Right side - settings, theme toggle and user profile */}
             <div className="flex-1 flex justify-end items-center gap-3">
-                {/* Settings and theme toggle group - always visible */}
-                <div className="pointer-events-auto">
+                {/* Settings and theme toggle group - always visible and clickable */}
+                <div className="force-pointer-events relative z-50 fix-hit-testing">
                     <div className="flex flex-row items-center bg-gradient-noise-top text-muted-foreground gap-0.5 rounded-md p-1 transition-all rounded-bl-xl">
 
                         <Tooltip>

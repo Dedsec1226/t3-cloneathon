@@ -309,6 +309,27 @@
     backface-visibility: hidden;
   }
 
+  /* Ensure text inputs work properly */
+  input, textarea, button, a, [role="button"] {
+    pointer-events: auto !important;
+  }
+
+  /* Fix form interactions */
+  form * {
+    pointer-events: auto !important;
+  }
+
+  /* Ensure dropdown and dialog interactions work */
+  [role="dialog"], [role="menu"], [role="listbox"], [role="combobox"] {
+    pointer-events: auto !important;
+    z-index: 9999 !important;
+  }
+
+  /* Fix theme toggle specifically */
+  .theme-toggle, .theme-toggle * {
+    pointer-events: auto !important;
+  }
+
 /* Custom text selection color */
 ::selection {
   background-color: #990043;
