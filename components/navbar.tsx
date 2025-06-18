@@ -110,7 +110,7 @@ const Navbar = memo(({
             transition={{ duration: 0.3, ease: "easeOut" }}
             style={{ opacity: 1 }}
             className={cn(
-            "fixed top-0 left-0 right-0 z-30 flex justify-between items-center p-3 transition-colors duration-200",
+            "fixed top-0 left-0 right-0 navbar-layer flex justify-between items-center p-3 transition-colors duration-200 fix-hit-testing",
             isDialogOpen
                 ? "bg-transparent"
                 : (status === "streaming" || status === 'ready'

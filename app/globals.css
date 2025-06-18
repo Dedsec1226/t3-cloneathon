@@ -281,7 +281,33 @@
     z-index: 30 !important;
   }
 
+  /* Proper z-index layering for interactive elements */
+  .navbar-layer {
+    z-index: 50 !important;
+  }
 
+  .dialog-layer {
+    z-index: 60 !important;
+  }
+
+  .form-layer {
+    z-index: 30 !important;
+  }
+
+  .content-layer {
+    z-index: 10 !important;
+  }
+
+  /* Ensure interactive elements remain clickable */
+  .force-pointer-events {
+    pointer-events: auto !important;
+  }
+
+  /* Fix hit-testing issues */
+  .fix-hit-testing {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
 
 /* Custom text selection color */
 ::selection {
