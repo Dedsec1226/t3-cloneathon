@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Sidebar from "@/components/Sidebar";
+import { ClerkProvider } from "@clerk/nextjs";
 
 export default function HomeLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -14,7 +15,9 @@ export default function HomeLayout({ children }: { children: React.ReactNode }) 
           sidebarOpen ? "ml-64" : "ml-0"
         }`}
       >
+        <ClerkProvider>
         {children}
+        </ClerkProvider>
       </main>
     </div>
   );
