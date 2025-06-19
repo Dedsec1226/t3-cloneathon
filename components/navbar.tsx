@@ -1,6 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 import React, { useState, memo, useEffect } from 'react';
-import { Globe, Lock, Copy, Check, Cpu } from 'lucide-react';
+import { Globe, Lock, Copy, Check, Cpu, MessageCircle, Book, Youtube, BarChart3, Brain, Telescope } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { UserProfile } from '@/components/user-profile';
@@ -14,23 +14,35 @@ import { cn } from '@/lib/utils';
 import { User } from '@/lib/db/schema';
 import { LinkedinLogo, RedditLogo, Share, XLogo } from '@phosphor-icons/react';
 import { ClassicLoader } from '@/components/ui/loading';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Message } from 'ai';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { SearchGroup, SearchGroupId, searchGroups } from '@/lib/utils';
 
+// Route icon component for group selector
+const RouteIcon = ({ size = 14, className }: { size?: number; className?: string }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+        <circle cx="6" cy="19" r="3"/>
+        <path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"/>
+        <circle cx="18" cy="5" r="3"/>
+    </svg>
+);
 
 type VisibilityType = 'public' | 'private';
 
 interface NavbarProps {
     isDialogOpen: boolean;
-    chatId: string | null;
+    chatId: string;
     selectedVisibilityType: VisibilityType;
-    onVisibilityChange: (visibility: VisibilityType) => void | Promise<void>;
-    status: string;
+    onVisibilityChange: (visibility: VisibilityType) => Promise<void>;
+    status: 'submitted' | 'streaming' | 'ready' | 'error';
     user: User | null;
     onHistoryClick: () => void;
     isOwner?: boolean;
-    selectedModel?: string;
-    setSelectedModel?: (model: string) => void;
+    selectedModel: string;
+    setSelectedModel: (model: string) => void;
+    selectedGroup?: SearchGroupId;
+    setSelectedGroup?: (group: SearchGroupId) => void;
 }
 
 const Navbar = memo(({
@@ -43,18 +55,19 @@ const Navbar = memo(({
     onHistoryClick,
     isOwner = true,
     selectedModel,
-    setSelectedModel
+    setSelectedModel,
+    selectedGroup = null,
+    setSelectedGroup
 }: NavbarProps) => {
-    const [copied, setCopied] = useState(false);
+    const [mounted, setMounted] = useState(false);
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [privateDropdownOpen, setPrivateDropdownOpen] = useState(false);
+    const [copied, setCopied] = useState(false);
     const [isChangingVisibility, setIsChangingVisibility] = useState(false);
-    const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
         setMounted(true);
     }, []);
-
 
     const handleCopyLink = (e: React.MouseEvent) => {
         e.preventDefault();
@@ -76,18 +89,21 @@ const Navbar = memo(({
     // Social media share handlers
     const handleShareLinkedIn = (e: React.MouseEvent) => {
         e.preventDefault();
+        if (!chatId || !shareUrl) return;
         const linkedInUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
         window.open(linkedInUrl, '_blank', 'noopener,noreferrer');
     };
 
     const handleShareTwitter = (e: React.MouseEvent) => {
         e.preventDefault();
+        if (!chatId || !shareUrl) return;
         const twitterUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}`;
         window.open(twitterUrl, '_blank', 'noopener,noreferrer');
     };
 
     const handleShareReddit = (e: React.MouseEvent) => {
         e.preventDefault();
+        if (!chatId || !shareUrl) return;
         const redditUrl = `https://www.reddit.com/submit?url=${encodeURIComponent(shareUrl)}`;
         window.open(redditUrl, '_blank', 'noopener,noreferrer');
     };
@@ -106,6 +122,9 @@ const Navbar = memo(({
         }
     };
 
+    // Define the actual group selector IDs
+    const actualGroupIds = ['academic', 'youtube', 'reddit', 'x', 'analysis', 'memory'];
+
     // Prevent hydration mismatch by not rendering theme-dependent content until mounted
     if (!mounted) {
         return (
@@ -117,6 +136,7 @@ const Navbar = memo(({
                     {/* Placeholder content during hydration */}
                 </div>
                 <div className="flex items-center gap-3">
+                    <div className="w-8 h-8" /> {/* Group selector placeholder */}
                     <div className="w-8 h-8" /> {/* Theme toggle placeholder */}
                     <div className="w-8 h-8 rounded-full bg-neutral-200 dark:bg-neutral-700" /> {/* User profile placeholder */}
                 </div>
@@ -126,31 +146,21 @@ const Navbar = memo(({
 
     return (
         <motion.div 
-            initial={{ opacity: 0, y: -20 }}
+            className="fixed top-0 left-0 right-0 navbar-layer flex justify-between items-center p-3 bg-background fix-hit-testing"
+            initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
+            transition={{ duration: 0.3 }}
             style={{ opacity: 1 }}
-            className={cn(
-            "fixed top-0 left-0 right-0 navbar-layer flex justify-between items-center p-3 transition-colors duration-75 fix-hit-testing",
-            isDialogOpen
-                ? "bg-transparent"
-                : (status === "streaming" || status === 'ready'
-                    ? "bg-background/95 backdrop-blur-sm supports-backdrop-filter:bg-background/60"
-                    : "bg-background")
-            )}
         >
-            {/* Empty left side for balance */}
+            {/* Left side spacer */}
             <div className="flex-1" />
             
-            {/* Center content */}
-            <div className={cn(
-                "flex items-center justify-center",
-                isDialogOpen ? "pointer-events-none" : "pointer-events-auto"
-            )}>
-                {/* Only show visibility controls if there's a chatId and user is authenticated */}
-                {chatId && user && isOwner && (
+            {/* Center content - privacy/sharing controls */}
+            <div className="flex-1 flex justify-center items-center">
+                {isOwner && (
                     <AnimatePresence>
                         <motion.div
+                            className="flex items-center gap-3"
                             initial={{ opacity: 0, scale: 0.9 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.9 }}
@@ -158,8 +168,7 @@ const Navbar = memo(({
                             style={{ opacity: 1 }}
                         >
                                 {selectedVisibilityType === 'public' ? (
-                                    /* Public chat - show dropdown for copying link */
-                                    <DropdownMenu open={dropdownOpen} onOpenChange={!isChangingVisibility ? setDropdownOpen : undefined}>
+                                <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
                                         <DropdownMenuTrigger asChild>
                                             <Button
                                                 variant="secondary"
@@ -187,25 +196,18 @@ const Navbar = memo(({
                                             style={{ opacity: 1 }}
                                             className="space-y-4"
                                         >
-                                                <header className="flex justify-between items-center">
-                                                <h4 className="text-sm font-semibold">Share Link</h4>
-                                                    <div className="flex gap-2">
-                                                        <Button
-                                                        variant="outline"
-                                                            size="sm"
-                                                        className="h-8 text-xs focus:outline-none"
-                                                            onClick={() => handleVisibilityChange('private')}
-                                                            disabled={isChangingVisibility}
-                                                        >
-                                                            <Lock size={12} className="mr-1" />
-                                                            Make Private
-                                                        </Button>
-                                                    </div>
+                                            <header className="text-center">
+                                                <h4 className="text-sm font-semibold">
+                                                    {chatId ? 'Share Conversation' : 'Public Chat Mode'}
+                                                </h4>
+                                                <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+                                                    {chatId ? 'This conversation is public' : 'New messages will be public'}
+                                                </p>
                                                 </header>
 
                                             <div className="flex items-center gap-3 bg-neutral-50 dark:bg-neutral-800 rounded-lg p-3 border">
                                                 <div className="truncate flex-1 text-xs text-neutral-600 dark:text-neutral-400 font-mono">
-                                                        {shareUrl}
+                                                    {chatId ? shareUrl : 'Share URL will be available after sending your first message'}
                                                     </div>
                                                     <Button
                                                     size="sm"
@@ -213,6 +215,7 @@ const Navbar = memo(({
                                                     className="h-8 px-2 focus:outline-none"
                                                         onClick={handleCopyLink}
                                                         title="Copy to clipboard"
+                                                    disabled={!chatId}
                                                     >
                                                         {copied ? (
                                                             <Check size={14} className="text-green-500" />
@@ -222,33 +225,17 @@ const Navbar = memo(({
                                                     </Button>
                                                 </div>
 
-                                            <div className="text-center">
-                                                <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-3">
-                                                    Anyone with this link can view this conversation
-                                                        </p>
+                                            <div className="text-center space-y-3">
+                                                <p className="text-xs text-neutral-500 dark:text-neutral-400">Share on social media</p>
 
-                                                <div className="flex justify-center gap-2">
-                                                        {typeof navigator !== 'undefined' && 'share' in navigator && (
-                                                            <Button
-                                                                variant="outline"
-                                                            size="sm"
-                                                            className="h-9 w-9 focus:outline-none"
-                                                                onClick={() => {
-                                                                    navigator.share({
-                                                                    title: 'Shared Conversation',
-                                                                        url: shareUrl
-                                                                    }).catch(console.error);
-                                                                }}
-                                                            >
-                                                            <Share size={16} />
-                                                            </Button>
-                                                        )}
+                                                <div className="flex justify-center gap-3">
                                                         <Button
                                                             variant="outline"
                                                         size="sm"
                                                         className="h-9 w-9 focus:outline-none"
                                                             onClick={handleShareLinkedIn}
                                                             title="Share on LinkedIn"
+                                                        disabled={!chatId}
                                                         >
                                                         <LinkedinLogo size={16} />
                                                         </Button>
@@ -258,6 +245,7 @@ const Navbar = memo(({
                                                         className="h-9 w-9 focus:outline-none"
                                                             onClick={handleShareTwitter}
                                                         title="Share on X"
+                                                        disabled={!chatId}
                                                         >
                                                         <XLogo size={16} />
                                                         </Button>
@@ -267,32 +255,53 @@ const Navbar = memo(({
                                                         className="h-9 w-9 focus:outline-none"
                                                             onClick={handleShareReddit}
                                                             title="Share on Reddit"
+                                                        disabled={!chatId}
                                                         >
                                                         <RedditLogo size={16} />
                                                         </Button>
+                                                </div>
+                                                
+                                                {!chatId && (
+                                                    <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 border border-blue-200 dark:border-blue-800">
+                                                        <p className="text-sm text-blue-800 dark:text-blue-200">
+                                                            Your next message will start a public conversation that can be shared with others.
+                                                        </p>
                                                     </div>
+                                                )}
+                                            </div>
+                                            
+                                            <div className="text-center">
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    className="text-xs focus:outline-none"
+                                                    onClick={() => handleVisibilityChange('private')}
+                                                    disabled={isChangingVisibility}
+                                                >
+                                                    <Lock size={12} className="mr-1" />
+                                                    Make Private
+                                                </Button>
                                             </div>
                                         </motion.div>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 ) : (
-                                    /* Private chat - dropdown prompt to make public */
-                                    <DropdownMenu open={privateDropdownOpen} onOpenChange={!isChangingVisibility ? setPrivateDropdownOpen : undefined}>
+                                <DropdownMenu open={privateDropdownOpen} onOpenChange={setPrivateDropdownOpen}>
                                         <DropdownMenuTrigger asChild>
                                             <Button
                                                 variant="secondary"
-                                            className="rounded-lg pointer-events-auto flex items-center gap-2 px-4 py-2 text-sm bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-all duration-75 focus:outline-none"
+                                        className="rounded-lg pointer-events-auto flex items-center gap-2 px-4 py-2 text-sm bg-[#fbe4f4] dark:bg-black/40 border border-[#f3c6e4] dark:border-neutral-700 hover:bg-[#f8d7e8] dark:hover:bg-black/60 transition-all duration-75 focus:outline-none! focus:ring-0!"
                                                 disabled={isChangingVisibility}
                                             >
                                                 {isChangingVisibility ? (
                                                     <>
-                                                        <ClassicLoader size="sm" className="text-neutral-500" />
-                                                    <span className="text-sm font-medium text-neutral-600 dark:text-neutral-400">Saving...</span>
+                                                        <ClassicLoader size="sm" className="text-[#b83268] dark:text-violet-300" />
+                                                    <span className="text-sm font-medium text-[#b83268] dark:text-violet-300">Saving...</span>
                                                     </>
                                                 ) : (
                                                     <>
-                                                        <Lock size={16} className="text-neutral-500" />
-                                                    <span className="text-sm font-medium text-neutral-600 dark:text-neutral-400">Private</span>
+                                                        <Lock size={16} className="text-[#b83268] dark:text-violet-300" />
+                                                    <span className="text-sm font-medium text-[#b83268] dark:text-violet-300">Private</span>
                                                     </>
                                                 )}
                                             </Button>
@@ -306,12 +315,17 @@ const Navbar = memo(({
                                             className="space-y-4"
                                         >
                                             <header className="text-center">
-                                                <h4 className="text-sm font-semibold">Make Public</h4>
+                                                <h4 className="text-sm font-semibold">
+                                                    {chatId ? 'Make Public' : 'Private Chat Mode'}
+                                                </h4>
                                                 </header>
 
                                             <div className="text-center space-y-3">
                                                 <p className="text-sm text-neutral-600 dark:text-neutral-400">
-                                                    Making this conversation public will allow anyone with the link to view it.
+                                                    {chatId 
+                                                        ? 'Making this conversation public will allow anyone with the link to view it.'
+                                                        : 'Your messages will be private and only visible to you.'
+                                                    }
                                                     </p>
                                                 
                                                 <div className="flex justify-center gap-3 pt-2">
@@ -331,7 +345,7 @@ const Navbar = memo(({
                                                         disabled={isChangingVisibility}
                                                     >
                                                         <Globe size={12} className="mr-1" />
-                                                        Make Public
+                                                        {chatId ? 'Make Public' : 'Switch to Public'}
                                                     </Button>
                                                 </div>
                                             </div>
@@ -344,12 +358,35 @@ const Navbar = memo(({
                 )}
             </div>
 
-            {/* Right side - settings, theme toggle and user profile */}
+            {/* Right side - group selector, settings, theme toggle and user profile */}
             <div className="flex-1 flex justify-end items-center gap-3">
+                {/* Group Selector - simple text display */}
+                {setSelectedGroup && selectedGroup && actualGroupIds.includes(selectedGroup) && (
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <button
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setSelectedGroup(null);
+                                    toast.success('Chat Mode: Default chat mode');
+                                }}
+                                className="flex items-center px-3 py-1.5 rounded-md bg-[#fbe4f4] dark:bg-black/40 backdrop-blur-sm hover:bg-[#f8d7e8] dark:hover:bg-black/60 transition-all duration-200 cursor-pointer"
+                            >
+                                <span className="text-sm font-medium text-[#b83268] dark:text-pink-200">
+                                    {searchGroups.find(g => g.id === selectedGroup)?.name || 'Unknown Mode'}
+                                </span>
+                            </button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p className="text-white">Click to return to Chat Mode</p>
+                        </TooltipContent>
+                    </Tooltip>
+                )}
+
                 {/* Settings and theme toggle group - always visible and clickable */}
                 <div className="force-pointer-events relative z-50 fix-hit-testing">
                     <div className="flex flex-row items-center gap-0.5 rounded-md p-1 transition-all bg-[#fbe4f4] dark:bg-black/40 backdrop-blur-sm">
-
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <a aria-label="Go to settings" role="button" data-state="closed" href="/settings" data-discover="true">

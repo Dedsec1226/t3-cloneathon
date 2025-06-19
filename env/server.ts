@@ -23,7 +23,7 @@ export const serverEnv = createEnv({
     TAVILY_API_KEY: z.string().min(1).optional(),
     EXA_API_KEY: z.string().min(1).optional(),
     TMDB_API_KEY: z.string().min(1).optional(),
-    YT_ENDPOINT: z.string().min(1).optional(),
+    YT_ENDPOINT: z.string().min(1).optional(), // YouTube Data API v3 Key
     FIRECRAWL_API_KEY: z.string().min(1).optional(),
     SANDBOX_TEMPLATE_ID: z.string().min(1).optional(),
     CRON_SECRET: z.string().min(1).optional(),

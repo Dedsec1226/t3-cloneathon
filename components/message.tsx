@@ -5,8 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogClose, DialogContent } from "@/components/ui/dialog";
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { toast } from 'sonner';
-import { ArrowRight, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Copy, Download, X, ExternalLink, Maximize2, FileText, Plus, AlignLeft, AlertCircle, RefreshCw } from 'lucide-react';
+import { ArrowRight, ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Copy, Download, X, ExternalLink, Maximize2, FileText, Plus, AlignLeft, AlertCircle, RefreshCw, Edit2 } from 'lucide-react';
 import { TextUIPart, ReasoningUIPart, ToolInvocationUIPart, SourceUIPart, StepStartUIPart } from '@ai-sdk/ui-utils';
 import { MarkdownRenderer, preprocessLaTeX } from '@/components/markdown';
 import { deleteTrailingMessages } from '@/app/actions';
@@ -39,6 +40,7 @@ interface MessageProps {
   isMissingAssistantResponse?: boolean;
   handleRetry?: () => Promise<void>;
   isOwner?: boolean;
+  hoveredMessageIndex?: number | null;
 }
 
 // Message Editor Component
@@ -216,7 +218,8 @@ export const Message: React.FC<MessageProps> = ({
   error,
   isMissingAssistantResponse,
   handleRetry,
-  isOwner = true
+  isOwner = true,
+  hoveredMessageIndex
 }) => {
   // State for expanding/collapsing long user messages
   const [isExpanded, setIsExpanded] = useState(false);
@@ -251,7 +254,15 @@ export const Message: React.FC<MessageProps> = ({
     // Check if the message has parts that should be rendered
     if (message.parts && Array.isArray(message.parts) && message.parts.length > 0) {
       return (
-        <div className="mb-0! px-0">
+        <div className={`mb-0! px-0 group flex items-center w-full`} data-message-index={index}
+          onMouseEnter={() => {
+            window.dispatchEvent(new CustomEvent('showActionButtons', { detail: { messageIndex: index } }));
+          }}
+          onMouseLeave={() => {
+            window.dispatchEvent(new CustomEvent('hideActionButtons', { detail: { messageIndex: index } }));
+          }}
+        >
+          {/* Message bubble */}
           <div className="grow min-w-0">
             {mode === 'edit' ? (
               <MessageEditor
@@ -261,42 +272,142 @@ export const Message: React.FC<MessageProps> = ({
                 reload={reload}
               />
             ) : (
-              <div className="group relative">
-                <div className="relative">
-                  {/* Render user message parts */}
-                  {message.parts?.map((part: MessagePart, partIndex: number) => {
-                    if (part.type === 'text') {
-                      return (
-                        <div
-                          key={`user-${index}-${partIndex}`}
-                          ref={messageContentRef}
-                          className={`prose prose-neutral dark:prose-invert prose-p:my-2 prose-pre:my-2 prose-code:before:hidden prose-code:after:hidden [&>*]:font-syne! font-normal max-w-none [&>*]:text-lg text-neutral-900 dark:text-neutral-100 pr-10 sm:pr-12 overflow-hidden relative ${!isExpanded && exceedsMaxHeight ? 'max-h-[100px]' : ''}`}
+              <div 
+                role="article" 
+                aria-label="Your message" 
+                className="inline-block max-w-[80%] break-words rounded-xl border border-secondary/50 bg-secondary/50 px-3 py-2 text-center user-message-hover"
+              >
+                <span className="sr-only">Your message: </span>
+                <div className="flex flex-col gap-3">
+                  <div className="prose prose-pink max-w-none dark:prose-invert prose-pre:m-0 prose-pre:bg-transparent prose-pre:p-0 text-center mx-auto">
+                    {/* Render user message parts */}
+                    {message.parts?.map((part: MessagePart, partIndex: number) => {
+                      if (part.type === 'text') {
+                        return (
+                          <div
+                            key={`user-${index}-${partIndex}`}
+                            ref={messageContentRef}
+                            className={`overflow-hidden relative ${!isExpanded && exceedsMaxHeight ? 'max-h-[100px]' : ''}`}
+                          >
+                            <MarkdownRenderer content={preprocessLaTeX(part.text)} />
+                            {!isExpanded && exceedsMaxHeight && (
+                              <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-secondary/50 to-transparent pointer-events-none" />
+                            )}
+                          </div>
+                        );
+                      }
+                      return null;
+                    })}
+                    {/* If no parts have text, fall back to the content property */}
+                    {(!message.parts || !message.parts.some((part: any) => part.type === 'text' && part.text)) && (
+                      <div
+                        ref={messageContentRef}
+                        className={`overflow-hidden relative ${!isExpanded && exceedsMaxHeight ? 'max-h-[100px]' : ''}`}
+                      >
+                        <MarkdownRenderer content={preprocessLaTeX(message.content)} />
+                        {!isExpanded && exceedsMaxHeight && (
+                          <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-secondary/50 to-transparent pointer-events-none" />
+                        )}
+                      </div>
+                    )}
+                    {exceedsMaxHeight && (
+                      <div className="flex justify-center mt-0.5">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setIsExpanded(!isExpanded)}
+                          className="h-6 w-6 p-0 rounded-full text-neutral-400 hover:text-neutral-700 dark:text-neutral-500 dark:hover:text-neutral-300 hover:bg-transparent"
+                          aria-label={isExpanded ? "Show less" : "Show more"}
                         >
-                          <MarkdownRenderer content={preprocessLaTeX(part.text)} />
-
-                          {!isExpanded && exceedsMaxHeight && (
-                            <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-background to-transparent pointer-events-none" />
+                          {isExpanded ? (
+                            <ChevronUp className="h-3.5 w-3.5" />
+                          ) : (
+                            <ChevronDown className="h-3.5 w-3.5" />
                           )}
-                        </div>
-                      );
-                    }
-                    return null; // Skip non-text parts for user messages
-                  })}
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                {message.experimental_attachments && message.experimental_attachments.length > 0 && (
+                  <div className="mt-3">
+                    <AttachmentsBadge attachments={message.experimental_attachments} />
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+          {/* Action buttons OUTSIDE the bubble, right side, vertically centered */}
+          {hoveredMessageIndex === index && ((user && isOwner) || (!user && selectedVisibilityType === 'private')) && (
+            <div className="flex flex-row gap-2 ml-2 items-center">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setMode('edit')}
+                aria-label="Edit message"
+              >
+                <Edit2 className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => { navigator.clipboard.writeText(message.content); toast.success('Copied to clipboard'); }}
+                aria-label="Copy message"
+              >
+                <Copy className="h-4 w-4" />
+              </Button>
+              {typeof handleRetry === 'function' && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleRetry}
+                  aria-label="Retry message"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+          )}
+        </div>
+      );
+    }
 
-                  {/* If no parts have text, fall back to the content property */}
-                  {(!message.parts || !message.parts.some((part: any) => part.type === 'text' && part.text)) && (
-                    <div
-                      ref={messageContentRef}
-                      className={`prose prose-neutral dark:prose-invert prose-p:my-2 prose-pre:my-2 prose-code:before:hidden prose-code:after:hidden [&>*]:font-[syne]! font-normal max-w-none [&>*]:text-lg text-neutral-900 dark:text-neutral-100 pr-10 sm:pr-12 overflow-hidden relative ${!isExpanded && exceedsMaxHeight ? 'max-h-[100px]' : ''}`}
-                    >
-                      <MarkdownRenderer content={preprocessLaTeX(message.content)} />
-
-                      {!isExpanded && exceedsMaxHeight && (
-                        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-background to-transparent pointer-events-none" />
-                      )}
-                    </div>
-                  )}
-
+    // Fallback to the original rendering if no parts are present
+    return (
+      <div className="mb-0! px-0">
+        <div className="grow min-w-0">
+          {mode === 'edit' ? (
+            <MessageEditor
+              message={message}
+              setMode={setMode}
+              setMessages={setMessages}
+              reload={reload}
+            />
+          ) : (
+            <div 
+              role="article" 
+              aria-label="Your message" 
+              className="group relative inline-block max-w-[80%] break-words rounded-xl border border-secondary/50 bg-secondary/50 px-3 py-2 text-center user-message-hover"
+              data-message-index={index}
+              onMouseEnter={() => {
+                window.dispatchEvent(new CustomEvent('showActionButtons', { detail: { messageIndex: index } }));
+              }}
+              onMouseLeave={() => {
+                window.dispatchEvent(new CustomEvent('hideActionButtons', { detail: { messageIndex: index } }));
+              }}
+            >
+              <span className="sr-only">Your message: </span>
+              <div className="flex flex-col gap-3">
+                <div className="prose prose-pink max-w-none dark:prose-invert prose-pre:m-0 prose-pre:bg-transparent prose-pre:p-0 text-center mx-auto">
+                  <div
+                    ref={messageContentRef}
+                    className={`overflow-hidden relative ${!isExpanded && exceedsMaxHeight ? 'max-h-[100px]' : ''}`}
+                  >
+                    <MarkdownRenderer content={preprocessLaTeX(message.content)} />
+                    {!isExpanded && exceedsMaxHeight && (
+                      <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-secondary/50 to-transparent pointer-events-none" />
+                    )}
+                  </div>
                   {exceedsMaxHeight && (
                     <div className="flex justify-center mt-0.5">
                       <Button
@@ -314,152 +425,43 @@ export const Message: React.FC<MessageProps> = ({
                       </Button>
                     </div>
                   )}
-
-                  <div className="absolute -right-2 top-1 opacity-0 group-hover:opacity-100 transition-all duration-200 transform group-hover:translate-x-0 translate-x-2 bg-white/95 dark:bg-neutral-800/95 backdrop-blur-sm rounded-md border border-neutral-200 dark:border-neutral-700 flex items-center shadow-sm hover:shadow-md">
-                    {/* Only show edit button for owners OR unauthenticated users on private chats */}
-                    {((user && isOwner) || (!user && selectedVisibilityType === 'private')) && (
-                      <>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => setMode('edit')}
-                          className="h-7 w-7 rounded-l-md rounded-r-none text-neutral-500 dark:text-neutral-400 hover:text-primary hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
-                          disabled={status === 'submitted' || status === 'streaming'}
-                          aria-label="Edit message"
-                        >
-                          <svg
-                            width="15"
-                            height="15"
-                            viewBox="0 0 15 15"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-3.5 w-3.5"
-                          >
-                            <path
-                              d="M12.1464 1.14645C12.3417 0.951184 12.6583 0.951184 12.8535 1.14645L14.8535 3.14645C15.0488 3.34171 15.0488 3.65829 14.8535 3.85355L10.9109 7.79618C10.8349 7.87218 10.7471 7.93543 10.651 7.9835L6.72359 9.94721C6.53109 10.0435 6.29861 10.0057 6.14643 9.85355C5.99425 9.70137 5.95652 9.46889 6.05277 9.27639L8.01648 5.34897C8.06455 5.25283 8.1278 5.16507 8.2038 5.08907L12.1464 1.14645ZM12.5 2.20711L8.91091 5.79618L7.87266 7.87267L9.94915 6.83442L13.5382 3.24535L12.5 2.20711ZM8.99997 1.49997C9.27611 1.49997 9.49997 1.72383 9.49997 1.99997C9.49997 2.27611 9.27611 2.49997 8.99997 2.49997H4.49997C3.67154 2.49997 2.99997 3.17154 2.99997 3.99997V11C2.99997 11.8284 3.67154 12.5 4.49997 12.5H11.5C12.3284 12.5 13 11.8284 13 11V6.49997C13 6.22383 13.2238 5.99997 13.5 5.99997C13.7761 5.99997 14 6.22383 14 6.49997V11C14 12.3807 12.8807 13.5 11.5 13.5H4.49997C3.11926 13.5 1.99997 12.3807 1.99997 11V3.99997C1.99997 2.61926 3.11926 1.49997 4.49997 1.49997H8.99997Z"
-                              fill="currentColor"
-                              fillRule="evenodd"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                        </Button>
-                        <Separator orientation="vertical" className="h-5 bg-neutral-200 dark:bg-neutral-700" />
-                      </>
-                    )}
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => {
-                        navigator.clipboard.writeText(message.content);
-                        toast.success("Copied to clipboard");
-                      }}
-                      className={`h-7 w-7 ${(!user || !isOwner) && selectedVisibilityType === 'public' ? 'rounded-md' : 'rounded-r-md rounded-l-none'} text-neutral-500 dark:text-neutral-400 hover:text-primary hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors`}
-                      aria-label="Copy message"
-                    >
-                      <Copy className="h-3.5 w-3.5" />
-                    </Button>
-                  </div>
-                </div>
-                {message.experimental_attachments && message.experimental_attachments.length > 0 && (
-                  <AttachmentsBadge attachments={message.experimental_attachments} />
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-      );
-    }
-
-    // Fallback to the original rendering if no parts are present
-    return (
-      <div className="mb-0! px-0">
-        <div className="grow min-w-0">
-          {mode === 'edit' ? (
-            <MessageEditor
-              message={message}
-              setMode={setMode}
-              setMessages={setMessages}
-              reload={reload}
-            />
-          ) : (
-            <div className="group relative">
-              <div className="relative">
-                <div
-                  ref={messageContentRef}
-                  className={`prose prose-neutral dark:prose-invert prose-p:my-2 prose-pre:my-2 prose-code:before:hidden prose-code:after:hidden [&>*]:font-[syne]! font-normal max-w-none [&>*]:text-lg text-neutral-900 dark:text-neutral-100 pr-10 sm:pr-12 overflow-hidden relative ${!isExpanded && exceedsMaxHeight ? 'max-h-[100px]' : ''}`}
-                >
-                  <MarkdownRenderer content={preprocessLaTeX(message.content)} />
-
-                  {!isExpanded && exceedsMaxHeight && (
-                    <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-background to-transparent pointer-events-none" />
-                  )}
-                </div>
-
-                {exceedsMaxHeight && (
-                  <div className="flex justify-center mt-0.5">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setIsExpanded(!isExpanded)}
-                      className="h-6 w-6 p-0 rounded-full text-neutral-400 hover:text-neutral-700 dark:text-neutral-500 dark:hover:text-neutral-300 hover:bg-transparent"
-                      aria-label={isExpanded ? "Show less" : "Show more"}
-                    >
-                      {isExpanded ? (
-                        <ChevronUp className="h-3.5 w-3.5" />
-                      ) : (
-                        <ChevronDown className="h-3.5 w-3.5" />
-                      )}
-                    </Button>
-                  </div>
-                )}
-
-                <div className="absolute -right-2 top-1 opacity-0 group-hover:opacity-100 transition-all duration-200 transform group-hover:translate-x-0 translate-x-2 bg-white/95 dark:bg-neutral-800/95 backdrop-blur-sm rounded-md border border-neutral-200 dark:border-neutral-700 flex items-center shadow-sm hover:shadow-md">
-                  {/* Only show edit button for owners OR unauthenticated users on private chats */}
-                  {((user && isOwner) || (!user && selectedVisibilityType === 'private')) && (
-                    <>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setMode('edit')}
-                        className="h-7 w-7 rounded-l-md rounded-r-none text-neutral-500 dark:text-neutral-400 hover:text-primary hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
-                        disabled={status === 'submitted' || status === 'streaming'}
-                        aria-label="Edit message"
-                      >
-                        <svg
-                          width="15"
-                          height="15"
-                          viewBox="0 0 15 15"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-3.5 w-3.5"
-                        >
-                          <path
-                            d="M12.1464 1.14645C12.3417 0.951184 12.6583 0.951184 12.8535 1.14645L14.8535 3.14645C15.0488 3.34171 15.0488 3.65829 14.8535 3.85355L10.9109 7.79618C10.8349 7.87218 10.7471 7.93543 10.651 7.9835L6.72359 9.94721C6.53109 10.0435 6.29861 10.0057 6.14643 9.85355C5.99425 9.70137 5.95652 9.46889 6.05277 9.27639L8.01648 5.34897C8.06455 5.25283 8.1278 5.16507 8.2038 5.08907L12.1464 1.14645ZM12.5 2.20711L8.91091 5.79618L7.87266 7.87267L9.94915 6.83442L13.5382 3.24535L12.5 2.20711ZM8.99997 1.49997C9.27611 1.49997 9.49997 1.72383 9.49997 1.99997C9.49997 2.27611 9.27611 2.49997 8.99997 2.49997H4.49997C3.67154 2.49997 2.99997 3.17154 2.99997 3.99997V11C2.99997 11.8284 3.67154 12.5 4.49997 12.5H11.5C12.3284 12.5 13 11.8284 13 11V6.49997C13 6.22383 13.2238 5.99997 13.5 5.99997C13.7761 5.99997 14 6.22383 14 6.49997V11C14 12.3807 12.8807 13.5 11.5 13.5H4.49997C3.11926 13.5 1.99997 12.3807 1.99997 11V3.99997C1.99997 2.61926 3.11926 1.49997 4.49997 1.49997H8.99997Z"
-                            fill="currentColor"
-                            fillRule="evenodd"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                      </Button>
-                      <Separator orientation="vertical" className="h-5 bg-neutral-200 dark:bg-neutral-700" />
-                    </>
-                  )}
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => {
-                      navigator.clipboard.writeText(message.content);
-                      toast.success("Copied to clipboard");
-                    }}
-                    className={`h-7 w-7 ${(!user || !isOwner) && selectedVisibilityType === 'public' ? 'rounded-md' : 'rounded-r-md rounded-l-none'} text-neutral-500 dark:text-neutral-400 hover:text-primary hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors`}
-                    aria-label="Copy message"
-                  >
-                    <Copy className="h-3.5 w-3.5" />
-                  </Button>
                 </div>
               </div>
               {message.experimental_attachments && message.experimental_attachments.length > 0 && (
-                <AttachmentsBadge attachments={message.experimental_attachments} />
+                <div className="mt-3">
+                  <AttachmentsBadge attachments={message.experimental_attachments} />
+                </div>
+              )}
+              {/* Action buttons below the bubble, only on hover */}
+              {hoveredMessageIndex === index && ((user && isOwner) || (!user && selectedVisibilityType === 'private')) && (
+                <div className="flex flex-row gap-2 justify-end mt-2">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setMode('edit')}
+                    aria-label="Edit message"
+                  >
+                    <Edit2 className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => { navigator.clipboard.writeText(message.content); toast.success('Copied to clipboard'); }}
+                    aria-label="Copy message"
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                  {typeof handleRetry === 'function' && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={handleRetry}
+                      aria-label="Retry message"
+                    >
+                      <RefreshCw className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
               )}
             </div>
           )}

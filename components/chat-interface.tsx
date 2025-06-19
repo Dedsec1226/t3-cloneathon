@@ -648,7 +648,7 @@ const ChatInterface = memo(({ initialChatId, initialMessages, initialVisibility 
             )}>
                 <Navbar
                     isDialogOpen={anyDialogOpen}
-                    chatId={initialChatId || (messages.length > 0 ? chatId : null)}
+                    chatId={initialChatId || (messages.length > 0 ? chatId : "")}
                     selectedVisibilityType={selectedVisibilityType}
                     onVisibilityChange={handleVisibilityChange}
                     status={status}
@@ -657,6 +657,8 @@ const ChatInterface = memo(({ initialChatId, initialMessages, initialVisibility 
                     isOwner={isOwner}
                     selectedModel={selectedModel}
                     setSelectedModel={handleModelChange}
+                    selectedGroup={selectedGroup}
+                    setSelectedGroup={setSelectedGroup}
                 />
 
                 {/* Chat History Dialog */}
@@ -689,23 +691,45 @@ const ChatInterface = memo(({ initialChatId, initialMessages, initialVisibility 
                         status === 'ready' && messages.length === 0
                         ? 'flex flex-col justify-between' 
                         : 'overflow-y-auto pt-20 pb-32'
-                    } ${sidebarOpen ? 'ml-[250px]' : 'ml-0'}`}>
+                    }`}
+                    style={{
+                        // Only apply sidebar positioning for empty state, not for messages
+                        ...(status === 'ready' && messages.length === 0 ? {
+                            marginLeft: sidebarOpen ? '256px' : '0',
+                            width: sidebarOpen ? 'calc(100% - 256px)' : '100%'
+                        } : {})
+                    }}>
                     
-                    {/* Content wrapper - centers empty state properly accounting for sidebar, flows normally for messages */}
+                    {/* Content wrapper - handles both empty state and messages with proper sidebar awareness */}
                     <div className={`${
                         status === 'ready' && messages.length === 0
-                        ? sidebarOpen 
-                            ? 'flex-1 flex items-center justify-center' 
-                            : 'flex-1 flex items-center justify-center' 
-                        : 'w-full max-w-[95%] sm:max-w-2xl mx-auto space-y-6 p-2 sm:p-4'
-                    } transition-all duration-300 cubic-bezier(0.4, 0.0, 0.2, 1)`}>
+                        ? 'flex-1 flex items-center justify-center' // Center content vertically and horizontally
+                        : '' // Messages state - no wrapper styling, let individual containers handle positioning
+                    } transition-all duration-300 cubic-bezier(0.4, 0.0, 0.2, 1)`}
+                    style={{
+                        // For messages view, apply sidebar positioning here so content centers properly
+                        ...(messages.length > 0 ? {
+                            marginLeft: sidebarOpen ? '256px' : '0',
+                            width: sidebarOpen ? 'calc(100% - 256px)' : '100%',
+                            transition: 'margin-left 300ms cubic-bezier(0.4, 0.0, 0.2, 1), width 300ms cubic-bezier(0.4, 0.0, 0.2, 1)'
+                        } : {})
+                    }}>
                         
-                        {/* Empty state content - matching form component structure exactly */}
+                        {/* Empty state content - positioned higher up on screen */}
                         {status === 'ready' && messages.length === 0 && !input.trim() && (
-                            <div className={cn(
-                                "w-full max-w-3xl mx-auto px-4 space-y-4 pt-[calc(max(2vh,0.5rem))] pb-6 duration-300 animate-in fade-in-50 zoom-in-95",
-                                !sidebarOpen && "transform -translate-x-[125px]"
-                            )}>
+                            <div 
+                                className="fixed top-0 bottom-0 flex items-center justify-center z-10 pointer-events-none"
+                                style={{
+                                    left: sidebarOpen ? '256px' : '0',
+                                    right: '0',
+                                    width: sidebarOpen ? 'calc(100% - 256px)' : '100%',
+                                    transition: 'left 300ms cubic-bezier(0.4, 0.0, 0.2, 1), width 300ms cubic-bezier(0.4, 0.0, 0.2, 1)'
+                                }}
+                            >
+                                {/* Use EXACT same container structure as messages and form */}
+                                <div className="px-2">
+                                    <div className="mx-auto sm:max-w-3xl">
+                                        <div className="w-full px-3 space-y-4 pointer-events-auto duration-300 animate-in fade-in-50 zoom-in-95">
                                 <h1 className="text-4xl font-semibold text-left">
                                     How can I help you?
                                 </h1>
@@ -814,31 +838,45 @@ const ChatInterface = memo(({ initialChatId, initialMessages, initialVisibility 
                                         </div>
                                     ))}
                                 </div>
-                        </div>
-                    )}
+                                    </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
 
                     {/* Messages */}
                     {messages.length > 0 && (
-                        <Messages
-                            messages={messages as UIMessage[]}
-                            lastUserMessageIndex={lastUserMessageIndex}
-                            input={input}
-                            setInput={setInput}
-                            setMessages={setMessages as (messages: UIMessage[] | ((prevMessages: UIMessage[]) => UIMessage[])) => void}
-                            append={append as (message: UIMessage, options?: unknown) => Promise<string | null | undefined>}
-                            reload={reload}
-                            suggestedQuestions={suggestedQuestions}
-                            setSuggestedQuestions={setSuggestedQuestions}
-                            status={status}
-                            error={error ?? null}
-                            user={user ? { id: user.id, name: user.name ?? undefined, email: user.email ?? undefined } : undefined}
-                            selectedVisibilityType={selectedVisibilityType}
-                            chatId={initialChatId || (messages.length > 0 ? chatId : undefined)}
-                            onVisibilityChange={handleVisibilityChange}
-                            initialMessages={initialMessages}
-                            isOwner={isOwner}
-                            isStoppedByUser={isStoppedByUser}
-                        />
+                        <div className="px-2">
+                            <div className="mx-auto sm:max-w-3xl">
+                                <div 
+                                    role="log" 
+                                    aria-label="Chat messages" 
+                                    aria-live="polite" 
+                                    className="flex w-full flex-col space-y-12 px-3 pb-10 pt-safe-offset-10"
+                                >
+                            <Messages
+                                messages={messages as UIMessage[]}
+                                lastUserMessageIndex={lastUserMessageIndex}
+                                input={input}
+                                setInput={setInput}
+                                setMessages={setMessages as (messages: UIMessage[] | ((prevMessages: UIMessage[]) => UIMessage[])) => void}
+                                append={append as (message: UIMessage, options?: unknown) => Promise<string | null | undefined>}
+                                reload={reload}
+                                suggestedQuestions={suggestedQuestions}
+                                setSuggestedQuestions={setSuggestedQuestions}
+                                status={status}
+                                error={error ?? null}
+                                user={user ? { id: user.id, name: user.name ?? undefined, email: user.email ?? undefined } : undefined}
+                                selectedVisibilityType={selectedVisibilityType}
+                                chatId={initialChatId || (messages.length > 0 ? chatId : undefined)}
+                                onVisibilityChange={handleVisibilityChange}
+                                initialMessages={initialMessages}
+                                isOwner={isOwner}
+                                isStoppedByUser={isStoppedByUser}
+                            />
+                                </div>
+                            </div>
+                        </div>
                     )}
 
                     <div ref={bottomRef} />
@@ -851,13 +889,15 @@ const ChatInterface = memo(({ initialChatId, initialMessages, initialVisibility 
                         !initialChatId || 
                         (!user && selectedVisibilityType === 'private')
                     ) && (
-                        <div className={cn(
-                            "pb-4 px-4 transition-all duration-200 ease-out",
-                            sidebarOpen ? "" : ""
-                        )}>
-                            <div className="w-full flex justify-center">
+                        <div className="pb-4 transition-all duration-200 ease-out">
+                                                          {/* Use EXACT same container structure as messages and form */}
+                            <div className="px-2">
+                                <div className="mx-auto sm:max-w-3xl">
+                                    <div className="w-full px-3 flex justify-center">
                                 <div className="prose max-w-none rounded-t-md border border-secondary/40 bg-chat-background/50 py-2 px-6 text-sm text-secondary-foreground/80 backdrop-blur-md blur-fallback:bg-chat-background text-center inline-block mx-auto transition-all duration-200 ease-out">
                                     <span className="font-semibold text-center block">Make sure you agree to our <a href="/terms-of-service" className="text-foreground hover:text-primary dark:hover:text-muted-foreground underline font-semibold">Terms</a> and our <a href="/privacy-policy" className="text-foreground hover:text-primary dark:hover:text-muted-foreground underline font-semibold">Privacy Policy</a></span>
+                                </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -896,14 +936,17 @@ const ChatInterface = memo(({ initialChatId, initialMessages, initialVisibility 
                     {((user && isOwner) || 
                       !initialChatId || 
                       (!user && selectedVisibilityType === 'private')) && (
-                        <div className={cn(
-                            "fixed bottom-0 form-layer bg-gradient-to-t from-background via-background/95 to-background/80 backdrop-blur-sm border-t border-border/30 force-pointer-events fix-hit-testing transition-all duration-200 ease-out",
-                            sidebarOpen ? "left-[250px] right-0" : "left-0 right-0"
-                        )}>
-                            <div className={cn(
-                                "w-full max-w-3xl mx-auto px-4 pt-3",
-                                !sidebarOpen && "transform -translate-x-[125px]"
-                            )}>
+                        <div className="fixed bottom-0 form-layer bg-gradient-to-t from-background via-background/95 to-background/80 backdrop-blur-sm border-t border-border/30 force-pointer-events fix-hit-testing"
+                        style={{
+                            left: sidebarOpen ? '256px' : '0',
+                            right: '0',
+                            width: sidebarOpen ? 'calc(100% - 256px)' : '100%',
+                            transition: 'left 300ms cubic-bezier(0.4, 0.0, 0.2, 1), width 300ms cubic-bezier(0.4, 0.0, 0.2, 1)'
+                        }}>
+                            {/* EXACT same container structure as messages and welcome content */}
+                            <div className="px-2">
+                                <div className="mx-auto sm:max-w-3xl">
+                                    <div className="w-full px-3 pt-3">
                             <FormComponent
                                 chatId={chatId}
                                 input={input}
@@ -927,6 +970,8 @@ const ChatInterface = memo(({ initialChatId, initialMessages, initialVisibility 
                                 status={status}
                                 setHasSubmitted={setHasSubmitted}
                             />
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     )}

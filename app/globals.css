@@ -410,6 +410,9 @@
     .pb-safe-offset-3 {
       padding-bottom: max(0.75rem, env(safe-area-inset-bottom)) !important;
     }
+    .pt-safe-offset-10 {
+      padding-top: max(2.5rem, env(safe-area-inset-top)) !important;
+    }
   }
 
   /* Chat input background variable */
@@ -615,4 +618,42 @@
   .max-w-3xl {
     transition: all 300ms cubic-bezier(0.4, 0.0, 0.2, 1);
   }
+
+  /* Custom easing for snappy animations */
+  .ease-snappy {
+    transition-timing-function: cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  /* Ensure proper text wrapping for assistant messages */
+  .assistant-text-content {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    hyphens: auto;
+    max-width: 100%;
+  }
+
+  .assistant-text-content * {
+    max-width: 100%;
+  }
+
+  /* Ensure code blocks don't overflow */
+  .assistant-text-content pre {
+    overflow-x: auto;
+    word-wrap: normal;
+    word-break: normal;
+  }
+
+  /* Center user message text content */
+  .prose.text-center p,
+  .prose.text-center h1,
+  .prose.text-center h2,
+  .prose.text-center h3,
+  .prose.text-center h4,
+  .prose.text-center h5,
+  .prose.text-center h6 {
+    text-align: center;
+  }
+
+  /* Show action buttons when hovering over user message */
 }

@@ -42,7 +42,7 @@ const AcademicPapersCard = ({ results }: AcademicPapersProps) => {
         <div className="flex overflow-x-auto gap-3 no-scrollbar hover:overflow-x-scroll pb-1">
           {results.map((paper: AcademicResult, index: number) => (
             <motion.div
-              key={paper.url || index}
+              key={paper.url ? paper.url + '-' + index : index}
               className="w-[360px] flex-none"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
