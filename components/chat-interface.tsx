@@ -433,7 +433,14 @@ const ChatInterface = memo(({ initialChatId, initialMessages, initialVisibility 
         if (status === 'streaming') {
             // Clear suggested questions when a new message is being streamed
             setSuggestedQuestions([]);
-            // Reset stopped by user state when new streaming starts
+            // Only reset stopped by user state when a new user message is submitted
+            // Don't reset it just because streaming started after stopping
+        }
+    }, [status]);
+
+    // Reset stopped by user state when user submits a new message
+    useEffect(() => {
+        if (status === 'submitted') {
             setIsStoppedByUser(false);
         }
     }, [status]);
@@ -799,16 +806,8 @@ const ChatInterface = memo(({ initialChatId, initialMessages, initialVisibility 
                             onVisibilityChange={handleVisibilityChange}
                             initialMessages={initialMessages}
                             isOwner={isOwner}
+                            isStoppedByUser={isStoppedByUser}
                         />
-                    )}
-
-                    {/* Show "Stopped by user" message when user stops generation */}
-                    {isStoppedByUser && status === 'ready' && (
-                        <div className="w-full max-w-[95%] sm:max-w-2xl mx-auto px-2 sm:px-4 mb-4">
-                            <div className="bg-red-100 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg px-4 py-3 text-red-700 dark:text-red-300 text-sm font-medium">
-                                Stopped by user
-                            </div>
-                        </div>
                     )}
 
                     <div ref={bottomRef} />

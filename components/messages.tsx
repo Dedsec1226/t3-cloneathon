@@ -68,7 +68,8 @@ const Messages: React.FC<MessagesProps> = ({
   chatId,
   onVisibilityChange,
   initialMessages,
-  isOwner
+  isOwner,
+  isStoppedByUser
 }) => {
   // Track visibility state for each reasoning section using messageIndex-partIndex as key
   const [reasoningVisibilityMap, setReasoningVisibilityMap] = useState<Record<string, boolean>>({});
@@ -486,7 +487,14 @@ const Messages: React.FC<MessagesProps> = ({
         </div>
       )}
 
-      
+      {/* Show "Stopped by user" message when user stops generation */}
+      {isStoppedByUser && status === 'ready' && (
+        <div className="w-full mx-auto px-2 sm:px-4 mb-4">
+          <div className="bg-red-100 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg px-4 py-3 text-red-700 dark:text-red-300 text-sm font-medium">
+            Stopped by user
+          </div>
+        </div>
+      )}
 
       <div ref={reasoningScrollRef} />
       <div ref={messagesEndRef} />
