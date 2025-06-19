@@ -11,7 +11,7 @@ import { deleteTrailingMessages } from '@/app/actions';
 import { toast } from 'sonner';
 import { updateChatVisibility } from '@/app/actions';
 import { invalidateChatsCache } from '@/lib/utils';
-import { Share } from '@phosphor-icons/react';
+import { Share } from 'lucide-react';
 
 // Define interface for part, messageIndex and partIndex objects
 interface PartInfo {

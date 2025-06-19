@@ -19,7 +19,6 @@
     "@clerk/nextjs": "^6.22.0",
     "@daytonaio/sdk": "^0.20.2",
     "@foobar404/wave": "^2.0.5",
-    "@phosphor-icons/react": "^2.1.10",
     "@radix-ui/react-avatar": "^1.1.10",
     "@radix-ui/react-dialog": "^1.1.14",
     "@radix-ui/react-hover-card": "^1.1.14",
@@ -69,6 +68,9 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@next/bundle-analyzer": "^15.0.2",
+    "@next/eslint-plugin-next": "^15.0.2",
+    "@radix-ui/react-accordion": "^1.2.1",
     "@tailwindcss/postcss": "^4",
     "@types/luxon": "^3.6.2",
     "@types/node": "^20",
