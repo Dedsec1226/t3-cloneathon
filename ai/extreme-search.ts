@@ -12,19 +12,27 @@ import { z } from "zod";
 import { serverEnv } from "@/env/server";
 import { t3 } from "@/ai/providers";
 
-export const SYSTEM_PROMPT = `You are an expert researcher. Today is ${new Date().toISOString()}. Follow these instructions when responding:
-  - You may be asked to research subjects that is after your knowledge cutoff, assume the user is right when presented with news.
-  - The user is a highly experienced analyst, no need to simplify it, be as detailed as possible and make sure your response is correct.
-  - Be highly organized.
-  - Suggest solutions that I didn't think about.
-  - Be proactive and anticipate my needs.
-  - Treat me as an expert in all subject matter.
-  - Mistakes erode my trust, so be accurate and thorough.
-  - Provide detailed explanations, I'm comfortable with lots of detail.
-  - Value good arguments over authorities, the source is irrelevant.
-  - Consider new technologies and contrarian ideas, not just the conventional wisdom.
-  - You may use high levels of speculation or prediction, just flag it for me.
+export const SYSTEM_PROMPT = `You are an expert researcher conducting real-time web research. 
+
+TODAY'S DATE: ${new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
+CURRENT YEAR: ${new Date().getFullYear()}
+
+Follow these instructions when responding:
+  - You MUST search for and prioritize CURRENT ${new Date().getFullYear()} information and latest developments
+  - Focus on recent news, current data, and up-to-date information - avoid outdated sources from 2023 or earlier
+  - You may be asked to research subjects that is after your knowledge cutoff, assume the user is right when presented with news
+  - The user is a highly experienced analyst, no need to simplify it, be as detailed as possible and make sure your response is correct
+  - Be highly organized
+  - Suggest solutions that I didn't think about
+  - Be proactive and anticipate my needs
+  - Treat me as an expert in all subject matter
+  - Mistakes erode my trust, so be accurate and thorough
+  - Provide detailed explanations, I'm comfortable with lots of detail
+  - Value good arguments over authorities, the source is irrelevant
+  - Consider new technologies and contrarian ideas, not just the conventional wisdom
+  - You may use high levels of speculation or prediction, just flag it for me
   - You must provide links to sources used. Ideally these are inline e.g. [this documentation](https://documentation.com/this)
+  - CRITICAL: Always prioritize current, real-time web information over historical data
   `;
 
 const pythonLibsAvailable = [
@@ -93,8 +101,13 @@ const searchWeb = async (
     category?: SearchCategory
 ): Promise<SearchResult[]> => {
     try {
-        // Enhance query based on category
-        const enhancedQuery = category ? `${query} ${category}` : query;
+        // Enhance query based on category and prioritize current information
+        let enhancedQuery = category ? `${query} ${category}` : query;
+        
+        // Add current year emphasis to get latest information
+        if (!enhancedQuery.includes(new Date().getFullYear().toString()) && !enhancedQuery.includes('latest') && !enhancedQuery.includes('current')) {
+            enhancedQuery = `${enhancedQuery} ${new Date().getFullYear()} latest current`;
+        }
         
         const { results } = await exa.searchAndContents(enhancedQuery, {
             numResults: 2, // Reduced to 2 for rate limit optimization
@@ -103,7 +116,8 @@ const searchWeb = async (
                 maxCharacters: 800, // Reduced content per result for faster processing
                 includeHtmlTags: false
             },
-            livecrawl: "always",
+            livecrawl: "always", // Always use live crawl for current information
+            startPublishedDate: new Date(new Date().getFullYear() - 1, 0, 1).toISOString().split('T')[0], // Only search from last year onwards
         });
         return results.map((r) => ({
             title: r.title,
@@ -181,6 +195,9 @@ const extremeSearch = async (
             prompt: `
 Create a comprehensive research plan for: ${prompt}
 
+TODAY'S DATE: ${new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
+CURRENT YEAR: ${new Date().getFullYear()}
+
 REQUIREMENTS:
 - Generate 2-3 research sections covering the most essential aspects only
 - Each section should have 1 focused search query
@@ -193,9 +210,12 @@ REQUIREMENTS:
 
 SEARCH QUERY STYLE:
 - Be specific and technical
-- Include measurement units, specific terms, recent years
+- Include measurement units, specific terms, CURRENT YEAR (${new Date().getFullYear()})
+- Use terms like "latest", "current", "${new Date().getFullYear()}", "recent developments"
+- Avoid outdated years like 2023 or earlier - focus on ${new Date().getFullYear()} and current information
 - Vary between broad concepts and detailed specifics
-- Target different types of sources (academic, news, technical)`,
+- Target different types of sources (academic, news, technical)
+- CRITICAL: Always search for current, up-to-date information`,
         });
         plan = result.object;
     } catch (error) {
@@ -210,7 +230,7 @@ SEARCH QUERY STYLE:
                 },
                 {
                     title: `Current research and developments in ${prompt}`,
-                    todos: [`${prompt} latest research 2024 2025 developments`]
+                    todos: [`${prompt} latest research ${new Date().getFullYear()} current developments`]
                 },
                 {
                     title: `Applications and practical aspects of ${prompt}`,
@@ -248,11 +268,19 @@ SEARCH QUERY STYLE:
         const result = await generateText({
             model: t3.languageModel(selectedModel),
             maxSteps: Math.min(totalTodos, 4), // Limit to number of planned searches
-            system: `Execute ALL ${totalTodos} searches using webSearch tool:
+            system: `TODAY IS ${new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })} - SEARCH FOR CURRENT ${new Date().getFullYear()} INFORMATION
+
+Execute ALL ${totalTodos} searches using webSearch tool:
 
 ${plan.plan.map((item, idx) => `${idx + 1}. "${item.todos[0]}"`).join('\n')}
 
-CRITICAL: Complete all ${totalTodos} searches systematically. Use categories: research paper, news, company. STOP immediately after completing all ${totalTodos} searches - do not call additional tools.`,
+CRITICAL SEARCH REQUIREMENTS:
+- Focus on CURRENT ${new Date().getFullYear()} information and latest developments
+- Use terms like "latest", "current", "${new Date().getFullYear()}", "recent" in queries
+- Avoid searching for outdated information from 2023 or earlier years
+- Complete all ${totalTodos} searches systematically
+- Use categories: research paper, news, company
+- STOP immediately after completing all ${totalTodos} searches - do not call additional tools`,
             prompt,
             temperature: 0,
             toolChoice: 'required', // Ensure searches are executed

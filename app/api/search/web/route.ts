@@ -159,8 +159,24 @@ export async function POST(request: NextRequest) {
       content: typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content)
     }));
 
-    // Optimized shorter system prompt for faster processing
-    const systemPrompt = `T3 Chat with real-time web search. Use web_search tool first for current info: news, time queries, prices, events, recent data. The tool will provide a synthesized report that compiles all search results - use this comprehensive analysis as your primary source and build upon it. Include [Source](URL) citations. Make 1-3 focused queries.`;
+    // Enhanced system prompt for ChatGPT-like source compilation behavior
+    const systemPrompt = `T3 Chat with real-time web search capabilities.
+
+TODAY'S DATE: ${new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric", weekday: "long" })}
+CURRENT YEAR: ${new Date().getFullYear()}
+CURRENT TIME: ${new Date().toLocaleTimeString("en-US", { timeZoneName: "short" })}
+
+You have access to real-time web search and should prioritize current, up-to-date information from ${new Date().getFullYear()}.
+
+IMPORTANT: When using web_search:
+1. FIRST, display the synthesizedReport exactly as provided - this shows users the compilation of sources found (like ChatGPT does)
+2. THEN provide your comprehensive answer based on that information
+3. Always include [Source](URL) citations in your final response
+4. Use 1-3 focused search queries for best results
+5. For date/time questions, always use the current date information provided above
+6. For current events, search for the latest ${new Date().getFullYear()} information
+
+The synthesizedReport contains a textual compilation of all sources found and should be shown to users before your analysis.`;
 
     const finalMessages = [
       { role: 'system', content: systemPrompt },
@@ -265,14 +281,41 @@ export async function POST(request: NextRequest) {
 
               const searchResults = await Promise.all(searchPromises);
 
-              // Simplified: Just return search results without complex synthesis
-              const synthesizedReport = searchResults.length > 0 ? 
-                `Found ${searchResults.reduce((total, search) => total + search.results.length, 0)} relevant results for your query.` : 
-                null;
+              // **ENHANCED: Create ChatGPT-like textual compilation of sources**
+              const totalResults = searchResults.reduce((total, search) => total + search.results.length, 0);
+              
+              let synthesizedReport = null;
+              if (totalResults > 0) {
+                // Create a comprehensive compilation of all sources
+                const sourceCompilations = searchResults.map((search, searchIndex) => {
+                  if (search.results.length === 0) return null;
+                  
+                  const sourceTexts = search.results.map((result, resultIndex) => {
+                    // Extract key information from each source
+                    const truncatedContent = result.content.length > 400 
+                      ? result.content.substring(0, 400) + "..."
+                      : result.content;
+                    
+                    return `**${result.title}** (${new URL(result.url).hostname})
+${truncatedContent}`;
+                  }).join('\n\n');
+                  
+                  return `### Query: "${search.query}"
+${sourceTexts}`;
+                }).filter(Boolean);
+
+                synthesizedReport = `## 📊 Information Gathered from ${totalResults} Sources
+
+${sourceCompilations.join('\n\n---\n\n')}
+
+---
+
+*This compilation represents the key information found across all searched sources. The AI will now analyze this information to provide a comprehensive response.*`;
+              }
 
               return {
                 searches: searchResults,
-                synthesizedReport: synthesizedReport || null,
+                synthesizedReport,
                 hasContent: searchResults.some(search => search.results.length > 0)
               };
             } catch (error) {

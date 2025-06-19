@@ -336,8 +336,9 @@ export async function POST(req: Request) {
         console.log("Tool choice will be: required");
         console.log("Max steps will be: 2");
         
-        // Validate that the model supports web search for extreme mode
-        const modelSupportsWeb = model.includes('gemini') || model.includes('t3-4o') || model.includes('t3-gpt');
+        // **CORRECTED: Validate that the model supports web search for extreme mode**
+        // Extreme mode uses web search tools, so only web-compatible models should be allowed
+        const modelSupportsWeb = model.includes('gemini') || model.includes('t3-4o') || model.includes('t3-gpt') || model.includes('multimodal-best');
         if (!modelSupportsWeb) {
             console.error("🚨 EXTREME MODE ERROR: Model doesn't support web search");
             return new Response(
@@ -371,15 +372,14 @@ export async function POST(req: Request) {
                 } : {
                     temperature: 0, // Conservative default
                 }),
-                maxSteps: group === 'extreme' ? 2 : 1, // Allow 2 steps for extreme mode for complex research
+                maxSteps: 1, // Single step for all modes to prevent duplicate tool calls
                 maxRetries: 3, // Increased retries for API stability
                 experimental_activeTools: [...activeTools],
-                system: instructions + `\n\nThe user's location is ${latitude}, ${longitude}.`,
+                system: instructions + `\n\n🗓️ CURRENT DATE & TIME: ${new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric", weekday: "long" })} - CURRENT YEAR: ${new Date().getFullYear()}\n\nThe user's location is ${latitude}, ${longitude}.`,
                 toolChoice: group === 'extreme' ? 'required' : 
                            group === 'web' ? 'required' : 'auto', // Force tool usage for extreme and web modes
                 // **EXTREME MODE: Simplified approach for reliability**
                 ...(group === 'extreme' ? {
-                    maxToolRoundtrips: 2, // Allow sufficient tool executions but keep it manageable
                     experimental_continueSteps: false, // Disable continuation for stability
                 } : {}),
                 experimental_transform: smoothStream({
@@ -501,7 +501,9 @@ export async function POST(req: Request) {
                         } : {})
                     },
                 },
-                tools: {
+                tools: (() => {
+                    // Create filtered tools object based on active tools for extreme mode
+                    const baseTools = {
                     stock_chart: tool({
                         description: 'Get stock data and news for given stock symbols.',
                         parameters: z.object({
@@ -1141,37 +1143,39 @@ print(f"Converted amount: {converted_amount}")
                             const searchResults = await Promise.all(searchPromises);
 
                             // Add synthesis step - compile all information like ChatGPT
+                            // SKIP SYNTHESIS IN EXTREME MODE - let extreme search handle final comprehensive report
                             let synthesizedReport = '';
-                            try {
-                                // Collect all content for synthesis
-                                const allContent = searchResults.flatMap(search => 
-                                    search.results.map(result => ({
-                                        title: result.title,
-                                        content: result.content,
-                                        url: result.url,
-                                        query: search.query
-                                    }))
-                                );
+                            if (group !== 'extreme') {
+                                try {
+                                    // Collect all content for synthesis
+                                    const allContent = searchResults.flatMap(search => 
+                                        search.results.map(result => ({
+                                            title: result.title,
+                                            content: result.content,
+                                            url: result.url,
+                                            query: search.query
+                                        }))
+                                    );
 
-                                // Only synthesize if we have content
-                                if (allContent.length > 0) {
-                                    const contentForSynthesis = allContent
-                                        .slice(0, 15) // Limit to top 15 results for synthesis
-                                        .map(item => `**${item.title}**\n${item.content.slice(0, 800)}`)
-                                        .join('\n\n---\n\n');
+                                    // Only synthesize if we have content
+                                    if (allContent.length > 0) {
+                                        const contentForSynthesis = allContent
+                                            .slice(0, 15) // Limit to top 15 results for synthesis
+                                            .map(item => `**${item.title}**\n${item.content.slice(0, 800)}`)
+                                            .join('\n\n---\n\n');
 
-                                    // Add annotation for synthesis start
-                                    dataStream.writeMessageAnnotation({
-                                        type: 'synthesis',
-                                        data: {
-                                            status: 'starting',
-                                            message: 'Compiling and analyzing collected information...'
-                                        }
-                                    });
+                                        // Add annotation for synthesis start
+                                        dataStream.writeMessageAnnotation({
+                                            type: 'synthesis',
+                                            data: {
+                                                status: 'starting',
+                                                message: 'Compiling and analyzing collected information...'
+                                            }
+                                        });
 
-                                    const { object } = await generateObject({
-                                        model: t3.languageModel(model),
-                                        system: `You are an expert research analyst. Your task is to synthesize and compile information from multiple web sources into a comprehensive, well-structured report.
+                                        const { object } = await generateObject({
+                                            model: t3.languageModel(model),
+                                            system: `You are an expert research analyst. Your task is to synthesize and compile information from multiple web sources into a comprehensive, well-structured report.
 
 SYNTHESIS GUIDELINES:
 1. **Comprehensive Analysis**: Analyze all provided sources and create a cohesive narrative
@@ -1186,40 +1190,44 @@ SYNTHESIS GUIDELINES:
 10. **Current Context**: Emphasize recent developments and current state
 
 Create a comprehensive report that goes beyond just listing facts - provide analysis, context, and insights that would be valuable to someone seeking to understand this topic thoroughly.`,
-                                        prompt: `Based on the following web search results for queries: "${queries.join(', ')}", create a comprehensive, well-structured report that synthesizes all the information:
+                                            prompt: `Based on the following web search results for queries: "${queries.join(', ')}", create a comprehensive, well-structured report that synthesizes all the information:
 
 ${contentForSynthesis}
 
 Create a detailed analysis that compiles, connects, and contextualizes this information into a coherent, insightful report.`,
-                                        schema: z.object({
-                                            synthesizedReport: z.string().describe("A comprehensive, well-structured report that synthesizes all the collected information into a cohesive analysis with insights, context, and key findings"),
-                                            keyPoints: z.array(z.string()).describe("3-5 key insights or findings from the synthesis"),
-                                            summary: z.string().describe("A concise summary of the main conclusions")
-                                        }),
-                                    });
+                                            schema: z.object({
+                                                synthesizedReport: z.string().describe("A comprehensive, well-structured report that synthesizes all the collected information into a cohesive analysis with insights, context, and key findings"),
+                                                keyPoints: z.array(z.string()).describe("3-5 key insights or findings from the synthesis"),
+                                                summary: z.string().describe("A concise summary of the main conclusions")
+                                            }),
+                                        });
 
-                                    synthesizedReport = object.synthesizedReport;
+                                        synthesizedReport = object.synthesizedReport;
 
-                                    // Add annotation for synthesis completion
+                                        // Add annotation for synthesis completion
+                                        dataStream.writeMessageAnnotation({
+                                            type: 'synthesis',
+                                            data: {
+                                                status: 'completed',
+                                                message: 'Information synthesis completed',
+                                                keyPoints: object.keyPoints,
+                                                summary: object.summary
+                                            }
+                                        });
+                                    }
+                                } catch (error) {
+                                    console.error('Error during information synthesis:', error);
                                     dataStream.writeMessageAnnotation({
                                         type: 'synthesis',
                                         data: {
-                                            status: 'completed',
-                                            message: 'Information synthesis completed',
-                                            keyPoints: object.keyPoints,
-                                            summary: object.summary
+                                            status: 'error',
+                                            message: 'Failed to synthesize information, showing raw results'
                                         }
                                     });
                                 }
-                            } catch (error) {
-                                console.error('Error during information synthesis:', error);
-                                dataStream.writeMessageAnnotation({
-                                    type: 'synthesis',
-                                    data: {
-                                        status: 'error',
-                                        message: 'Failed to synthesize information, showing raw results'
-                                    }
-                                });
+                            } else {
+                                // In extreme mode, skip synthesis and let extreme search handle the final report
+                                console.log('⚡ Extreme mode: Skipping web search synthesis - will be handled by extreme search');
                             }
 
                             return {
@@ -1985,7 +1993,23 @@ Create a detailed analysis that compiles, connects, and contextualizes this info
                             }
                         },
                     }),
-                },
+                    };
+                    
+                    // Filter tools based on activeTools for extreme mode - exclude web_search completely
+                    if (group === 'extreme') {
+                        const filteredTools: any = {};
+                        activeTools.forEach((toolName: string) => {
+                            if (baseTools[toolName as keyof typeof baseTools]) {
+                                filteredTools[toolName] = baseTools[toolName as keyof typeof baseTools];
+                            }
+                        });
+                        console.log('🚀 EXTREME MODE: Filtered tools to only:', Object.keys(filteredTools));
+                        return filteredTools;
+                    }
+                    
+                    // For non-extreme modes, return all tools
+                    return baseTools;
+                })(),
                 // experimental_repairToolCall disabled
                 onChunk(event) {
                     if (event.chunk.type === 'tool-call') {

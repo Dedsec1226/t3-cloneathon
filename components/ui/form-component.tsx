@@ -167,14 +167,22 @@ const ImagePlusIcon = (props: SVGProps<SVGSVGElement>) => (
 );
 
 const TelescopeIcon = (props: SVGProps<SVGSVGElement>) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-telescope h-4 w-4" {...props}>
-        <path d="m10.065 12.493-6.18 1.318a.934.934 0 0 1-1.108-.702l-.537-2.15a1.07 1.07 0 0 1 .691-1.265l13.504-4.44" />
-        <path d="m13.56 11.747 4.332-.924" />
-        <path d="m16 21-3.105-6.21" />
-        <path d="M16.485 5.94a2 2 0 0 1 1.455-2.425l1.09-.272a1 1 0 0 1 1.212.727l1.515 6.06a1 1 0 0 1-.727 1.213l-1.09.272a2 2 0 0 1-2.425-1.455z" />
-        <path d="m6.158 8.633 1.114 4.456" />
-        <path d="m8 21 3.105-6.21" />
-        <circle cx="12" cy="13" r="2" />
+    <svg
+        {...props}
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+    >
+        <path d="m10.065 12.493-6.18 1.318a.934.934 0 0 1-1.108-.702l-.537-2.15a1.07 1.07 0 0 1 .691-1.265l13.504-4.44"/>
+        <path d="m13.56 11.747 4.332-.924"/>
+        <path d="m16 21-3.105-6.21"/>
+        <circle cx="16" cy="13" r="2.5"/>
     </svg>
 );
 
@@ -184,48 +192,48 @@ const models = [
     { value: "t3-4o", label: "GPT 4o", icon: OpenAIIcon, iconClass: "text-current", description: "OpenAI's flagship multimodal model", color: "blue", vision: true, reasoning: false, experimental: false, category: "Favorites", pdf: true, fast: false, web: true, imageGeneration: true, extreme: true },
     { value: "t3-dall-e-3", label: "DALL-E 3", icon: OpenAIIcon, iconClass: "text-current", description: "Advanced AI image generation", color: "blue", vision: false, reasoning: false, experimental: false, category: "Favorites", pdf: false, fast: false, web: false, imageGeneration: true, extreme: false },
     
-    // Anthropic Latest Models (Claude 4)
-    { value: "t3-claude-4-sonnet", label: "Claude 4 Sonnet", icon: AnthropicIcon, iconClass: "text-current", description: "Latest Claude 4 Sonnet model", color: "violet", vision: true, reasoning: true, experimental: false, category: "Favorites", pdf: true, fast: false, web: false, imageGeneration: false, extreme: true },
-    { value: "t3-claude-4-opus", label: "Claude 4 Opus", icon: AnthropicIcon, iconClass: "text-current", description: "Most powerful Claude 4 model", color: "violet", vision: true, reasoning: true, experimental: false, category: "Favorites", pdf: true, fast: false, web: false, imageGeneration: false, extreme: true },
-    { value: "t3-claude-3-opus", label: "Claude 3 Opus", icon: AnthropicIcon, iconClass: "text-current", description: "Legacy powerful Claude model", color: "violet", vision: true, reasoning: false, experimental: false, category: "Favorites", pdf: true, fast: false, web: false, imageGeneration: false, extreme: true },
+    // Anthropic Latest Models (Claude 4) - NO WEB SEARCH = NO EXTREME MODE
+    { value: "t3-claude-4-sonnet", label: "Claude 4 Sonnet", icon: AnthropicIcon, iconClass: "text-current", description: "Latest Claude 4 Sonnet model", color: "violet", vision: true, reasoning: true, experimental: false, category: "Favorites", pdf: true, fast: false, web: false, imageGeneration: false, extreme: false },
+    { value: "t3-claude-4-opus", label: "Claude 4 Opus", icon: AnthropicIcon, iconClass: "text-current", description: "Most powerful Claude 4 model", color: "violet", vision: true, reasoning: true, experimental: false, category: "Favorites", pdf: true, fast: false, web: false, imageGeneration: false, extreme: false },
+    { value: "t3-claude-3-opus", label: "Claude 3 Opus", icon: AnthropicIcon, iconClass: "text-current", description: "Legacy powerful Claude model", color: "violet", vision: true, reasoning: false, experimental: false, category: "Favorites", pdf: true, fast: false, web: false, imageGeneration: false, extreme: false },
     
-    // Google Gemini Models
+    // Google Gemini Models - HAS WEB SEARCH = EXTREME MODE COMPATIBLE
     { value: "t3-gemini-2-5-flash", label: "Gemini 2.5 Flash", icon: GeminiIcon, iconClass: "text-current", description: "Latest Gemini model with optimized streaming", color: "gemini", vision: true, reasoning: false, experimental: false, category: "Favorites", pdf: true, fast: true, web: true, imageGeneration: false, extreme: true },
     { value: "t3-gemini-1-5-pro", label: "Gemini 1.5 Pro", icon: GeminiIcon, iconClass: "text-current", description: "Professional Gemini model", color: "gemini", vision: true, reasoning: false, experimental: false, category: "Favorites", pdf: true, fast: false, web: true, imageGeneration: false, extreme: true },
 
     // ===== OPENAI MODELS =====
-    { value: "t3-4o-mini", label: "GPT 4o mini", icon: OpenAIIcon, iconClass: "text-current", description: "Fast and efficient OpenAI model", color: "blue", vision: true, reasoning: false, experimental: false, category: "OpenAI", pdf: true, fast: true, web: false, imageGeneration: false, extreme: true },
+    { value: "t3-4o-mini", label: "GPT 4o mini", icon: OpenAIIcon, iconClass: "text-current", description: "Fast and efficient OpenAI model", color: "blue", vision: true, reasoning: false, experimental: false, category: "OpenAI", pdf: true, fast: true, web: false, imageGeneration: false, extreme: false },
     { value: "t3-o1", label: "o1", icon: OpenAIIcon, iconClass: "text-current", description: "Advanced reasoning model", color: "blue", vision: false, reasoning: true, experimental: false, category: "OpenAI", pdf: false, fast: false, web: false, imageGeneration: false, extreme: false },
     { value: "t3-o1-mini", label: "o1 mini", icon: OpenAIIcon, iconClass: "text-current", description: "Compact reasoning model", color: "blue", vision: false, reasoning: true, experimental: false, category: "OpenAI", pdf: false, fast: true, web: false, imageGeneration: false, extreme: false },
-    { value: "t3-gpt-4-turbo", label: "GPT 4 Turbo", icon: OpenAIIcon, iconClass: "text-current", description: "High-performance GPT-4 variant", color: "blue", vision: true, reasoning: false, experimental: false, category: "OpenAI", pdf: true, fast: false, web: false, imageGeneration: false, extreme: true },
+    { value: "t3-gpt-4-turbo", label: "GPT 4 Turbo", icon: OpenAIIcon, iconClass: "text-current", description: "High-performance GPT-4 variant", color: "blue", vision: true, reasoning: false, experimental: false, category: "OpenAI", pdf: true, fast: false, web: false, imageGeneration: false, extreme: false },
 
 
-    // ===== ANTHROPIC MODELS =====
-    { value: "t3-claude-4-sonnet", label: "Claude 4 Sonnet", icon: AnthropicIcon, iconClass: "text-current", description: "Latest Claude 4 Sonnet model", color: "violet", vision: true, reasoning: true, experimental: false, category: "Anthropic", pdf: true, fast: false, web: false, imageGeneration: false, extreme: true },
-    { value: "t3-claude-4-opus", label: "Claude 4 Opus", icon: AnthropicIcon, iconClass: "text-current", description: "Most powerful Claude 4 model", color: "violet", vision: true, reasoning: true, experimental: false, category: "Anthropic", pdf: true, fast: false, web: false, imageGeneration: false, extreme: true },
-    { value: "t3-claude-3-5-sonnet", label: "Claude 3.5 Sonnet", icon: AnthropicIcon, iconClass: "text-current", description: "Previous generation Sonnet", color: "violet", vision: true, reasoning: false, experimental: false, category: "Anthropic", pdf: true, fast: false, web: false, imageGeneration: false, extreme: true },
-    { value: "t3-claude-3-5-haiku", label: "Claude 3.5 Haiku", icon: AnthropicIcon, iconClass: "text-current", description: "Fast and lightweight Claude", color: "violet", vision: true, reasoning: false, experimental: false, category: "Anthropic", pdf: true, fast: true, web: false, imageGeneration: false, extreme: true },
-    { value: "t3-claude-3-opus", label: "Claude 3 Opus", icon: AnthropicIcon, iconClass: "text-current", description: "Legacy powerful Claude model", color: "violet", vision: true, reasoning: false, experimental: false, category: "Anthropic", pdf: true, fast: false, web: false, imageGeneration: false, extreme: true },
+    // ===== ANTHROPIC MODELS ===== - NO WEB SEARCH SUPPORT
+    { value: "t3-claude-4-sonnet", label: "Claude 4 Sonnet", icon: AnthropicIcon, iconClass: "text-current", description: "Latest Claude 4 Sonnet model", color: "violet", vision: true, reasoning: true, experimental: false, category: "Anthropic", pdf: true, fast: false, web: false, imageGeneration: false, extreme: false },
+    { value: "t3-claude-4-opus", label: "Claude 4 Opus", icon: AnthropicIcon, iconClass: "text-current", description: "Most powerful Claude 4 model", color: "violet", vision: true, reasoning: true, experimental: false, category: "Anthropic", pdf: true, fast: false, web: false, imageGeneration: false, extreme: false },
+    { value: "t3-claude-3-5-sonnet", label: "Claude 3.5 Sonnet", icon: AnthropicIcon, iconClass: "text-current", description: "Previous generation Sonnet", color: "violet", vision: true, reasoning: false, experimental: false, category: "Anthropic", pdf: true, fast: false, web: false, imageGeneration: false, extreme: false },
+    { value: "t3-claude-3-5-haiku", label: "Claude 3.5 Haiku", icon: AnthropicIcon, iconClass: "text-current", description: "Fast and lightweight Claude", color: "violet", vision: true, reasoning: false, experimental: false, category: "Anthropic", pdf: true, fast: true, web: false, imageGeneration: false, extreme: false },
+    { value: "t3-claude-3-opus", label: "Claude 3 Opus", icon: AnthropicIcon, iconClass: "text-current", description: "Legacy powerful Claude model", color: "violet", vision: true, reasoning: false, experimental: false, category: "Anthropic", pdf: true, fast: false, web: false, imageGeneration: false, extreme: false },
 
-    // ===== GOOGLE MODELS =====
+    // ===== GOOGLE MODELS ===== - HAS WEB SEARCH SUPPORT
     { value: "t3-gemini-2-5-flash", label: "Gemini 2.5 Flash", icon: GeminiIcon, iconClass: "text-current", description: "Latest Gemini model with optimized streaming", color: "gemini", vision: true, reasoning: false, experimental: false, category: "Google", pdf: true, fast: true, web: true, imageGeneration: false, extreme: true },
     { value: "t3-gemini-1-5-flash", label: "Gemini 1.5 Flash", icon: GeminiIcon, iconClass: "text-current", description: "Fast Gemini model", color: "gemini", vision: true, reasoning: false, experimental: false, category: "Google", pdf: true, fast: true, web: true, imageGeneration: false, extreme: true },
     { value: "t3-gemini-1-5-pro", label: "Gemini 1.5 Pro", icon: GeminiIcon, iconClass: "text-current", description: "Professional Gemini model", color: "gemini", vision: true, reasoning: false, experimental: false, category: "Google", pdf: true, fast: false, web: true, imageGeneration: false, extreme: true },
 
 
 
-    // ===== SPECIALIZED MODELS =====
-    { value: "t3-reasoning-best", label: "Best Reasoning", icon: BrainCapabilityIcon, iconClass: "text-current", description: "Best hybrid reasoning model", color: "purple", vision: true, reasoning: true, experimental: false, category: "Specialized", pdf: true, fast: false, web: false, imageGeneration: false, extreme: true },
-    { value: "t3-vision-best", label: "Best Vision", icon: EyeCapabilityIcon, iconClass: "text-current", description: "Best vision understanding", color: "indigo", vision: true, reasoning: false, experimental: false, category: "Specialized", pdf: true, fast: false, web: false, imageGeneration: false, extreme: true },
-    { value: "t3-code-best", label: "Best Coding", icon: OpenAIIcon, iconClass: "text-current", description: "Best for coding tasks", color: "green", vision: true, reasoning: true, experimental: false, category: "Specialized", pdf: true, fast: false, web: false, imageGeneration: false, extreme: true },
+    // ===== SPECIALIZED MODELS ===== - ONLY MULTIMODAL HAS WEB SEARCH
+    { value: "t3-reasoning-best", label: "Best Reasoning", icon: BrainCapabilityIcon, iconClass: "text-current", description: "Best hybrid reasoning model", color: "purple", vision: true, reasoning: true, experimental: false, category: "Specialized", pdf: true, fast: false, web: false, imageGeneration: false, extreme: false },
+    { value: "t3-vision-best", label: "Best Vision", icon: EyeCapabilityIcon, iconClass: "text-current", description: "Best vision understanding", color: "indigo", vision: true, reasoning: false, experimental: false, category: "Specialized", pdf: true, fast: false, web: false, imageGeneration: false, extreme: false },
+    { value: "t3-code-best", label: "Best Coding", icon: OpenAIIcon, iconClass: "text-current", description: "Best for coding tasks", color: "green", vision: true, reasoning: true, experimental: false, category: "Specialized", pdf: true, fast: false, web: false, imageGeneration: false, extreme: false },
     { value: "t3-multimodal-best", label: "Best Multimodal", icon: AnthropicIcon, iconClass: "text-current", description: "Best multimodal capabilities", color: "violet", vision: true, reasoning: true, experimental: false, category: "Specialized", pdf: true, fast: false, web: true, imageGeneration: false, extreme: true },
     
-    // ===== FAST MODELS =====
-    { value: "t3-fast", label: "Fast (GPT-4o mini)", icon: ZapIcon, iconClass: "text-current", description: "Quick responses", color: "yellow", vision: true, reasoning: false, experimental: false, category: "Fast", pdf: true, fast: true, web: false, imageGeneration: false, extreme: true },
-    { value: "t3-fast-haiku", label: "Fast (Claude Haiku)", icon: ZapIcon, iconClass: "text-current", description: "Lightning fast Claude", color: "yellow", vision: true, reasoning: false, experimental: false, category: "Fast", pdf: true, fast: true, web: false, imageGeneration: false, extreme: true },
+    // ===== FAST MODELS ===== - ONLY FLASH HAS WEB SEARCH
+    { value: "t3-fast", label: "Fast (GPT-4o mini)", icon: ZapIcon, iconClass: "text-current", description: "Quick responses", color: "yellow", vision: true, reasoning: false, experimental: false, category: "Fast", pdf: true, fast: true, web: false, imageGeneration: false, extreme: false },
+    { value: "t3-fast-haiku", label: "Fast (Claude Haiku)", icon: ZapIcon, iconClass: "text-current", description: "Lightning fast Claude", color: "yellow", vision: true, reasoning: false, experimental: false, category: "Fast", pdf: true, fast: true, web: false, imageGeneration: false, extreme: false },
     { value: "t3-fast-flash", label: "Fast (Gemini Flash)", icon: ZapIcon, iconClass: "text-current", description: "Super fast Gemini", color: "yellow", vision: true, reasoning: false, experimental: false, category: "Fast", pdf: true, fast: true, web: true, imageGeneration: false, extreme: true },
 
-    // ===== IMAGE GENERATION =====
+    // ===== IMAGE GENERATION ===== - NO WEB SEARCH NEEDED
     { value: "t3-dall-e-3", label: "DALL-E 3", icon: ImagePlusIcon, iconClass: "text-current", description: "High quality image generation", color: "pink", vision: false, reasoning: false, experimental: false, category: "Image Generation", pdf: false, fast: false, web: false, imageGeneration: true, extreme: false },
     { value: "t3-dall-e-2", label: "DALL-E 2", icon: ImagePlusIcon, iconClass: "text-current", description: "Standard image generation", color: "pink", vision: false, reasoning: false, experimental: false, category: "Image Generation", pdf: false, fast: true, web: false, imageGeneration: true, extreme: false },
 ];
@@ -365,7 +373,7 @@ const ModelSwitcher: React.FC<ModelSwitcherProps & {
                     case 'imageGeneration':
                         return model.imageGeneration === true;
                     case 'extreme':
-                        return model.extreme === true;
+                        return model.extreme === true && model.web === true;
                     default:
                         return false;
                 }
@@ -618,7 +626,8 @@ const ModelSwitcher: React.FC<ModelSwitcherProps & {
                                 { key: 'web', label: 'Web', icon: GlobeCapabilityIcon, color: '#3b82f6' },
                                 { key: 'pdf', label: 'PDFs', icon: FileTextIcon, color: '#8b5cf6' },
                                 { key: 'reasoning', label: 'Reasoning', icon: BrainCapabilityIcon, color: '#a855f7' },
-                                { key: 'imageGeneration', label: 'Images', icon: ImagePlusIcon, color: '#f97316' }
+                                { key: 'imageGeneration', label: 'Images', icon: ImagePlusIcon, color: '#f97316' },
+                                { key: 'extreme', label: 'Extreme', icon: TelescopeIcon, color: '#ec4899' }
                             ].map(({ key, label, icon: Icon, color }) => (
                                 <motion.button
                                     key={key}
@@ -811,6 +820,11 @@ const ModelSwitcher: React.FC<ModelSwitcherProps & {
                                                                         <ImagePlusIcon className="w-2 h-2 text-orange-400" />
                                                                     </div>
                                                                 )}
+                                                                {model.extreme && model.web && (
+                                                                    <div className="w-3 h-3 rounded bg-pink-500/20 flex items-center justify-center">
+                                                                        <TelescopeIcon className="w-2 h-2 text-pink-400" />
+                                                                    </div>
+                                                                )}
                                                             </div>
                                                         </DropdownMenuItem>
                                                     </motion.div>
@@ -939,6 +953,18 @@ const ModelSwitcher: React.FC<ModelSwitcherProps & {
                                                                     </TooltipContent>
                                                                 </Tooltip>
                                                             )}
+                                                            {model.extreme && model.web && (
+                                                                <Tooltip delayDuration={300}>
+                                                                    <TooltipTrigger asChild>
+                                                                        <div className="w-5 h-5 rounded bg-pink-500/20 flex items-center justify-center">
+                                                                            <TelescopeIcon className="w-3 h-3 text-pink-400" />
+                                                                        </div>
+                                                                    </TooltipTrigger>
+                                                                    <TooltipContent side="top" className="bg-popover border-border">
+                                                                        <span className="text-xs text-popover-foreground">Extreme Mode</span>
+                                                                    </TooltipContent>
+                                                                </Tooltip>
+                                                            )}
                                                         </div>
                                                     </DropdownMenuItem>
                                                 </motion.div>
@@ -1064,6 +1090,11 @@ const ModelSwitcher: React.FC<ModelSwitcherProps & {
                                                                         </TooltipContent>
                                                                     </Tooltip>
                                                                 )}
+                                                                {model.extreme && model.web && (
+                                                                    <div className="w-3 h-3 rounded bg-pink-500/20 flex items-center justify-center">
+                                                                        <TelescopeIcon className="w-2 h-2 text-pink-400" />
+                                                                    </div>
+                                                                )}
                                                             </div>
                                                         </DropdownMenuItem>
                                                     </motion.div>
@@ -1179,6 +1210,18 @@ const ModelSwitcher: React.FC<ModelSwitcherProps & {
                                                                     </TooltipTrigger>
                                                                     <TooltipContent side="top" className="bg-popover border-border">
                                                                         <span className="text-xs text-popover-foreground">Image Generation</span>
+                                                                    </TooltipContent>
+                                                                </Tooltip>
+                                                            )}
+                                                            {model.extreme && model.web && (
+                                                                <Tooltip delayDuration={300}>
+                                                                    <TooltipTrigger asChild>
+                                                                        <div className="w-5 h-5 rounded bg-pink-500/20 flex items-center justify-center">
+                                                                            <TelescopeIcon className="w-3 h-3 text-pink-400" />
+                                                                        </div>
+                                                                    </TooltipTrigger>
+                                                                    <TooltipContent side="top" className="bg-popover border-border">
+                                                                        <span className="text-xs text-popover-foreground">Extreme Mode</span>
                                                                     </TooltipContent>
                                                                 </Tooltip>
                                                             )}
@@ -1877,10 +1920,6 @@ const FormComponent: React.FC<FormComponentProps> = ({
         }
 
         if (input.trim() || attachments.length > 0) {
-            if (user) {
-                window.history.replaceState({}, '', `/search/${chatId}`);
-            }
-
             setHasSubmitted(true);
             lastSubmittedQueryRef.current = input.trim();
 
@@ -1943,9 +1982,9 @@ const FormComponent: React.FC<FormComponentProps> = ({
     const webSupportedModels = models.filter(model => model.web === true);
     const currentModelSupportsWeb = models.find(model => model.value === selectedModel)?.web === true;
     
-    // Get models that support extreme mode
-    const extremeSupportedModels = models.filter(model => model.extreme === true);
-    const currentModelSupportsExtreme = models.find(model => model.value === selectedModel)?.extreme === true;
+    // Get models that support extreme mode (requires both extreme and web search)
+    const extremeSupportedModels = models.filter(model => model.extreme === true && model.web === true);
+    const currentModelSupportsExtreme = models.find(model => model.value === selectedModel)?.extreme === true && models.find(model => model.value === selectedModel)?.web === true;
 
     const handleWebSearchToggle = useCallback((e: React.MouseEvent) => {
         e.preventDefault();

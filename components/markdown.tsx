@@ -405,6 +405,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
     // Temporarily disable HoverCard to prevent infinite loops
     return (
       <Link
+        key={generateKey()}
         href={href}
         target="_blank"
         rel="noopener noreferrer"
@@ -478,11 +479,12 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
       if (matches.length > 0) {
         const parts = [];
         let lastIndex = 0;
+        const fragmentKey = generateKey(); // Generate a unique key for this fragment
         
         matches.forEach((match, index) => {
           // Add text before the LaTeX placeholder
           if (match.index! > lastIndex) {
-            parts.push(<span key={`text-before-${index}`}>{text.slice(lastIndex, match.index)}</span>);
+            parts.push(<span key={`text-before-${fragmentKey}-${index}`}>{text.slice(lastIndex, match.index)}</span>);
           }
           
           // Add the LaTeX component
@@ -490,7 +492,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
           if (latexBlock) {
             parts.push(
               <LaTeX
-                key={`latex-${index}-${generateKey()}`}
+                key={`latex-${fragmentKey}-${index}`}
                 delimiters={[
                   { left: '$', right: '$', display: false },
                   { left: '\\(', right: '\\)', display: false }
@@ -501,7 +503,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
               </LaTeX>
             );
           } else {
-            parts.push(<span key={`fallback-${index}`}>{match[0]}</span>); // fallback to placeholder text
+            parts.push(<span key={`fallback-${fragmentKey}-${index}`}>{match[0]}</span>); // fallback to placeholder text
           }
           
           lastIndex = match.index! + match[0].length;
@@ -509,10 +511,10 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
         
         // Add any remaining text after the last LaTeX placeholder
         if (lastIndex < text.length) {
-          parts.push(<span key="text-after">{text.slice(lastIndex)}</span>);
+          parts.push(<span key={`text-after-${fragmentKey}`}>{text.slice(lastIndex)}</span>);
         }
         
-        return <React.Fragment key={generateKey()}>{parts}</React.Fragment>;
+        return <React.Fragment key={fragmentKey}>{parts}</React.Fragment>;
       }
       
       return text;
@@ -572,7 +574,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
       }
       return isValidUrl(href)
         ? renderHoverCard(href, text)
-        : <a href={href} className="text-primary dark:text-primary-light hover:underline font-medium">{text}</a>;
+        : <a key={generateKey()} href={href} className="text-primary dark:text-primary-light hover:underline font-medium">{text}</a>;
     },
     heading(children, level) {
       const HeadingTag = `h${level}` as keyof JSX.IntrinsicElements;

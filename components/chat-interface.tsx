@@ -480,11 +480,30 @@ const ChatInterface = memo(({ initialChatId, initialMessages, initialVisibility 
             const currentScrollTop = window.scrollY;
             const scrollHeight = document.documentElement.scrollHeight;
             const clientHeight = window.innerHeight;
-            const isAtBottom = currentScrollTop + clientHeight >= scrollHeight - 100; // More forgiving threshold
-            const hasScrolledUp = currentScrollTop < scrollHeight - clientHeight - 100; // Show button when scrolled up
+            const isAtBottom = currentScrollTop + clientHeight >= scrollHeight - 50; // More sensitive bottom detection
+            // **IMPROVED: Show button when scrolled up by more than 100px from bottom (more sensitive)**
+            const hasScrolledUp = currentScrollTop < scrollHeight - clientHeight - 100; // More responsive detection
 
-            // Show scroll-to-bottom button when user has scrolled up and there are messages
-            setShowScrollToBottom(hasScrolledUp && messages.length > 0);
+            // Show scroll-to-bottom button when user is not at bottom and there are messages
+            // **IMPROVED: Show button whenever not at bottom, regardless of scroll distance**
+            const shouldShow = !isAtBottom && messages.length > 0;
+            
+            // Debug logging
+            console.log('Scroll Debug:', {
+                currentScrollTop,
+                scrollHeight,
+                clientHeight,
+                isAtBottom,
+                messagesLength: messages.length,
+                shouldShow
+            });
+            
+            setShowScrollToBottom(shouldShow);
+            
+            // Temporary: Always show button when there are messages for testing
+            if (messages.length > 0) {
+                setShowScrollToBottom(true);
+            }
 
             // Track manual scrolling during streaming
             if (status === 'streaming' && !isAutoScrollingRef.current) {
@@ -838,27 +857,18 @@ const ChatInterface = memo(({ initialChatId, initialMessages, initialVisibility 
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: 20 }}
                                 transition={{ duration: 0.2 }}
-                                className="fixed bottom-32 right-6 z-40"
+                                className="fixed bottom-32 right-6 z-[9999]"
+                                style={{ zIndex: 9999 }}
                             >
                                 <button
                                     onClick={scrollToBottom}
-                                    className="group flex items-center justify-center gap-2 bg-background/95 backdrop-blur-sm border border-border/60 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 active:scale-95 px-3 py-2 text-sm font-medium text-foreground/80 hover:text-foreground"
+                                    className="justify-center whitespace-nowrap font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 disabled:hover:bg-secondary/50 h-8 px-3 text-xs pointer-events-auto flex items-center gap-2 rounded-full border border-secondary/40 bg-background/95 text-secondary-foreground/70 backdrop-blur-xl hover:bg-secondary shadow-lg"
                                     aria-label="Scroll to bottom"
                                 >
-                                    <svg
-                                        width="16"
-                                        height="16"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeWidth="2"
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        className="transition-transform group-hover:translate-y-0.5"
-                                    >
-                                        <path d="m6 9 6 6 6-6" />
+                                    <span className="pb-0.5">Scroll to bottom</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down -mr-1 h-4 w-4">
+                                        <path d="m6 9 6 6 6-6"></path>
                                     </svg>
-                                    <span className="hidden sm:inline">Scroll to bottom</span>
                                 </button>
                             </motion.div>
                         )}
