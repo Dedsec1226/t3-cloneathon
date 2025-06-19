@@ -8,7 +8,7 @@ export default function LandingPage() {
   return (
     <div className="relative flex h-screen flex-col overflow-hidden bg-background text-foreground">
       {/* Theme Toggle - positioned in top right */}
-      <div className="absolute top-4 right-4 z-20">
+      <div className="absolute top-4 right-4 z-20 theme-toggle">
         <ThemeToggle />
       </div>
       

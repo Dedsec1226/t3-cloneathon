@@ -239,7 +239,7 @@ const models = [
 ];
 
 const getColorClasses = (color: string, isSelected: boolean = false) => {
-    const baseClasses = "transition-colors duration-200";
+    const baseClasses = "transition-colors duration-75";
     const selectedClasses = isSelected ? "bg-opacity-100! dark:bg-opacity-100!" : "";
 
     // For selected state, use consistent theme colors like Gemini and OpenAI
@@ -461,7 +461,7 @@ const ModelSwitcher: React.FC<ModelSwitcherProps & {
         return (
             <div className={cn(
                 "flex items-center gap-2 p-2 sm:px-3 h-8",
-                "rounded-full transition-all duration-200",
+                "rounded-full transition-all duration-75",
                 "border border-neutral-200 dark:border-neutral-800",
                 className
             )}>
@@ -504,7 +504,7 @@ const ModelSwitcher: React.FC<ModelSwitcherProps & {
             <DropdownMenuTrigger
                 className={cn(
                     "flex items-center gap-2 p-2 sm:px-3 h-8",
-                    "rounded-full transition-all duration-200",
+                    "rounded-full transition-all duration-75",
                     "border border-neutral-200 dark:border-neutral-800",
                     "hover:shadow-sm hover:border-neutral-300 dark:hover:border-neutral-700",
                     getColorClasses(selectedModelData?.color || "neutral", true),
@@ -647,7 +647,7 @@ const ModelSwitcher: React.FC<ModelSwitcherProps & {
                                         setSelectedFilters(newFilters as Set<string>);
                                     }}
                                     className={cn(
-                                        "inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 hover:scale-105 border",
+                                        "inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-75 hover:scale-105 border",
                                         activeFilters.has(key) 
                                             ? "text-primary-foreground shadow-lg" 
                                             : "text-muted-foreground hover:text-foreground bg-secondary/50 border-border hover:border-border/60"
@@ -2025,6 +2025,32 @@ const FormComponent: React.FC<FormComponentProps> = ({
             );
         }
     }, [selectedGroup, setSelectedGroup, currentModelSupportsWeb, webSupportedModels, showSwitchNotification]);
+
+    // Prevent hydration mismatch by not rendering theme-dependent content until mounted
+    if (!mounted) {
+        return (
+            <div className="flex flex-col w-full">
+                <TooltipProvider>
+                    <div className="relative">
+                        <div className="rounded-t-3xl pt-2 px-2 backdrop-blur-lg bg-background">
+                            <div className="border-reflect rounded-t-2xl backdrop-blur-lg">
+                                <div className="relative flex w-full flex-col items-stretch gap-2 rounded-t-2xl border-0 backdrop-blur-md px-3 pt-3 text-secondary-foreground outline-0 sm:max-w-3xl bg-background">
+                                    <div className="w-full h-12 bg-neutral-200 dark:bg-neutral-700 rounded animate-pulse" />
+                                    <div className="flex justify-between items-center pt-3 mt-2 pb-3">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-8 h-8 bg-neutral-200 dark:bg-neutral-700 rounded-full animate-pulse" />
+                                            <div className="w-20 h-8 bg-neutral-200 dark:bg-neutral-700 rounded-full animate-pulse" />
+                                        </div>
+                                        <div className="w-16 h-8 bg-neutral-200 dark:bg-neutral-700 rounded animate-pulse" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </TooltipProvider>
+            </div>
+        );
+    }
 
     return (
         <div className={cn("flex flex-col w-full")} suppressHydrationWarning>

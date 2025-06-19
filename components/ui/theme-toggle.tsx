@@ -18,8 +18,9 @@ export function ThemeToggle() {
   }, []);
 
   const toggleTheme = () => {
-    // Simple toggle logic - if currently dark, go to light, otherwise go to dark
-    setTheme(isDark ? "light" : "dark");
+    // Force explicit theme toggle - avoid system preference dependency
+    const newTheme = resolvedTheme === "dark" ? "light" : "dark";
+    setTheme(newTheme);
   };
 
   // Prevent hydration mismatch by not rendering until mounted
@@ -30,7 +31,7 @@ export function ThemeToggle() {
           <Button
             variant="ghost"
             size="icon"
-            className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-muted/40 hover:text-foreground disabled:hover:bg-transparent disabled:hover:text-foreground/50 group relative size-8 bg-muted/20 dark:bg-muted/30 backdrop-blur-sm"
+            className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-black/10 dark:hover:bg-white/10 disabled:hover:bg-transparent disabled:hover:text-foreground/50 size-8 text-[#b83268] dark:text-pink-200"
           >
             <div className="size-4" />
             <span className="sr-only">Toggle theme</span>
@@ -50,7 +51,7 @@ export function ThemeToggle() {
           variant="ghost"
           size="icon"
           onClick={toggleTheme}
-          className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-muted/40 hover:text-foreground disabled:hover:bg-transparent disabled:hover:text-foreground/50 group relative size-8 bg-muted/20 dark:bg-muted/30 backdrop-blur-sm"
+          className="theme-toggle inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-black/10 dark:hover:bg-white/10 disabled:hover:bg-transparent disabled:hover:text-foreground/50 group relative size-8 text-[#b83268] dark:text-pink-200"
         >
           <motion.svg
             xmlns="http://www.w3.org/2000/svg"
