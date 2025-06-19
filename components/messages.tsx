@@ -77,6 +77,26 @@ const Messages: React.FC<MessagesProps> = ({
   const reasoningScrollRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [hasInitialScrolled, setHasInitialScrolled] = useState(false);
+  const [hoveredMessageIndex, setHoveredMessageIndex] = useState<number | null>(null);
+
+  // Add event listeners for action button visibility
+  useEffect(() => {
+    const handleShowActionButtons = (event: any) => {
+      setHoveredMessageIndex(event.detail.messageIndex);
+    };
+    
+    const handleHideActionButtons = (event: any) => {
+      setHoveredMessageIndex(null);
+    };
+    
+    window.addEventListener('showActionButtons', handleShowActionButtons);
+    window.addEventListener('hideActionButtons', handleHideActionButtons);
+    
+    return () => {
+      window.removeEventListener('showActionButtons', handleShowActionButtons);
+      window.removeEventListener('hideActionButtons', handleHideActionButtons);
+    };
+  }, []);
 
   // Scroll to bottom immediately (without animation) when opening existing chat
   useEffect(() => {
@@ -169,7 +189,7 @@ const Messages: React.FC<MessagesProps> = ({
       case "text":        
         return (
           <div key={`${messageIndex}-${partIndex}-text`}>
-            <div>
+            <div className="prose prose-neutral dark:prose-invert max-w-none prose-pre:overflow-x-auto assistant-text-content">
               <MarkdownRenderer content={part.text} />
             </div>
 
@@ -311,10 +331,93 @@ const Messages: React.FC<MessagesProps> = ({
       case "step-start": {
         const firstStepStartIndex = parts.findIndex(p => p.type === 'step-start');
         if (partIndex === firstStepStartIndex) {
-          // Render logo and title for the first step-start
+          // Render logo and title for the first step-start with action buttons to the side
           return (
             <div key={`${messageIndex}-${partIndex}-step-start-logo`}>
-              <T3LogoHeader />
+              <div className="flex items-center justify-between">
+                <T3LogoHeader />
+                {/* Add action buttons to the side of T3 header */}
+                <div className={`flex items-center gap-1 transition-opacity action-buttons ${hoveredMessageIndex === messageIndex ? 'opacity-100' : 'opacity-0'}`} data-for-message={messageIndex}>
+                {/* Only show retry/edit button for owners OR unauthenticated users on private chats */}
+                {((user && isOwner) || (!user && selectedVisibilityType === 'private')) && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={async () => {
+                      try {
+                        const lastUserMessage = messages.findLast(m => m.role === 'user');
+                        if (!lastUserMessage) return;
+
+                        // Step 1: Delete trailing messages if user is authenticated
+                        if (user && lastUserMessage.id) {
+                          await deleteTrailingMessages({
+                            id: lastUserMessage.id,
+                          });
+                        }
+
+                        // Step 2: Update local state to remove assistant messages
+                        const newMessages = [];
+                        // Find the index of the last user message
+                        for (let i = 0; i < messages.length; i++) {
+                          newMessages.push(messages[i]);
+                          if (messages[i].id === lastUserMessage.id) {
+                            break;
+                          }
+                        }
+
+                        // Step 3: Update UI state
+                        setMessages(newMessages);
+                        setSuggestedQuestions([]);
+
+                        // Step 4: Reload
+                        await reload();
+                      } catch (error) {
+                        console.error("Error in reload:", error);
+                      }
+                    }}
+                    disabled={status === 'submitted' || status === 'streaming'}
+                    className="h-8 w-8 p-0 text-xs"
+                    aria-label="Retry message"
+                  >
+                    <RefreshCw className="h-4 w-4" />
+                  </Button>
+                )}
+                {((user && isOwner) || (!user && selectedVisibilityType === 'private')) && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      // Edit functionality - you may need to pass this as a prop
+                      console.log("Edit functionality would go here");
+                    }}
+                    disabled={status === 'submitted' || status === 'streaming'}
+                    className="h-8 w-8 p-0 text-xs"
+                    aria-label="Edit message"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                      <path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                      <path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"></path>
+                    </svg>
+                  </Button>
+                )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    // Copy the last user message
+                    const lastUserMessage = messages.findLast(m => m.role === 'user');
+                    if (lastUserMessage?.content) {
+                      navigator.clipboard.writeText(lastUserMessage.content);
+                      toast.success("Copied to clipboard");
+                    }
+                  }}
+                  className="h-8 w-8 p-0 text-xs"
+                  aria-label="Copy message"
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
+                </div>
+              </div>
             </div>
           );
         }
@@ -413,56 +516,31 @@ const Messages: React.FC<MessagesProps> = ({
   return (
     <div className="space-y-0 mb-32 flex flex-col">
       <div className="flex-grow">
-        {memoizedMessages.map((message, index) => {
-          const isNextMessageAssistant = index < memoizedMessages.length - 1 && memoizedMessages[index + 1].role === 'assistant';
-          const isCurrentMessageUser = message.role === 'user';
-          const isCurrentMessageAssistant = message.role === 'assistant';
-          const isLastMessage = index === memoizedMessages.length - 1;
-          
-          // Determine proper spacing between messages
-          let messageClasses = '';
-          
-          if (isCurrentMessageUser && isNextMessageAssistant) {
-            // Reduce space between user message and its response
-            messageClasses = 'mb-2';
-          } else if (isCurrentMessageAssistant && index < memoizedMessages.length - 1) {
-            // Add border and spacing only if this is not the last assistant message
-            messageClasses = 'mb-6 pb-6 border-b border-neutral-200 dark:border-neutral-800';
-          } else if (isCurrentMessageAssistant && index === memoizedMessages.length - 1) {
-            // Last assistant message should have no bottom margin (min-height is now handled in Message component)
-            messageClasses = 'mb-0';
-          } else {
-            messageClasses = 'mb-3';
-          }
-          
-          return (
-            <div 
-              key={index} 
-              className={messageClasses}
-            >
-              <Message
-                message={message}
-                index={index}
-                lastUserMessageIndex={lastUserMessageIndex}
-                renderPart={renderPart}
-                status={status}
-                messages={messages}
-                setMessages={setMessages}
-                append={append}
-                setSuggestedQuestions={setSuggestedQuestions}
-                suggestedQuestions={index === memoizedMessages.length - 1 ? suggestedQuestions : []}
-                user={user}
-                selectedVisibilityType={selectedVisibilityType}
-                reload={reload}
-                isLastMessage={isLastMessage}
-                error={index === memoizedMessages.length - 1 ? error : null}
-                isMissingAssistantResponse={index === memoizedMessages.length - 1 ? isMissingAssistantResponse : false}
-                handleRetry={handleRetry}
-                isOwner={isOwner}
-              />
-            </div>
-          );
-        })}
+        {memoizedMessages.map((message, i) => (
+          <div key={i} className="mb-4">
+            <Message
+              message={message}
+              index={i}
+              lastUserMessageIndex={lastUserMessageIndex}
+              renderPart={renderPart}
+              status={status}
+              messages={messages}
+              setMessages={setMessages}
+              append={append}
+              setSuggestedQuestions={setSuggestedQuestions}
+              suggestedQuestions={suggestedQuestions}
+              user={user}
+              selectedVisibilityType={selectedVisibilityType}
+              reload={reload}
+              isLastMessage={i === memoizedMessages.length - 1}
+              error={error}
+              isMissingAssistantResponse={isMissingAssistantResponse}
+              handleRetry={handleRetry}
+              isOwner={isOwner}
+              hoveredMessageIndex={hoveredMessageIndex}
+            />
+          </div>
+        ))}
       </div>
 
       {/* Loading animation when status is submitted with min-height to reserve space */}

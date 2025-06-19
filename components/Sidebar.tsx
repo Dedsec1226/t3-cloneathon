@@ -128,9 +128,12 @@ export default function Sidebar() {
       
       {/* Sidebar */}
       <div
-        className={`fixed top-0 left-0 h-full w-64 ${sidebarBg} shadow-lg z-[55] flex flex-col justify-between transform transition-transform duration-200 ease-out rounded-tr-2xl rounded-br-2xl ${
+        className={`fixed top-0 left-0 h-full w-64 ${sidebarBg} shadow-lg z-[55] flex flex-col justify-between transform rounded-tr-2xl rounded-br-2xl ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
+        style={{
+          transition: 'transform 300ms cubic-bezier(0.4, 0.0, 0.2, 1)'
+        }}
       >
         <div className="flex flex-col h-full">
           {/* Header section with consistent spacing */}

@@ -118,57 +118,206 @@ interface YouTubeCardProps {
     index: number;
 }
 
-// Now adding the SearchLoadingState component
+// Enhanced SearchLoadingState component for all group selector options
 const SearchLoadingState = ({
     icon: Icon,
     text,
-    color
+    color,
+    subtext,
+    showSkeletonCards = false
 }: {
     icon: LucideIcon,
     text: string,
-    color: "red" | "green" | "orange" | "violet" | "gray" | "blue"
+    color: "red" | "green" | "orange" | "violet" | "gray" | "blue" | "purple",
+    subtext?: string,
+    showSkeletonCards?: boolean
 }) => {
     const colorVariants = {
         red: {
             background: "bg-red-50 dark:bg-red-950",
             border: "from-red-200 via-red-500 to-red-200 dark:from-red-400 dark:via-red-500 dark:to-red-700",
             text: "text-red-500",
-            icon: "text-red-500"
+            icon: "text-red-500",
+            shimmerBg: "from-red-100 via-red-200 to-red-100 dark:from-red-900/30 dark:via-red-800/30 dark:to-red-900/30"
         },
         green: {
             background: "bg-green-50 dark:bg-green-950",
             border: "from-green-200 via-green-500 to-green-200 dark:from-green-400 dark:via-green-500 dark:to-green-700",
             text: "text-green-500",
-            icon: "text-green-500"
+            icon: "text-green-500",
+            shimmerBg: "from-green-100 via-green-200 to-green-100 dark:from-green-900/30 dark:via-green-800/30 dark:to-green-900/30"
         },
         orange: {
             background: "bg-orange-50 dark:bg-orange-950",
             border: "from-orange-200 via-orange-500 to-orange-200 dark:from-orange-400 dark:via-orange-500 dark:to-orange-700",
             text: "text-orange-500",
-            icon: "text-orange-500"
+            icon: "text-orange-500",
+            shimmerBg: "from-orange-100 via-orange-200 to-orange-100 dark:from-orange-900/30 dark:via-orange-800/30 dark:to-orange-900/30"
         },
         violet: {
             background: "bg-violet-50 dark:bg-violet-950",
             border: "from-violet-200 via-violet-500 to-violet-200 dark:from-violet-400 dark:via-violet-500 dark:to-violet-700",
             text: "text-violet-500",
-            icon: "text-violet-500"
+            icon: "text-violet-500",
+            shimmerBg: "from-violet-100 via-violet-200 to-violet-100 dark:from-violet-900/30 dark:via-violet-800/30 dark:to-violet-900/30"
+        },
+        purple: {
+            background: "bg-purple-50 dark:bg-purple-950",
+            border: "from-purple-200 via-purple-500 to-purple-200 dark:from-purple-400 dark:via-purple-500 dark:to-purple-700",
+            text: "text-purple-500",
+            icon: "text-purple-500",
+            shimmerBg: "from-purple-100 via-purple-200 to-purple-100 dark:from-purple-900/30 dark:via-purple-800/30 dark:to-purple-900/30"
         },
         gray: {
             background: "bg-neutral-50 dark:bg-neutral-950",
             border: "from-neutral-200 via-neutral-500 to-neutral-200 dark:from-neutral-400 dark:via-neutral-500 dark:to-neutral-700",
             text: "text-neutral-500",
-            icon: "text-neutral-500"
+            icon: "text-neutral-500",
+            shimmerBg: "from-neutral-100 via-neutral-200 to-neutral-100 dark:from-neutral-900/30 dark:via-neutral-800/30 dark:to-neutral-900/30"
         },
         blue: {
             background: "bg-blue-50 dark:bg-blue-950",
             border: "from-blue-200 via-blue-500 to-blue-200 dark:from-blue-400 dark:via-blue-500 dark:to-blue-700",
             text: "text-blue-500",
-            icon: "text-blue-500"
+            icon: "text-blue-500",
+            shimmerBg: "from-blue-100 via-blue-200 to-blue-100 dark:from-blue-900/30 dark:via-blue-800/30 dark:to-blue-900/30"
         }
     };
 
     const variant = colorVariants[color];
 
+    if (showSkeletonCards) {
+        // Academic-style loading with skeleton cards
+        return (
+            <Card className="w-full my-4 overflow-hidden border border-neutral-200 dark:border-neutral-800 shadow-xs">
+                <CardHeader className="pb-2 flex flex-row items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <div className={cn(
+                            "h-8 w-8 rounded-lg flex items-center justify-center",
+                            variant.background
+                        )}>
+                            <Icon className={cn("h-4 w-4", variant.icon)} />
+                        </div>
+                        <div>
+                            <CardTitle className="flex items-center gap-2">
+                                <span>{text}</span>
+                                <div className="flex gap-1">
+                                    {[...Array(3)].map((_, i) => (
+                                        <div
+                                            key={i}
+                                            className={cn("w-1.5 h-1.5 rounded-full animate-bounce", `bg-${color}-500`)}
+                                            style={{
+                                                animationDelay: `${i * 0.15}s`,
+                                                animationDuration: '1s'
+                                            }}
+                                        />
+                                    ))}
+                                </div>
+                            </CardTitle>
+                            {subtext && (
+                                <TextShimmer 
+                                    className="text-sm text-muted-foreground"
+                                    duration={2.5}
+                                >
+                                    {subtext}
+                                </TextShimmer>
+                            )}
+                        </div>
+                    </div>
+                </CardHeader>
+                <div className="px-4 pb-4">
+                    <div className="flex overflow-x-auto gap-3 no-scrollbar pb-1">
+                        {[...Array(3)].map((_, index) => (
+                            <motion.div
+                                key={index}
+                                className="w-[360px] flex-none"
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ 
+                                    duration: 0.6,
+                                    delay: index * 0.2,
+                                    repeat: Infinity,
+                                    repeatType: "reverse",
+                                    repeatDelay: 1
+                                }}
+                            >
+                                <div className="h-[300px] relative group">
+                                    <div className="h-full bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg p-4 flex flex-col">
+                                        {/* Title skeleton with shimmer */}
+                                        <div className="space-y-2 mb-3">
+                                            <div className={cn("h-6 bg-gradient-to-r rounded animate-pulse", variant.shimmerBg)} />
+                                            <div className={cn("h-6 w-4/5 bg-gradient-to-r rounded animate-pulse", variant.shimmerBg)} />
+                                        </div>
+
+                                        {/* Metadata badges skeleton */}
+                                        <div className="flex flex-wrap gap-2 mb-3">
+                                            <div className={cn("inline-flex items-center gap-1.5 px-2 py-1 rounded-md", variant.background)}>
+                                                <User2 className={cn("h-3 w-3 animate-pulse", variant.icon)} />
+                                                <div className={cn("h-3 w-16 rounded animate-pulse", variant.shimmerBg)} />
+                                            </div>
+                                            <div className={cn("inline-flex items-center gap-1.5 px-2 py-1 rounded-md", variant.background)}>
+                                                <svg className={cn("h-3 w-3 animate-pulse", variant.icon)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                                                    <line x1="16" y1="2" x2="16" y2="6"/>
+                                                    <line x1="8" y1="2" x2="8" y2="6"/>
+                                                    <line x1="3" y1="10" x2="21" y2="10"/>
+                                                </svg>
+                                                <div className={cn("h-3 w-12 rounded animate-pulse", variant.shimmerBg)} />
+                                            </div>
+                                        </div>
+
+                                        {/* Content skeleton */}
+                                        <div className="flex-1 space-y-2 mb-3">
+                                            {[...Array(8)].map((_, i) => (
+                                                <div 
+                                                    key={i} 
+                                                    className="h-3 bg-gradient-to-r from-neutral-100 via-neutral-200 to-neutral-100 dark:from-neutral-800/50 dark:via-neutral-700/50 dark:to-neutral-800/50 rounded animate-pulse"
+                                                    style={{
+                                                        width: `${Math.random() * 40 + 60}%`,
+                                                        animationDelay: `${i * 0.1}s`
+                                                    }}
+                                                />
+                                            ))}
+                                        </div>
+
+                                        {/* Buttons skeleton */}
+                                        <div className="flex gap-2 mt-auto">
+                                            <div className={cn("flex-1 h-9 bg-gradient-to-r rounded animate-pulse", variant.shimmerBg)} />
+                                            <div className={cn("h-9 w-9 bg-gradient-to-r rounded animate-pulse", variant.shimmerBg)} />
+                                        </div>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        ))}
+                    </div>
+                    
+                    {/* Progress indicators */}
+                    <div className="mt-4 flex items-center justify-center gap-3">
+                        <div className="flex gap-1">
+                            {[...Array(5)].map((_, i) => (
+                                <div
+                                    key={i}
+                                    className={cn("w-2 h-2 rounded-full", `bg-${color}-200 dark:bg-${color}-800`)}
+                                    style={{
+                                        animation: `pulse 1.5s ease-in-out infinite`,
+                                        animationDelay: `${i * 0.1}s`
+                                    }}
+                                />
+                            ))}
+                        </div>
+                        <TextShimmer 
+                            className={cn("text-xs font-medium", variant.text)}
+                            duration={1.8}
+                        >
+                            {subtext || "Processing..."}
+                        </TextShimmer>
+                    </div>
+                </div>
+            </Card>
+        );
+    }
+
+    // Simple loading state for other search types
     return (
         <Card className="relative w-full h-[100px] my-4 overflow-hidden shadow-none">
             <BorderTrail
@@ -201,14 +350,22 @@ const SearchLoadingState = ({
                             >
                                 {text}
                             </TextShimmer>
+                            {subtext && (
+                                <TextShimmer
+                                    className="text-sm text-muted-foreground"
+                                    duration={2.5}
+                                >
+                                    {subtext}
+                                </TextShimmer>
+                            )}
                             <div className="flex gap-2">
                                 {[...Array(3)].map((_, i) => (
                                     <div
                                         key={i}
-                                        className="h-1.5 rounded-full bg-neutral-200 dark:bg-neutral-700 animate-pulse"
+                                        className={cn("w-2 h-2 rounded-full animate-pulse", variant.text)}
                                         style={{
-                                            width: `${Math.random() * 40 + 20}px`,
-                                            animationDelay: `${i * 0.2}s`
+                                            animationDelay: `${i * 0.2}s`,
+                                            animationDuration: '1.5s'
                                         }}
                                     />
                                 ))}
@@ -685,8 +842,9 @@ const ToolInvocationListView = memo(
                     if (!result) {
                         return <SearchLoadingState
                             icon={Film}
-                            text="Discovering entertainment content..."
-                            color="violet"
+                            text="Discovering Entertainment Content"
+                            color="orange"
+                            subtext="Searching movies, TV shows, and entertainment data..."
                         />;
                     }
 
@@ -697,8 +855,9 @@ const ToolInvocationListView = memo(
                     if (!result) {
                         return <SearchLoadingState
                             icon={Film}
-                            text="Loading trending movies..."
+                            text="Loading Trending Movies"
                             color="blue"
+                            subtext="Fetching the latest trending movies..."
                         />;
                     }
                     return <TrendingResults result={result} type="movie" />;
@@ -708,8 +867,9 @@ const ToolInvocationListView = memo(
                     if (!result) {
                         return <SearchLoadingState
                             icon={Tv}
-                            text="Loading trending TV shows..."
+                            text="Loading Trending TV Shows"
                             color="blue"
+                            subtext="Fetching the latest trending TV shows..."
                         />;
                     }
                     return <TrendingResults result={result} type="tv" />;
@@ -719,8 +879,9 @@ const ToolInvocationListView = memo(
                     if (!result) {
                         return <SearchLoadingState
                             icon={YoutubeIcon}
-                            text="Searching YouTube videos..."
+                            text="Searching YouTube Videos"
                             color="red"
+                            subtext="Finding relevant videos and transcripts..."
                         />;
                     }
 
@@ -732,6 +893,23 @@ const ToolInvocationListView = memo(
                         video.captions ||
                         video.summary
                     );
+
+                    // Generate summary for YouTube results
+                    const generateYouTubeSummary = (videos: typeof filteredVideos) => {
+                        if (videos.length === 0) return null;
+                        const totalVideos = videos.length;
+                        const videoDetails = videos.slice(0, 5).map(v => {
+                            const title = v.details?.title || 'Unknown';
+                            const author = v.details?.author_name ? ` by ${v.details.author_name}` : '';
+                            const hasTranscript = v.captions ? ' (with transcript)' : '';
+                            const hasTimestamps = v.timestamps && v.timestamps.length > 0 ? ' (with timestamps)' : '';
+                            return `"${title}"${author}${hasTranscript || hasTimestamps}`;
+                        }).join(', ');
+                        const moreCount = totalVideos > 5 ? ` and ${totalVideos - 5} more` : '';
+                        return `Found ${totalVideos} relevant YouTube video${totalVideos > 1 ? 's' : ''} including ${videoDetails}${moreCount}. These videos provide detailed transcripts, key moments, and author/channel information to help answer your query. Review the list below for more context and direct links to each video.`;
+                    };
+
+                    const summary = generateYouTubeSummary(filteredVideos);
 
                     // If no videos with content, show a message instead
                     if (filteredVideos.length === 0) {
@@ -756,6 +934,25 @@ const ToolInvocationListView = memo(
 
                     return (
                         <div className="w-full my-4">
+                            {/* YouTube Search Summary */}
+                            {summary && (
+                                <div className="mb-4 p-4 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/50 rounded-lg">
+                                    <div className="flex items-start gap-3">
+                                        <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-red-100 dark:bg-red-900/50">
+                                            <YoutubeIcon className="h-4 w-4 text-red-600" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <h3 className="text-sm font-semibold text-red-900 dark:text-red-100 mb-1">
+                                                YouTube Search Summary
+                                            </h3>
+                                            <p className="text-sm text-red-800 dark:text-red-200 leading-relaxed">
+                                                {summary}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
                             <Accordion type="single" collapsible defaultValue="videos">
                                 <AccordionItem value="videos" className="border dark:border-neutral-800 rounded-xl bg-white dark:bg-neutral-900 shadow-xs">
                                     <AccordionTrigger className="px-4 py-3 hover:no-underline">
@@ -803,12 +1000,58 @@ const ToolInvocationListView = memo(
                     if (!result) {
                         return <SearchLoadingState
                             icon={Book}
-                            text="Searching academic papers..."
-                            color="violet"
+                            text="Searching Academic Papers"
+                            color="purple"
+                            subtext="Scanning research databases and academic sources..."
+                            showSkeletonCards
                         />;
                     }
 
-                    return <AcademicPapersCard results={result.results} />;
+                    // Generate summary for academic results
+                    const generateAcademicSummary = (results: any[]) => {
+                        if (!results || results.length === 0) return null;
+                        const totalPapers = results.length;
+                        const recentPapers = results.filter(paper => {
+                            if (!paper.publishedDate) return false;
+                            const publishYear = new Date(paper.publishedDate).getFullYear();
+                            const currentYear = new Date().getFullYear();
+                            return currentYear - publishYear <= 3;
+                        }).length;
+                        const paperDetails = results.slice(0, 4).map(p => {
+                            const title = p.title || 'Untitled';
+                            const author = p.authors && p.authors.length > 0 ? ` by ${p.authors.join(', ')}` : '';
+                            const year = p.publishedDate ? ` (${new Date(p.publishedDate).getFullYear()})` : '';
+                            return `"${title}"${author}${year}`;
+                        }).join(', ');
+                        const moreCount = totalPapers > 4 ? ` and ${totalPapers - 4} more` : '';
+                        return `Found ${totalPapers} relevant academic paper${totalPapers > 1 ? 's' : ''} including ${paperDetails}${moreCount}. ${recentPapers > 0 ? `${recentPapers} of these are recent publications from the last 3 years. ` : ''}These papers provide comprehensive research insights, author and publication details, and citations to support your inquiry. Review the list below for more information and direct links to each paper.`;
+                    };
+
+                    const summary = generateAcademicSummary(result.results);
+
+                    return (
+                        <div className="w-full my-4">
+                            {/* Academic Search Summary */}
+                            {summary && (
+                                <div className="mb-4 p-4 bg-violet-50 dark:bg-violet-950/30 border border-violet-200 dark:border-violet-800/50 rounded-lg">
+                                    <div className="flex items-start gap-3">
+                                        <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-violet-100 dark:bg-violet-900/50">
+                                            <Book className="h-4 w-4 text-violet-600" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <h3 className="text-sm font-semibold text-violet-900 dark:text-violet-100 mb-1">
+                                                Academic Research Summary
+                                            </h3>
+                                            <p className="text-sm text-violet-800 dark:text-violet-200 leading-relaxed">
+                                                {summary}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                            <AcademicPapersCard results={result.results} />
+                        </div>
+                    );
                 }
 
 
@@ -1261,6 +1504,10 @@ const ToolInvocationListView = memo(
                     if (!result) {
                         return (
                             <SearchLoadingState
+                                icon={Memory}
+                                text="Managing Memories"
+                                color="purple"
+                                subtext="Processing and organizing your conversation history..."
                                 icon={Brain}
                                 text="Managing memories..."
                                 color="violet"
@@ -1275,9 +1522,12 @@ const ToolInvocationListView = memo(
                 if (toolInvocation.toolName === 'reddit_search') {
                     if (!result) {
                         return <SearchLoadingState
+                            icon={RedditLogo}
+                            text="Searching Reddit"
                             icon={MessageCircle}
                             text="Searching Reddit..."
                             color="orange"
+                            subtext="Finding relevant discussions and threads..."
                         />;
                     }
                     
@@ -1287,9 +1537,12 @@ const ToolInvocationListView = memo(
                 if (toolInvocation.toolName === 'x_search') {
                     if (!result) {
                         return <SearchLoadingState
+                            icon={XLogo}
+                            text="Searching X (Twitter)"
                             icon={MessageSquare}
                             text="Searching X (Twitter)..."
                             color="gray"
+                            subtext="Finding recent posts and conversations..."
                         />;
                     }
                     

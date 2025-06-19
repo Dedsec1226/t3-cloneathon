@@ -27,6 +27,8 @@ const RouteIcon = ({ size = 14, className }: { size?: number; className?: string
     </svg>
 );
 
+// Fix ReferenceError: define actualGroupIds here
+const actualGroupIds = ["academic", "youtube", "reddit", "x", "analysis", "memory"];
 
 interface Attachment {
     url: string;
@@ -314,7 +316,7 @@ const ModelSwitcher: React.FC<ModelSwitcherProps & {
     const [searchQuery, setSearchQuery] = useState('');
     const [showAllModels, setShowAllModels] = useState(false);
     const [internalSelectedFilters, setInternalSelectedFilters] = useState<Set<string>>(new Set());
-    const [showFilters, setShowFilters] = useState(true); // Default to true so filters are visible
+    const [showFilters, setShowFilters] = useState(false); // Default to false so filters only open when clicked
 
     const isProcessing = status === 'submitted' || status === 'streaming';
     
@@ -727,13 +729,14 @@ const ModelSwitcher: React.FC<ModelSwitcherProps & {
                 ) : (
                     <motion.div
                         key={showAllModels ? 'expanded' : 'limited'}
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
+                        initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95, y: 10 }}
                         transition={{ 
-                            duration: 0.3,
-                            ease: "easeInOut",
-                            height: { duration: 0.4 }
+                            type: "spring",
+                            stiffness: 400,
+                            damping: 30,
+                            duration: 0.2
                         }}
                         className="space-y-1"
                     >
@@ -745,9 +748,14 @@ const ModelSwitcher: React.FC<ModelSwitcherProps & {
                                     return (
                                         <motion.div
                                             key={category}
-                                            initial={{ opacity: 0, y: 20 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            transition={{ duration: 0.3, delay: 0.2 + categoryIndex * 0.1 }}
+                                            initial={{ opacity: 0, x: -20, scale: 0.9 }}
+                                            animate={{ opacity: 1, x: 0, scale: 1 }}
+                                            transition={{ 
+                                                type: "spring",
+                                                stiffness: 500,
+                                                damping: 35,
+                                                delay: categoryIndex * 0.03
+                                            }}
                                         >
                                             <div className="px-2 mb-3">
                                                 <h3 className="text-sm font-medium text-foreground">{category}</h3>
@@ -756,9 +764,14 @@ const ModelSwitcher: React.FC<ModelSwitcherProps & {
                                 {categoryModels.map((model, modelIndex) => (
                                                     <motion.div
                                                         key={model.value}
-                                                        initial={{ opacity: 0, scale: 0.8 }}
-                                                        animate={{ opacity: 1, scale: 1 }}
-                                                        transition={{ duration: 0.2, delay: 0.3 + categoryIndex * 0.1 + modelIndex * 0.05 }}
+                                                        initial={{ opacity: 0, x: -10, scale: 0.98 }}
+                                                        animate={{ opacity: 1, x: 0, scale: 1 }}
+                                                        transition={{ 
+                                                            type: "spring",
+                                                            stiffness: 500,
+                                                            damping: 35,
+                                                            delay: modelIndex * 0.03
+                                                        }}
                                                     >
                                     <DropdownMenuItem
                                                             onSelect={() => {
@@ -840,9 +853,9 @@ const ModelSwitcher: React.FC<ModelSwitcherProps & {
                                 {/* Favorites Section in Limited View */}
                                 {groupedModels.Stable && groupedModels.Stable.length > 0 && (
                                     <motion.div
-                                        initial={{ opacity: 0, y: 10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ duration: 0.2, delay: 0.05 }}
+                                        initial={{ opacity: 0, x: -20, scale: 0.9 }}
+                                        animate={{ opacity: 1, x: 0, scale: 1 }}
+                                        transition={{ type: "spring", stiffness: 500, damping: 35 }}
                                     >
                                         <div className="flex items-center gap-2 mb-2 px-2">
                                             <svg className="w-4 h-4 text-orange-400" fill="currentColor" viewBox="0 0 20 20">
@@ -854,9 +867,14 @@ const ModelSwitcher: React.FC<ModelSwitcherProps & {
                                             {groupedModels.Stable.slice(0, 3).map((model, modelIndex) => (
                                                 <motion.div
                                                     key={model.value}
-                                                    initial={{ opacity: 0, x: -20 }}
-                                                    animate={{ opacity: 1, x: 0 }}
-                                                    transition={{ duration: 0.2, delay: 0.1 + modelIndex * 0.03 }}
+                                                    initial={{ opacity: 0, x: -10, scale: 0.98 }}
+                                                    animate={{ opacity: 1, x: 0, scale: 1 }}
+                                                    transition={{ 
+                                                        type: "spring",
+                                                        stiffness: 500,
+                                                        damping: 35,
+                                                        delay: modelIndex * 0.03
+                                                    }}
                                                 >
                                                     <DropdownMenuItem
                                                         onSelect={() => {
@@ -984,16 +1002,16 @@ const ModelSwitcher: React.FC<ModelSwitcherProps & {
                                             <motion.div 
                                                 key={`${category}-remaining`} 
                                                 className="space-y-1"
-                                                initial={{ opacity: 0, y: 10 }}
-                                                animate={{ opacity: 1, y: 0 }}
-                                                transition={{ duration: 0.2, delay: 0.2 + categoryIndex * 0.05 }}
+                                                initial={{ opacity: 0, x: -20, scale: 0.9 }}
+                                                animate={{ opacity: 1, x: 0, scale: 1 }}
+                                                transition={{ type: "spring", stiffness: 500, damping: 35, delay: categoryIndex * 0.03 }}
                                             >
                                                 {remainingStableModels.map((model, modelIndex) => (
                                                     <motion.div
                                                         key={model.value}
-                                                        initial={{ opacity: 0, x: -20 }}
-                                                        animate={{ opacity: 1, x: 0 }}
-                                                        transition={{ duration: 0.2, delay: 0.25 + categoryIndex * 0.05 + modelIndex * 0.03 }}
+                                                        initial={{ opacity: 0, x: -10, scale: 0.98 }}
+                                                        animate={{ opacity: 1, x: 0, scale: 1 }}
+                                                        transition={{ type: "spring", stiffness: 500, damping: 35, delay: modelIndex * 0.03 }}
                                                     >
                                                         <DropdownMenuItem
                                                             onSelect={() => {
@@ -1107,16 +1125,16 @@ const ModelSwitcher: React.FC<ModelSwitcherProps & {
                                         <motion.div 
                                             key={category} 
                                             className="space-y-1"
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            transition={{ duration: 0.2, delay: categoryIndex * 0.05 }}
+                                            initial={{ opacity: 0, x: -20, scale: 0.9 }}
+                                            animate={{ opacity: 1, x: 0, scale: 1 }}
+                                            transition={{ type: "spring", stiffness: 500, damping: 35, delay: categoryIndex * 0.03 }}
                                         >
                                             {categoryModels.map((model, modelIndex) => (
                                                 <motion.div
                                                     key={model.value}
-                                                    initial={{ opacity: 0, x: -20 }}
-                                                    animate={{ opacity: 1, x: 0 }}
-                                                    transition={{ duration: 0.2, delay: categoryIndex * 0.05 + modelIndex * 0.03 }}
+                                                    initial={{ opacity: 0, x: -10, scale: 0.98 }}
+                                                    animate={{ opacity: 1, x: 0, scale: 1 }}
+                                                    transition={{ type: "spring", stiffness: 500, damping: 35, delay: modelIndex * 0.03 }}
                                                 >
                                                     <DropdownMenuItem
                                                         onSelect={() => {
@@ -1241,8 +1259,19 @@ const ModelSwitcher: React.FC<ModelSwitcherProps & {
                 
                 {/* Bottom Controls */}
                 {!showAllModels && (
-                    <div className="relative flex items-center justify-between rounded-b-lg pb-1 pl-1 pr-2.5 pt-1.5 mx-4 bg-popover">
-                        <div className="absolute inset-x-3 top-0 border-b border-border"></div>
+                    <motion.div 
+                        className="relative flex items-center justify-between rounded-b-lg pb-1 pl-1 pr-2.5 pt-1.5 mx-4 bg-popover"
+                        initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                        transition={{ 
+                            type: "spring",
+                            stiffness: 400,
+                            damping: 30,
+                            duration: 0.15
+                        }}
+                    >
+                        <div className="absolute inset-x-3 top-0 border-b border-border" />
                         {capabilityFilteredModels.length > 8 && (
                         <button 
                                 onClick={(e) => {
@@ -1258,7 +1287,7 @@ const ModelSwitcher: React.FC<ModelSwitcherProps & {
                             Show all
                         </button>
                         )}
-                        <button 
+                        <motion.button 
                             onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
@@ -1270,23 +1299,67 @@ const ModelSwitcher: React.FC<ModelSwitcherProps & {
                                 (showFilters || activeFilters.size > 0) && "bg-accent/20 text-accent-foreground"
                             )}
                             type="button"
+                            initial={{ opacity: 0, x: 10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ 
+                                duration: 0.2,
+                                delay: 0.1,
+                                ease: "easeOut"
+                            }}
                         >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-filter h-4 w-4">
+                            <motion.svg 
+                                xmlns="http://www.w3.org/2000/svg" 
+                                width="24" height="24" 
+                                viewBox="0 0 24 24" 
+                                fill="none" 
+                                stroke="currentColor" 
+                                strokeWidth="2" 
+                                strokeLinecap="round" 
+                                strokeLinejoin="round" 
+                                className="lucide lucide-filter h-4 w-4"
+                                initial={{ scale: 0.8, rotate: 45 }}
+                                animate={{ scale: 1, rotate: 0 }}
+                                transition={{ 
+                                    duration: 0.3,
+                                    delay: 0.15,
+                                    ease: "easeOut"
+                                }}
+                            >
                                 <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
-                            </svg>
+                            </motion.svg>
                             {activeFilters.size > 0 && (
-                                <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full flex items-center justify-center">
+                                <motion.div 
+                                    className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full flex items-center justify-center"
+                                    initial={{ scale: 0 }}
+                                    animate={{ scale: 1 }}
+                                    transition={{ 
+                                        duration: 0.2,
+                                        delay: 0.2,
+                                        ease: "backOut"
+                                    }}
+                                >
                                     <span className="text-[10px] font-bold text-white">{activeFilters.size}</span>
-                                </div>
+                                </motion.div>
                             )}
-                        </button>
-                    </div>
+                        </motion.button>
+                    </motion.div>
                 )}
 
                 {/* Show All Models Toggle */}
                 {showAllModels && (
-                    <div className="relative flex items-center justify-between rounded-b-lg pb-1 pl-1 pr-2.5 pt-1.5 mx-4 bg-popover">
-                        <div className="absolute inset-x-3 top-0 border-b border-border"></div>
+                    <motion.div 
+                        className="relative flex items-center justify-between rounded-b-lg pb-1 pl-1 pr-2.5 pt-1.5 mx-4 bg-popover"
+                        initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                        transition={{ 
+                            type: "spring",
+                            stiffness: 400,
+                            damping: 30,
+                            duration: 0.15
+                        }}
+                    >
+                        <div className="absolute inset-x-3 top-0 border-b border-border" />
                         <button
                             onClick={(e) => {
                                 e.preventDefault();
@@ -1295,12 +1368,29 @@ const ModelSwitcher: React.FC<ModelSwitcherProps & {
                             }}
                             className="justify-center whitespace-nowrap rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent disabled:cursor-not-allowed disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-accent/20 hover:text-accent-foreground disabled:hover:bg-transparent disabled:hover:text-muted-foreground/50 h-9 px-4 py-2 flex items-center gap-2 pl-2 text-sm text-muted-foreground"
                         >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-left h-4 w-4">
+                            <motion.svg 
+                                xmlns="http://www.w3.org/2000/svg" 
+                                width="24" height="24" 
+                                viewBox="0 0 24 24" 
+                                fill="none" 
+                                stroke="currentColor" 
+                                strokeWidth="2" 
+                                strokeLinecap="round" 
+                                strokeLinejoin="round" 
+                                className="lucide lucide-chevron-left h-4 w-4"
+                                initial={{ rotate: 90, scale: 0.8 }}
+                                animate={{ rotate: 0, scale: 1 }}
+                                transition={{ 
+                                    duration: 0.3,
+                                    delay: 0.15,
+                                    ease: "easeOut"
+                                }}
+                            >
                                 <path d="m15 18-6-6 6-6"></path>
-                            </svg>
+                            </motion.svg>
                             Favourites
                         </button>
-                                        <button
+                        <motion.button
                             onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
@@ -1312,17 +1402,50 @@ const ModelSwitcher: React.FC<ModelSwitcherProps & {
                                 (showFilters || activeFilters.size > 0) && "bg-accent/20 text-accent-foreground"
                             )}
                             type="button"
+                            initial={{ opacity: 0, x: 10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ 
+                                duration: 0.2,
+                                delay: 0.1,
+                                ease: "easeOut"
+                            }}
                         >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-filter h-4 w-4">
+                            <motion.svg 
+                                xmlns="http://www.w3.org/2000/svg" 
+                                width="24" height="24" 
+                                viewBox="0 0 24 24" 
+                                fill="none" 
+                                stroke="currentColor" 
+                                strokeWidth="2" 
+                                strokeLinecap="round" 
+                                strokeLinejoin="round" 
+                                className="lucide lucide-filter h-4 w-4"
+                                initial={{ scale: 0.8, rotate: 45 }}
+                                animate={{ scale: 1, rotate: 0 }}
+                                transition={{ 
+                                    duration: 0.3,
+                                    delay: 0.15,
+                                    ease: "easeOut"
+                                }}
+                            >
                                 <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
-                            </svg>
+                            </motion.svg>
                             {activeFilters.size > 0 && (
-                                <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full flex items-center justify-center">
+                                <motion.div 
+                                    className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full flex items-center justify-center"
+                                    initial={{ scale: 0 }}
+                                    animate={{ scale: 1 }}
+                                    transition={{ 
+                                        duration: 0.2,
+                                        delay: 0.2,
+                                        ease: "backOut"
+                                    }}
+                                >
                                     <span className="text-[10px] font-bold text-white">{activeFilters.size}</span>
-                                </div>
+                                </motion.div>
                             )}
-                                        </button>
-                                </div>
+                        </motion.button>
+                    </motion.div>
                 )}
             </DropdownMenuContent>
         </DropdownMenu>
@@ -1750,6 +1873,44 @@ const FormComponent: React.FC<FormComponentProps> = ({
     const [isGroupSelectorExpanded, setIsGroupSelectorExpanded] = useState(false);
     const [showGroupSelector, setShowGroupSelector] = useState(false);
     
+    // Separate state for toolbar toggles (not part of group selector)
+    const [webSearchEnabled, setWebSearchEnabled] = useState(false);
+    const [extremeModeEnabled, setExtremeModeEnabled] = useState(false);
+    
+    // Effect to sync toolbar states with selectedGroup changes
+    useEffect(() => {
+        // Sync toolbar states when selectedGroup changes from external sources (history, etc.)
+        if (selectedGroup === 'web') {
+            setWebSearchEnabled(true);
+            setExtremeModeEnabled(false);
+        } else if (selectedGroup === 'extreme') {
+            setWebSearchEnabled(false);
+            setExtremeModeEnabled(true);
+        } else {
+            // If a real group is selected or null, disable both toolbar modes
+            setWebSearchEnabled(false);
+            setExtremeModeEnabled(false);
+        }
+    }, [selectedGroup]);
+    
+    // Effect to update selectedGroup when web search or extreme mode is toggled
+    // Only if no actual group is selected from the group selector
+    useEffect(() => {
+        // Only override selectedGroup if it's not one of the actual group selector options
+        const actualGroupIds = ['academic', 'youtube', 'reddit', 'x', 'analysis', 'memory'];
+        const isActualGroup = selectedGroup && actualGroupIds.includes(selectedGroup);
+        
+        if (!isActualGroup) {
+            if (extremeModeEnabled) {
+                setSelectedGroup('extreme');
+            } else if (webSearchEnabled) {
+                setSelectedGroup('web');
+            } else {
+                setSelectedGroup(null);
+            }
+        }
+    }, [webSearchEnabled, extremeModeEnabled, selectedGroup, setSelectedGroup]);
+    
     // Use Zustand store for dropdown state management
     const { modelSelectorOpen, filterDropdownOpen, setModelSelectorOpen, setFilterDropdownOpen, toggleFilterDropdown, handleFilterInteraction } = useDropdownStore();
     
@@ -2004,27 +2165,27 @@ const FormComponent: React.FC<FormComponentProps> = ({
             return;
         }
 
-        // Toggle web search mode
-        if (selectedGroup === 'web') {
-            setSelectedGroup(null);
+        // Toggle web search mode (separate from group selector)
+        if (webSearchEnabled) {
+            setWebSearchEnabled(false);
             showSwitchNotification(
-                'Chat Mode',
-                'No group selected - default chat mode',
-                <MessageCircle className="size-4" />,
+                'Web Search Disabled',
+                'Web search mode is now disabled',
+                <Globe className="size-4" />,
                 'default',
                 'group'
             );
         } else {
-            setSelectedGroup('web');
+            setWebSearchEnabled(true);
             showSwitchNotification(
-                'Web Search',
+                'Web Search Enabled',
                 'Web search mode is now active',
                 <Globe className="size-4" />,
                 'web',
                 'group'
             );
         }
-    }, [selectedGroup, setSelectedGroup, currentModelSupportsWeb, webSupportedModels, showSwitchNotification]);
+    }, [webSearchEnabled, currentModelSupportsWeb, webSupportedModels, showSwitchNotification]);
 
     // Prevent hydration mismatch by not rendering theme-dependent content until mounted
     if (!mounted) {
@@ -2164,28 +2325,72 @@ const FormComponent: React.FC<FormComponentProps> = ({
                             suppressHydrationWarning
                         >
                                                          <div ref={groupSelectorRef} className={cn("flex items-center gap-2 relative", isProcessing ? "opacity-50 cursor-not-allowed" : "")}>
-                                 {/* Circular button with up arrow to indicate dropdown functionality */}
+                                 {/* Group selector button - shows selected group icon or route icon */}
                                  <Button
                                      variant="outline"
                                      size="icon"
-                                     className="rounded-full h-8 w-8 bg-background text-muted-foreground hover:bg-muted/40 hover:text-foreground border-secondary-foreground/10 shadow-sm hover:shadow-md transition-all duration-200"
+                                     className={cn(
+                                         "rounded-full h-8 w-8 border-secondary-foreground/10 transition-all duration-300 relative overflow-hidden",
+                                         selectedGroup && actualGroupIds.includes(selectedGroup)
+                                             ? "bg-[#b83268] hover:bg-[#a22b5a] text-white border-[#b83268] scale-110 animate-pulse shadow-md"
+                                             : "bg-background text-muted-foreground hover:bg-muted/40 hover:text-foreground shadow-sm hover:shadow-md scale-100"
+                                     )}
+                                     style={selectedGroup && actualGroupIds.includes(selectedGroup) ? {
+                                         animation: 'pulse 2s ease-in-out infinite'
+                                     } as React.CSSProperties : undefined}
                                      disabled={!!isProcessing}
                                      onClick={(e) => {
                                          e.preventDefault();
                                          e.stopPropagation();
-                                         setShowGroupSelector(!showGroupSelector);
-                                         // Close model selector if it's open
-                                         setModelSelectorOpen(false);
+                                         
+                                         // If a group is selected, deselect it on click
+                                         if (selectedGroup) {
+                                             setSelectedGroup(null);
+                                             showSwitchNotification(
+                                                 'Chat Mode',
+                                                 'No group selected - default chat mode',
+                                                 <MessageCircle className="size-4" />,
+                                                 'default',
+                                                 'group'
+                                             );
+                                         } else {
+                                             // If no group selected, open the selector
+                                             setShowGroupSelector(!showGroupSelector);
+                                             // Close model selector if it's open
+                                             setModelSelectorOpen(false);
+                                         }
                                      }} 
                                      suppressHydrationWarning
                                  >
-                                     <RouteIcon 
-                                         size={14}
-                                    className={cn(
-                                             "transition-transform duration-200",
-                                             showGroupSelector ? "rotate-180" : ""
+                                     {/* Fill animation background */}
+                                     {selectedGroup && actualGroupIds.includes(selectedGroup) && (
+                                         <div 
+                                             className="absolute inset-0 rounded-full opacity-30 animate-ping"
+                                             style={{
+                                                 background: 'radial-gradient(circle, rgba(184, 50, 104, 0.6) 0%, transparent 70%)',
+                                                 animationDuration: '2s'
+                                             } as React.CSSProperties}
+                                         />
+                                     )}
+                                     
+                                     {/* Icon - positioned above fill animation */}
+                                     <div className="relative z-10">
+                                         {selectedGroup && actualGroupIds.includes(selectedGroup) ? (
+                                             (() => {
+                                                 const group = searchGroups.find(g => g.id === selectedGroup);
+                                                 return group ? <group.icon size={14} className="transition-transform duration-200" /> : <RouteIcon size={14} />;
+                                             })()
+                                         ) : (
+                                             // Show route icon with rotation when dropdown is open
+                                             <RouteIcon 
+                                                 size={14}
+                                                 className={cn(
+                                                     "transition-transform duration-200",
+                                                     showGroupSelector ? "rotate-180" : ""
+                                                 )}
+                                             />
                                          )}
-                                     />
+                                     </div>
                                  </Button>
 
                                      <AnimatePresence>
@@ -2321,7 +2526,7 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                                             "flex items-center gap-1.5 h-8 transition-all duration-300",
                                                             "rounded-full border border-secondary-foreground/10",
                                                             "hover:shadow-md",
-                                                            selectedGroup === 'web' && currentModelSupportsWeb
+                                                            webSearchEnabled && currentModelSupportsWeb
                                                                 ? "bg-blue-500 dark:bg-blue-500 text-white px-2"
                                                                 : currentModelSupportsWeb
                                                                     ? "bg-background text-muted-foreground hover:bg-muted/40 hover:text-foreground px-1.5 w-8"
@@ -2330,7 +2535,7 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                                         suppressHydrationWarning
                                                     >
                                                         <Globe className="h-3.5 w-3.5 mx-auto" />
-                                                        {selectedGroup === 'web' && currentModelSupportsWeb && <span className="text-xs font-medium">Web Search</span>}
+                                                        {webSearchEnabled && currentModelSupportsWeb && <span className="text-xs font-medium">Web Search</span>}
                                                     </button>
                                                 </TooltipTrigger>
                                                 <TooltipContent
@@ -2357,7 +2562,7 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                                     "flex items-center gap-1.5 h-8 transition-all duration-300",
                                                     "rounded-full border border-secondary-foreground/10",
                                                     "hover:shadow-md",
-                                                    selectedGroup === 'web' && currentModelSupportsWeb
+                                                    webSearchEnabled && currentModelSupportsWeb
                                                         ? "bg-blue-500 dark:bg-blue-500 text-white px-2"
                                                         : currentModelSupportsWeb
                                                             ? "bg-background text-muted-foreground hover:bg-muted/40 hover:text-foreground px-1.5 w-8"
@@ -2366,7 +2571,7 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                                 suppressHydrationWarning
                                             >
                                                 <Globe className="h-3.5 w-3.5 mx-auto" />
-                                                {selectedGroup === 'web' && currentModelSupportsWeb && <span className="text-xs font-medium">Web Search</span>}
+                                                {webSearchEnabled && currentModelSupportsWeb && <span className="text-xs font-medium">Web Search</span>}
                                             </button>
                                         )}
 
@@ -2391,19 +2596,20 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                                              return;
                                                          }
                                                          
-                                                         if (selectedGroup === 'extreme') {
-                                                             setSelectedGroup(null);
+                                                         // Toggle extreme mode (separate from group selector)
+                                                         if (extremeModeEnabled) {
+                                                             setExtremeModeEnabled(false);
                                                              showSwitchNotification(
-                                                                 'Chat Mode',
-                                                                 'No group selected - default chat mode',
-                                                                 <MessageCircle className="size-4" />,
+                                                                 'Extreme Mode Disabled',
+                                                                 'Deep research mode is now disabled',
+                                                                 <Telescope className="size-4" />,
                                                                  'default',
                                                                  'group'
                                                              );
                                                          } else {
-                                                             setSelectedGroup('extreme');
+                                                             setExtremeModeEnabled(true);
                                                              showSwitchNotification(
-                                                                 'Extreme Mode',
+                                                                 'Extreme Mode Enabled',
                                                                  'Deep research mode is now active',
                                                                  <Telescope className="size-4" />,
                                                                  'extreme',
@@ -2415,7 +2621,7 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                                          "flex items-center gap-1.5 h-8 transition-all duration-300",
                                                          "rounded-full border border-secondary-foreground/10",
                                                          "hover:shadow-md",
-                                                         selectedGroup === 'extreme' && currentModelSupportsExtreme
+                                                             extremeModeEnabled && currentModelSupportsExtreme
                                                              ? "bg-purple-500 dark:bg-purple-500 text-white px-2"
                                                              : currentModelSupportsExtreme
                                                                  ? "bg-background text-muted-foreground hover:bg-muted/40 hover:text-foreground px-1.5 w-8"
@@ -2424,7 +2630,7 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                                      suppressHydrationWarning
                                                  >
                                                      <Telescope className="h-3.5 w-3.5 mx-auto" />
-                                                     {selectedGroup === 'extreme' && currentModelSupportsExtreme && <span className="text-xs font-medium">Extreme Mode</span>}
+                                                         {extremeModeEnabled && currentModelSupportsExtreme && <span className="text-xs font-medium">Extreme Mode</span>}
                                                  </button>
                                              </TooltipTrigger>
                                              <TooltipContent
@@ -2445,19 +2651,33 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                              onClick={(e) => {
                                                  e.preventDefault();
                                                  e.stopPropagation();
-                                                 if (selectedGroup === 'extreme') {
-                                                     setSelectedGroup(null);
+                                                 
+                                                 // Check if current model supports extreme mode
+                                                 if (!currentModelSupportsExtreme) {
                                                      showSwitchNotification(
-                                                         'Chat Mode',
-                                                         'No group selected - default chat mode',
-                                                         <MessageCircle className="size-4" />,
+                                                         'Model Not Compatible',
+                                                         `Switch to a compatible model for Extreme Mode. Try ${extremeSupportedModels[0]?.label || 'GPT 4o'}`,
+                                                         <Telescope className="size-4" />,
+                                                         'purple',
+                                                         'model'
+                                                     );
+                                                     return;
+                                                 }
+                                                 
+                                                 // Toggle extreme mode (separate from group selector)
+                                                 if (extremeModeEnabled) {
+                                                     setExtremeModeEnabled(false);
+                                                     showSwitchNotification(
+                                                         'Extreme Mode Disabled',
+                                                         'Deep research mode is now disabled',
+                                                         <Telescope className="size-4" />,
                                                          'default',
                                                          'group'
                                                      );
                                                  } else {
-                                                     setSelectedGroup('extreme');
+                                                     setExtremeModeEnabled(true);
                                                      showSwitchNotification(
-                                                         'Extreme Mode',
+                                                         'Extreme Mode Enabled',
                                                          'Deep research mode is now active',
                                                          <Telescope className="size-4" />,
                                                          'extreme',
@@ -2469,14 +2689,16 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                                  "flex items-center gap-1.5 h-8 transition-all duration-300",
                                                  "rounded-full border border-secondary-foreground/10",
                                                  "hover:shadow-md",
-                                                 selectedGroup === 'extreme'
+                                                 extremeModeEnabled && currentModelSupportsExtreme
                                                      ? "bg-purple-500 dark:bg-purple-500 text-white px-2"
-                                                     : "bg-background text-muted-foreground hover:bg-muted/40 hover:text-foreground px-1.5 w-8",
+                                                     : currentModelSupportsExtreme
+                                                         ? "bg-background text-muted-foreground hover:bg-muted/40 hover:text-foreground px-1.5 w-8"
+                                                         : "bg-background text-muted-foreground/50 hover:bg-muted/20 px-1.5 w-8 cursor-not-allowed opacity-60",
                                              )}
                                              suppressHydrationWarning
                                          >
                                              <Telescope className="h-3.5 w-3.5 mx-auto" />
-                                             {selectedGroup === 'extreme' && <span className="text-xs font-medium">Extreme</span>}
+                                             {extremeModeEnabled && currentModelSupportsExtreme && <span className="text-xs font-medium">Extreme</span>}
                                          </button>
                                      )}
 
@@ -2484,7 +2706,9 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                     </div>
                                 </div>
 
-                                                         <div className="flex items-center gap-2" suppressHydrationWarning>
+                         
+
+                                <div className="flex items-center gap-2" suppressHydrationWarning>
                                  {mounted && hasVisionSupport(selectedModel) && !(isMobile && isGroupSelectorExpanded) && (
                                         !isMobile ? (
                                             <Tooltip delayDuration={300}>

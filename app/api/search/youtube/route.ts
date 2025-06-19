@@ -13,6 +13,9 @@ interface VideoResult {
   details?: any;
   captions?: string;
   timestamps?: any;
+  views?: string;
+  likes?: string;
+  summary?: string;
 }
 
 export async function POST(request: NextRequest) {
@@ -58,92 +61,127 @@ Always provide useful context about the videos found including titles, creators,
       messages: finalMessages,
       tools: {
         youtube_search: tool({
-          description: 'Search YouTube videos using Exa AI and get detailed video information.',
+          description: 'Search YouTube videos using Google YouTube Data API and get detailed video information.',
           parameters: z.object({
             query: z.string().describe('The search query for YouTube videos'),
           }),
           execute: async ({ query }: { query: string }) => {
             try {
-              const exa = new Exa(serverEnv.EXA_API_KEY as string);
+              // Check if YouTube API key is available
+              if (!serverEnv.YT_ENDPOINT) {
+                console.error('YouTube API key not configured');
+                throw new Error('YouTube API key not configured');
+              }
+
+              const youtubeApiKey = serverEnv.YT_ENDPOINT;
 
               console.log('YouTube search query:', query);
 
-              // Simple search to get YouTube URLs only
-              const searchResult = await exa.search(query, {
-                type: 'keyword',
-                numResults: 10,
-                includeDomains: ['youtube.com'],
-              });
+              // Search for videos using YouTube Data API
+              const searchResponse = await fetch(
+                `https://www.googleapis.com/youtube/v3/search?key=${youtubeApiKey}&part=snippet&type=video&q=${encodeURIComponent(query)}&maxResults=10&order=relevance`,
+                {
+                  method: 'GET',
+                  headers: {
+                    'Accept': 'application/json',
+                  },
+                }
+              );
+
+              if (!searchResponse.ok) {
+                const errorText = await searchResponse.text();
+                console.error('YouTube API search error:', errorText);
+                throw new Error(`YouTube API error: ${searchResponse.status} - ${errorText}`);
+              }
+
+              const searchData = await searchResponse.json();
+
+              if (!searchData.items || searchData.items.length === 0) {
+                return {
+                  results: [],
+                };
+              }
+
+              // Extract video IDs for additional details
+              const videoIds = searchData.items.map((item: any) => item.id.videoId).join(',');
+
+              // Get additional video details (statistics, content details)
+              const detailsResponse = await fetch(
+                `https://www.googleapis.com/youtube/v3/videos?key=${youtubeApiKey}&part=snippet,statistics,contentDetails&id=${videoIds}`,
+                {
+                  method: 'GET',
+                  headers: {
+                    'Accept': 'application/json',
+                  },
+                }
+              );
+
+              let videoDetails: any = {};
+              if (detailsResponse.ok) {
+                const detailsData = await detailsResponse.json();
+                videoDetails = detailsData.items.reduce((acc: any, item: any) => {
+                  acc[item.id] = item;
+                  return acc;
+                }, {});
+              }
 
               // Process results
-              const processedResults = await Promise.all(
-                searchResult.results.map(async (result): Promise<VideoResult | null> => {
-                  const videoIdMatch = result.url.match(
-                    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&?/]+)/,
-                  );
-                  const videoId = videoIdMatch?.[1];
+              const processedResults: VideoResult[] = searchData.items.map((item: any) => {
+                const videoId = item.id.videoId;
+                const snippet = item.snippet;
+                const details = videoDetails[videoId];
+                const statistics = details?.statistics;
 
-                  if (!videoId) return null;
-
-                  // Base result
-                  const baseResult: VideoResult = {
-                    videoId,
-                    url: result.url,
-                  };
-
-                  try {
-                    // Fetch detailed info from our endpoints
-                    const [detailsResponse, captionsResponse, timestampsResponse] = await Promise.all([
-                      fetch(`${serverEnv.YT_ENDPOINT}/video-data`, {
-                        method: 'POST',
-                        headers: {
-                          'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                          url: result.url,
-                        }),
-                      }).then((res) => (res.ok ? res.json() : null)),
-                      fetch(`${serverEnv.YT_ENDPOINT}/video-captions`, {
-                        method: 'POST',
-                        headers: {
-                          'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                          url: result.url,
-                        }),
-                      }).then((res) => (res.ok ? res.text() : null)),
-                      fetch(`${serverEnv.YT_ENDPOINT}/video-timestamps`, {
-                        method: 'POST',
-                        headers: {
-                          'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                          url: result.url,
-                        }),
-                      }).then((res) => (res.ok ? res.json() : null)),
-                    ]);
-
-                    // Return combined data
-                    return {
-                      ...baseResult,
-                      details: detailsResponse || undefined,
-                      captions: captionsResponse || undefined,
-                      timestamps: timestampsResponse || undefined,
-                    };
-                  } catch (error) {
-                    console.error(`Error fetching details for video ${videoId}:`, error);
-                    return baseResult;
+                // Format duration from ISO 8601 to readable format
+                const formatDuration = (duration: string) => {
+                  const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+                  if (!match) return duration;
+                  const hours = match[1] ? parseInt(match[1]) : 0;
+                  const minutes = match[2] ? parseInt(match[2]) : 0;
+                  const seconds = match[3] ? parseInt(match[3]) : 0;
+                  
+                  if (hours > 0) {
+                    return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                  } else {
+                    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
                   }
-                }),
-              );
+                };
 
-              // Filter out null results
-              const validResults = processedResults.filter(
-                (result): result is VideoResult => result !== null,
-              );
+                // Format view count
+                const formatViewCount = (viewCount: string) => {
+                  const num = parseInt(viewCount);
+                  if (num >= 1000000) {
+                    return `${(num / 1000000).toFixed(1)}M views`;
+                  } else if (num >= 1000) {
+                    return `${(num / 1000).toFixed(1)}K views`;
+                  } else {
+                    return `${num} views`;
+                  }
+                };
+
+                const baseResult: VideoResult = {
+                  videoId,
+                  url: `https://www.youtube.com/watch?v=${videoId}`,
+                  details: {
+                    title: snippet.title,
+                    author_name: snippet.channelTitle,
+                    author_url: `https://www.youtube.com/channel/${snippet.channelId}`,
+                    thumbnail_url: snippet.thumbnails?.high?.url || snippet.thumbnails?.medium?.url || snippet.thumbnails?.default?.url,
+                    type: 'video',
+                    provider_name: 'YouTube',
+                    provider_url: 'https://www.youtube.com',
+                  },
+                  views: statistics ? formatViewCount(statistics.viewCount) : undefined,
+                  likes: statistics?.likeCount ? `${parseInt(statistics.likeCount).toLocaleString()} likes` : undefined,
+                  summary: `${snippet.description?.substring(0, 200)}${snippet.description?.length > 200 ? '...' : ''}`,
+                  timestamps: details?.contentDetails?.duration ? [formatDuration(details.contentDetails.duration)] : undefined,
+                };
+
+                return baseResult;
+              });
 
               return {
-                results: validResults,
+                results: processedResults,
               };
             } catch (error) {
               console.error('YouTube search error:', error);
