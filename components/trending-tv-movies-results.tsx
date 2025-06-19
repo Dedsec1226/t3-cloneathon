@@ -160,7 +160,7 @@ const TrendingResults = ({ result, type }: TrendingResultsProps) => {
           onClick={() => setShowAll(!showAll)}
           className="flex items-center gap-1 text-sm text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100"
         >
-          {showAll ? 'Show Less' : 'View All'}
+          {showAll ? 'Favourites' : 'View All'}
           <ChevronRight className="w-4 h-4" />
         </button>
       </header>

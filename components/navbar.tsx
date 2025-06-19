@@ -1,6 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 import React, { useState, memo } from 'react';
-import { Globe, Lock, Copy, Check } from 'lucide-react';
+import { Globe, Lock, Copy, Check, Cpu } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { UserProfile } from '@/components/user-profile';
@@ -17,6 +17,7 @@ import { ClassicLoader } from '@/components/ui/loading';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 
+
 type VisibilityType = 'public' | 'private';
 
 interface NavbarProps {
@@ -28,6 +29,8 @@ interface NavbarProps {
     user: User | null;
     onHistoryClick: () => void;
     isOwner?: boolean;
+    selectedModel?: string;
+    setSelectedModel?: (model: string) => void;
 }
 
 const Navbar = memo(({
@@ -38,12 +41,15 @@ const Navbar = memo(({
     status,
     user,
     onHistoryClick,
-    isOwner = true
+    isOwner = true,
+    selectedModel,
+    setSelectedModel
 }: NavbarProps) => {
     const [copied, setCopied] = useState(false);
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [privateDropdownOpen, setPrivateDropdownOpen] = useState(false);
     const [isChangingVisibility, setIsChangingVisibility] = useState(false);
+
 
     const handleCopyLink = (e: React.MouseEvent) => {
         e.preventDefault();
@@ -95,15 +101,18 @@ const Navbar = memo(({
         }
     };
 
+
+
     return (
         <motion.div 
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, ease: "easeOut" }}
+            style={{ opacity: 1 }}
             className={cn(
-            "fixed top-0 left-0 right-0 z-30 flex justify-between items-center p-3 transition-colors duration-200",
+            "fixed top-0 left-0 right-0 navbar-layer flex justify-between items-center p-3 transition-colors duration-200 fix-hit-testing",
             isDialogOpen
-                ? "bg-transparent pointer-events-none"
+                ? "bg-transparent"
                 : (status === "streaming" || status === 'ready'
                     ? "bg-background/95 backdrop-blur-sm supports-backdrop-filter:bg-background/60"
                     : "bg-background")
@@ -113,7 +122,10 @@ const Navbar = memo(({
             <div className="flex-1" />
             
             {/* Center content */}
-            <div className="flex items-center justify-center">
+            <div className={cn(
+                "flex items-center justify-center",
+                isDialogOpen ? "pointer-events-none" : "pointer-events-auto"
+            )}>
                 {/* Only show visibility controls if there's a chatId and user is authenticated */}
                 {chatId && user && isOwner && (
                     <AnimatePresence>
@@ -122,6 +134,7 @@ const Navbar = memo(({
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.9 }}
                             transition={{ duration: 0.2 }}
+                            style={{ opacity: 1 }}
                         >
                                 {selectedVisibilityType === 'public' ? (
                                     /* Public chat - show dropdown for copying link */
@@ -150,6 +163,7 @@ const Navbar = memo(({
                                             initial={{ opacity: 0, y: -10 }}
                                             animate={{ opacity: 1, y: 0 }}
                                             transition={{ duration: 0.2 }}
+                                            style={{ opacity: 1 }}
                                             className="space-y-4"
                                         >
                                                 <header className="flex justify-between items-center">
@@ -267,6 +281,7 @@ const Navbar = memo(({
                                             initial={{ opacity: 0, y: -10 }}
                                             animate={{ opacity: 1, y: 0 }}
                                             transition={{ duration: 0.2 }}
+                                            style={{ opacity: 1 }}
                                             className="space-y-4"
                                         >
                                             <header className="text-center">
@@ -310,19 +325,27 @@ const Navbar = memo(({
 
             {/* Right side - settings, theme toggle and user profile */}
             <div className="flex-1 flex justify-end items-center gap-3">
-                {/* Settings and theme toggle group - always visible */}
-                <div className="pointer-events-auto">
+                {/* Settings and theme toggle group - always visible and clickable */}
+                <div className="force-pointer-events relative z-50 fix-hit-testing">
                     <div className="flex flex-row items-center bg-gradient-noise-top text-muted-foreground gap-0.5 rounded-md p-1 transition-all rounded-bl-xl">
-                        <a aria-label="Go to settings" role="button" data-state="closed" href="/settings/customization" data-discover="true">
-                            <button className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-muted/40 hover:text-foreground disabled:hover:bg-transparent disabled:hover:text-foreground/50 size-8 rounded-bl-xl">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-settings2 size-4">
-                                    <path d="M20 7h-9"></path>
-                                    <path d="M14 17H5"></path>
-                                    <circle cx="17" cy="17" r="3"></circle>
-                                    <circle cx="7" cy="7" r="3"></circle>
-                                </svg>
-                            </button>
-                        </a>
+
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <a aria-label="Go to settings" role="button" data-state="closed" href="/settings" data-discover="true">
+                                    <button className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-muted/40 hover:text-foreground disabled:hover:bg-transparent disabled:hover:text-foreground/50 size-8 bg-muted/20 dark:bg-muted/30 backdrop-blur-sm">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-settings2 size-4">
+                                            <path d="M20 7h-9"></path>
+                                            <path d="M14 17H5"></path>
+                                            <circle cx="17" cy="17" r="3"></circle>
+                                            <circle cx="7" cy="7" r="3"></circle>
+                                        </svg>
+                                    </button>
+                                </a>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p className="text-white">Settings</p>
+                            </TooltipContent>
+                        </Tooltip>
                         <ThemeToggle />
                     </div>
                 </div>
@@ -333,6 +356,7 @@ const Navbar = memo(({
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.3, delay: 0.1 }}
+                        style={{ opacity: 1 }}
                     >
                 <UserProfile user={user} />
                     </motion.div>

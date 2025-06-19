@@ -62,20 +62,17 @@ import {
 import { Memory, Clock as PhosphorClock, RedditLogo, RoadHorizon, XLogo } from '@phosphor-icons/react';
 
 // Components
-import { FlightTracker } from '@/components/flight-tracker';
 import InteractiveChart from '@/components/interactive-charts';
 import { MapComponent, MapContainer } from '@/components/placeholders';
 import TMDBResult from '@/components/movie-info';
 import MultiSearch from '@/components/multi-search';
-import NearbySearchMapView from '@/components/nearby-search-map-view';
 import TrendingResults from '@/components/trending-tv-movies-results';
 import AcademicPapersCard from '@/components/academic-papers';
-import WeatherChart from '@/components/weather-chart';
 import InteractiveStockChart from '@/components/interactive-stock-chart';
 import { CurrencyConverter } from '@/components/currency_conv';
 import { ExtremeSearch } from '@/components/extreme-search';
 import MemoryManager from '@/components/memory-manager';
-import MCPServerList from '@/components/mcp-server-list';
+
 import RedditSearch from '@/components/reddit-search';
 import XSearch from '@/components/x-search';
 
@@ -677,169 +674,7 @@ const ToolInvocationListView = memo(
             (toolInvocation: ToolInvocation, index: number) => {
                 const args = JSON.parse(JSON.stringify(toolInvocation.args));
                 const result = 'result' in toolInvocation ? JSON.parse(JSON.stringify(toolInvocation.result)) : null;
-                
-                if (toolInvocation.toolName === 'find_place_on_map') {
-                    if (!result) {
-                        return <SearchLoadingState
-                            icon={MapPin}
-                            text="Finding locations..."
-                            color="blue"
-                        />;
-                    }
 
-                    // Handle error responses
-                    if (!result.success) {
-                        return (
-                            <div className="w-full my-4 rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950">
-                                <div className="p-4">
-                                    <div className="flex items-start gap-3">
-                                        <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-red-100 dark:bg-red-900 flex items-center justify-center">
-                                            <MapPin className="h-4 w-4 text-red-600 dark:text-red-400" />
-                                        </div>
-                                        <div className="flex-1">
-                                            <h3 className="text-sm font-medium text-red-900 dark:text-red-100">
-                                                Location search failed
-                                            </h3>
-                                            <p className="text-xs text-red-700 dark:text-red-300 mt-1">
-                                                {result.error}
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        );
-                    }
-
-                    const { places } = result;
-                    if (!places || places.length === 0) {
-                        return (
-                            <div className="w-full my-4 rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950">
-                                <div className="p-4">
-                                    <div className="flex items-start gap-3">
-                                        <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-900 flex items-center justify-center">
-                                            <MapPin className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                                        </div>
-                                        <div className="flex-1">
-                                            <h3 className="text-sm font-medium text-amber-900 dark:text-amber-100">
-                                                No locations found
-                                            </h3>
-                                            <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">
-                                                Try searching with different keywords or check the spelling.
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        );
-                    }
-
-                    return (
-                        <div className="w-full my-4 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 overflow-hidden">
-                            {/* Compact Header */}
-                            <div className="px-4 py-3 border-b border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-950">
-                                <div className="flex items-center gap-2">
-                                    <MapPin className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                                    <div>
-                                        <h3 className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
-                                            {places.length} Location{places.length !== 1 ? 's' : ''} Found
-                                        </h3>
-                                        <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                                            {result.search_type === 'forward' ? 'Address Search' : 'Coordinate Search'}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Compact Map */}
-                            <div className="relative h-[400px] min-h-[300px] bg-neutral-50 dark:bg-neutral-900">
-                                <MapComponent
-                                    center={{
-                                        lat: places[0].location.lat,
-                                        lng: places[0].location.lng,
-                                    }}
-                                    places={places.map((place: any) => ({
-                                        name: place.name,
-                                        location: place.location,
-                                        vicinity: place.formatted_address,
-                                    }))}
-                                    zoom={places.length > 1 ? 12 : 15}
-                                    height="h-full"
-                                    className="rounded-none"
-                                />
-                            </div>
-
-                            {/* Compact Places List */}
-                            <div className="divide-y divide-neutral-200 dark:divide-neutral-800">
-                                {places.map((place: any, index: number) => (
-                                    <div key={place.place_id || index} className="p-4">
-                                        <div className="flex items-start gap-3">
-                                            <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-950 flex items-center justify-center">
-                                                {place.types?.[0] === 'street_address' || place.types?.[0] === 'route' ? (
-                                                    <RoadHorizon className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                                                ) : place.types?.[0] === 'locality' ? (
-                                                    <Building className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                                                ) : (
-                                                    <MapPin className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                                                )}
-                                            </div>
-
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex items-start justify-between">
-                                                    <div className="flex-1 min-w-0">
-                                                        <h4 className="text-sm font-medium text-neutral-900 dark:text-neutral-100 mb-1">
-                                                            {place.name}
-                                                        </h4>
-                                                        
-                                                        {place.formatted_address && (
-                                                            <p className="text-xs text-neutral-600 dark:text-neutral-400 mb-2">
-                                                                {place.formatted_address}
-                                                            </p>
-                                                        )}
-
-                                                        <div className="flex items-center gap-3 text-xs text-neutral-500 dark:text-neutral-400">
-                                                            <span className="font-mono">{place.location.lat.toFixed(4)}, {place.location.lng.toFixed(4)}</span>
-                                                            {place.types?.[0] && (
-                                                                <span className="capitalize">{place.types[0].replace(/_/g, ' ')}</span>
-                                                            )}
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="flex items-center gap-1 ml-3">
-                                                        <Button
-                                                            size="sm"
-                                                            variant="outline"
-                                                            onClick={() => {
-                                                                const coords = `${place.location.lat},${place.location.lng}`;
-                                                                navigator.clipboard.writeText(coords);
-                                                                toast.success("Coordinates copied!");
-                                                            }}
-                                                            className="h-7 px-2 text-xs"
-                                                        >
-                                                            <Copy className="h-3 w-3" />
-                                                        </Button>
-
-                                                        <Button
-                                                            size="sm"
-                                                            onClick={() => {
-                                                                const url = place.place_id
-                                                                    ? `https://www.google.com/maps/place/?q=place_id:${place.place_id}`
-                                                                    : `https://www.google.com/maps/search/?api=1&query=${place.location.lat},${place.location.lng}`;
-                                                                window.open(url, '_blank');
-                                                            }}
-                                                            className="h-7 px-2 text-xs bg-blue-600 hover:bg-blue-700 text-white"
-                                                        >
-                                                            <ExternalLink className="h-3 w-3" />
-                                                        </Button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    );
-                }
 
                 if (toolInvocation.toolName === 'movie_or_tv_search') {
                     if (!result) {
@@ -971,125 +806,7 @@ const ToolInvocationListView = memo(
                     return <AcademicPapersCard results={result.results} />;
                 }
 
-                if (toolInvocation.toolName === 'nearby_places_search') {
-                    if (!result) {
-                        return <NearbySearchSkeleton type={args.type} />;
-                    }
 
-                    // Handle error responses
-                    if (!result.success) {
-                        return (
-                            <Card className="w-full my-4 p-4 border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950">
-                                <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
-                                    <MapPin className="h-5 w-5" />
-                                    <span className="font-medium">Nearby search failed</span>
-                                </div>
-                                <p className="text-sm text-red-500 dark:text-red-300 mt-1">{result.error}</p>
-                            </Card>
-                        );
-                    }
-
-                    const { places, center } = result;
-                    if (!places || places.length === 0) {
-                        return (
-                            <Card className="w-full my-4 p-4 border-yellow-200 dark:border-yellow-800 bg-yellow-50 dark:bg-yellow-950">
-                                <div className="flex items-center gap-2 text-yellow-600 dark:text-yellow-400">
-                                    <MapPin className="h-5 w-5" />
-                                    <span className="font-medium">No nearby {args.type} found</span>
-                                </div>
-                                <p className="text-sm text-yellow-500 dark:text-yellow-300 mt-1">
-                                    Try expanding the search radius or searching in a different area.
-                                </p>
-                            </Card>
-                        );
-                    }
-
-                    // Transform places to match the NearbySearchMapView expected format
-                    const transformedPlaces = places.map((place: any) => ({
-                        name: place.name,
-                        location: place.location,
-                        place_id: place.place_id,
-                        vicinity: place.formatted_address,
-                        rating: place.rating,
-                        reviews_count: place.reviews_count,
-                        price_level: place.price_level,
-                        photos: place.photos,
-                        is_closed: !place.is_open,
-                        type: place.types?.[0]?.replace(/_/g, ' '),
-                        source: place.source,
-                        phone: place.phone,
-                        website: place.website,
-                        hours: place.opening_hours,
-                        distance: place.distance,
-                    }));
-
-                    return (
-                        <div className="my-4">
-                            <NearbySearchMapView
-                                center={center}
-                                places={transformedPlaces}
-                                type={result.type}
-                                query={result.query}
-                                searchRadius={result.radius}
-                            />
-                        </div>
-                    );
-                }
-
-                if (toolInvocation.toolName === 'get_weather_data') {
-                    if (!result) {
-                        return (
-                            <Card className="my-2 py-0 shadow-none bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800 gap-0">
-                                <CardHeader className="py-2 px-3 sm:px-4">
-                                    <div className="flex justify-between items-start">
-                                        <div className="flex-1 min-w-0">
-                                            <div className="h-5 w-32 bg-neutral-200 dark:bg-neutral-800 rounded-md animate-pulse" />
-                                            <div className="flex items-center mt-1 gap-2">
-                                                <div className="h-4 w-20 bg-neutral-200 dark:bg-neutral-800 rounded-full animate-pulse" />
-                                                <div className="h-4 w-24 bg-neutral-200 dark:bg-neutral-800 rounded-full animate-pulse" />
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center ml-4">
-                                            <div className="text-right">
-                                                <div className="h-8 w-16 bg-neutral-200 dark:bg-neutral-800 rounded-md animate-pulse" />
-                                                <div className="h-4 w-24 bg-neutral-200 dark:bg-neutral-800 rounded-md mt-1 animate-pulse" />
-                                            </div>
-                                            <div className="h-12 w-12 flex items-center justify-center ml-2">
-                                                <Cloud className="h-8 w-8 text-neutral-300 dark:text-neutral-700 animate-pulse" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="flex flex-wrap gap-1.5 mt-3">
-                                        {[...Array(4)].map((_, i) => (
-                                            <div key={i} className="h-7 w-28 bg-neutral-200 dark:bg-neutral-800 rounded-full animate-pulse" />
-                                        ))}
-                                    </div>
-                                </CardHeader>
-                                <CardContent className="p-0">
-                                    <div className="px-3 sm:px-4">
-                                        <div className="h-8 w-full bg-neutral-200 dark:bg-neutral-800 rounded-lg animate-pulse mb-4" />
-                                        <div className="h-[180px] w-full bg-neutral-200 dark:bg-neutral-800 rounded-lg animate-pulse" />
-                                        <div className="flex justify-between mt-4 pb-4 overflow-x-auto no-scrollbar">
-                                            {[...Array(5)].map((_, i) => (
-                                                <div key={i} className="flex flex-col items-center min-w-[60px] sm:min-w-[70px] p-1.5 sm:p-2 mx-0.5">
-                                                    <div className="h-4 w-12 bg-neutral-200 dark:bg-neutral-800 rounded animate-pulse mb-2" />
-                                                    <div className="h-8 w-8 rounded-full bg-neutral-200 dark:bg-neutral-800 animate-pulse mb-2" />
-                                                    <div className="h-3 w-8 bg-neutral-200 dark:bg-neutral-800 rounded animate-pulse" />
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </CardContent>
-                                <CardFooter className="border-t border-neutral-200 dark:border-neutral-800 py-0! px-4 m-0!">
-                                    <div className="w-full flex justify-end items-center py-1">
-                                        <div className="h-3 w-32 bg-neutral-200 dark:bg-neutral-800 rounded animate-pulse" />
-                                    </div>
-                                </CardFooter>
-                            </Card>
-                        );
-                    }
-                    return <WeatherChart result={result} />;
-                }
 
                 if (toolInvocation.toolName === 'currency_converter') {
                     return <CurrencyConverter toolInvocation={toolInvocation} result={result} />;
@@ -1401,48 +1118,7 @@ const ToolInvocationListView = memo(
                     return <TranslationTool toolInvocation={toolInvocation} result={result} />;
                 }
 
-                if (toolInvocation.toolName === 'track_flight') {
-                    if (!result) {
-                        return (
-                            <div className="flex items-center justify-between w-full">
-                                <div className="flex items-center gap-2">
-                                    <Plane className="h-5 w-5 text-neutral-700 dark:text-neutral-300 animate-pulse" />
-                                    <span className="text-neutral-700 dark:text-neutral-300 text-lg">Tracking flight...</span>
-                                </div>
-                                <div className="flex space-x-1">
-                                    {[0, 1, 2].map((index) => (
-                                        <motion.div
-                                            key={index}
-                                            className="w-2 h-2 bg-neutral-400 dark:bg-neutral-600 rounded-full"
-                                            initial={{ opacity: 0.3 }}
-                                            animate={{ opacity: 1 }}
-                                            transition={{
-                                                repeat: Infinity,
-                                                duration: 0.8,
-                                                delay: index * 0.2,
-                                                repeatType: "reverse",
-                                            }}
-                                        />
-                                    ))}
-                                </div>
-                            </div>
-                        );
-                    }
 
-                    if (result.error) {
-                        return (
-                            <div className="text-red-500 dark:text-red-400">
-                                Error tracking flight: {result.error}
-                            </div>
-                        );
-                    }
-
-                    return (
-                        <div className="my-4">
-                            <FlightTracker data={result} />
-                        </div>
-                    );
-                }
 
                 if (toolInvocation.toolName === 'datetime') {
                     if (!result) {
@@ -1589,44 +1265,7 @@ const ToolInvocationListView = memo(
                     return <MemoryManager result={result} />;
                 }
 
-                if (toolInvocation.toolName === 'mcp_search') {
-                    if (!result) {
-                        return (
-                            <SearchLoadingState
-                                icon={Server}
-                                text="Searching MCP servers..."
-                                color="blue"
-                            />
-                        );
-                    }
 
-                    return (
-                        <div className="w-full my-2">
-                            <Card className="shadow-none border-neutral-200 dark:border-neutral-800 overflow-hidden">
-                                <CardHeader className="py-3 px-4">
-                                    <div className="flex items-center gap-3">
-                                        <div className="h-7 w-7 rounded-md bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
-                                            <Server className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
-                                        </div>
-                                        <div>
-                                            <CardTitle className="text-base">MCP Server Results</CardTitle>
-                                            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
-                                                Search results for &quot;{result.query}&quot;
-                                            </p>
-                                        </div>
-                                    </div>
-                                </CardHeader>
-                                <CardContent className="pt-0 px-3 pb-3">
-                                    <MCPServerList 
-                                        servers={result.servers || []} 
-                                        query={result.query} 
-                                        error={result.error}
-                                    />
-                                </CardContent>
-                            </Card>
-                        </div>
-                    );
-                }
 
                 if (toolInvocation.toolName === 'reddit_search') {
                     if (!result) {

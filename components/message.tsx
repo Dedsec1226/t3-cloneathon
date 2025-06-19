@@ -472,7 +472,7 @@ export const Message: React.FC<MessageProps> = ({
     const isLastAssistantMessage = isLastMessage && message.role === 'assistant';
 
     return (
-      <div className={isLastAssistantMessage ? 'min-h-[calc(100vh-18rem)]' : ''}>
+      <div className={isLastAssistantMessage ? 'min-h-[calc(50vh-14rem)]' : ''}>
         {message.parts?.map((part: MessagePart, partIndex: number) =>
           renderPart(
             part,
@@ -483,47 +483,7 @@ export const Message: React.FC<MessageProps> = ({
           )
         )}
 
-        {/* Show retry option when assistant response is missing (not an error status) */}
-        {isMissingAssistantResponse && handleRetry && (
-          <div className="mt-3">
-            <div className="rounded-lg border border-amber-200 dark:border-amber-800 bg-white dark:bg-neutral-900 shadow-sm overflow-hidden">
-              <div className="bg-amber-50 dark:bg-amber-900/30 px-4 py-3 border-b border-amber-200 dark:border-amber-800 flex items-start gap-3">
-                <div className="mt-0.5">
-                  <div className="bg-amber-100 dark:bg-amber-700/50 p-1.5 rounded-full">
-                    <AlertCircle className="h-4 w-4 text-amber-500 dark:text-amber-300" />
-                  </div>
-                </div>
-                <div>
-                  <h3 className="font-medium text-amber-700 dark:text-amber-300">
-                    Incomplete Response
-                  </h3>
-                  <p className="text-sm text-amber-600/80 dark:text-amber-400/80 mt-0.5">
-                    The assistant response appears to be incomplete or empty.
-                  </p>
-                </div>
-              </div>
-
-              <div className="px-4 py-3 flex items-center justify-between">
-                <p className="text-neutral-500 dark:text-neutral-400 text-xs">
-                  {(!user && selectedVisibilityType === 'public')
-                    ? "Please sign in to retry or try a different prompt"
-                    : "Try regenerating the response or rephrase your question"
-                  }
-                </p>
-                {(user || selectedVisibilityType === 'private') && (
-                  <Button
-                    onClick={handleRetry}
-                    className="bg-amber-600 hover:bg-amber-700 text-white"
-                    size="sm"
-                  >
-                    <RefreshCw className="mr-2 h-3.5 w-3.5" />
-                    Generate Response
-                  </Button>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
+        {/* REMOVED: "Incomplete Response" message completely disabled */}
 
         {/* Display error message with retry button */}
         {error && handleRetry && (
@@ -583,12 +543,12 @@ export const Message: React.FC<MessageProps> = ({
               <AlignLeft size={16} className="text-neutral-600 dark:text-neutral-400" />
               <h2 className="font-medium text-sm text-neutral-700 dark:text-neutral-300">Suggested questions</h2>
             </div>
-            <div className="flex flex-col border-t border-neutral-200 dark:border-neutral-800">
+            <div className="flex flex-col">
               {suggestedQuestions.map((question, i) => (
                 <button
                   key={i}
                   onClick={() => handleSuggestedQuestionClick(question)}
-                  className="w-full py-2.5 px-3 text-left flex justify-between items-center border-b border-neutral-200 dark:border-neutral-800 hover:bg-neutral-50/50 dark:hover:bg-neutral-900/50 transition-colors"
+                  className="w-full py-2.5 px-3 text-left flex justify-between items-center hover:bg-neutral-50/50 dark:hover:bg-neutral-900/50 transition-colors"
                 >
                   <span className="text-neutral-700 dark:text-neutral-300 text-sm font-normal pr-3">{question}</span>
                   <Plus size={14} className="text-neutral-600 dark:text-neutral-400 flex-shrink-0" />

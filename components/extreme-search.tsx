@@ -11,6 +11,7 @@ import { TextShimmer } from "@/components/core/text-shimmer";
 import { Skeleton } from "@/components/ui/skeleton";
 import ReactECharts, { EChartsOption } from 'echarts-for-react';
 import { useTheme } from 'next-themes';
+import { MarkdownRenderer } from "@/components/markdown";
 
 interface QueryBlockData {
   queryId: string;
@@ -574,9 +575,9 @@ const ExtremeSearchComponent = ({
   const [previousItemsLength, setPreviousItemsLength] = useState(0);
   const timelineContainerRef = useRef<HTMLDivElement>(null);
   
-  // Add state for accordion sections (default to closed for more compact view)
-  const [researchProcessOpen, setResearchProcessOpen] = useState(false);
-  const [sourcesOpen, setSourcesOpen] = useState(true);
+  // Add state for accordion sections (research process open by default, sources closed)
+  const [researchProcessOpen, setResearchProcessOpen] = useState(true);
+  const [sourcesOpen, setSourcesOpen] = useState(false);
 
   const latestStatusAnnotation = useMemo(() => 
     (annotations as any[])
@@ -588,6 +589,14 @@ const ExtremeSearchComponent = ({
 
   const planData = useMemo(() => 
     (annotations as any[])?.find(ann => ann.plan)?.plan,
+  [annotations]);
+
+  // Add thinking annotations support
+  const thinkingMessages = useMemo(() => 
+    (annotations as any[])
+      ?.filter(ann => ann && ann.type === "thinking" && typeof ann.content === 'string')
+      ?.map((ann, index) => ({ id: index, content: ann.content, timestamp: index }))
+      || [],
   [annotations]);
 
   const queriesWithSources: QueryBlockData[] = useMemo(() => 
@@ -1275,7 +1284,7 @@ const ExtremeSearchComponent = ({
         transition={{ duration: 0.3 }}
         className="space-y-4"
       >
-        {/* Show the timeline view first */}
+        {/* Show the research process FIRST */}
         <Card className="w-full mx-auto gap-0 py-0 mb-3 shadow-none overflow-hidden">
           <div
             className="py-2 px-3 border-b bg-neutral-50 dark:bg-neutral-900 flex justify-between items-center cursor-pointer"
@@ -1307,7 +1316,40 @@ const ExtremeSearchComponent = ({
             )}
           </AnimatePresence>
         </Card>
-        
+
+        {/* Show the synthesized research report AFTER the research process */}
+        {research?.text && (
+          <Card className="w-full mx-auto mb-4 shadow-none overflow-hidden">
+            <div className="py-3 px-4 border-b bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
+                <h3 className="text-sm font-semibold text-blue-900 dark:text-blue-100">
+                  Comprehensive Research Report
+                </h3>
+              </div>
+              <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
+                Synthesized findings from {uniqueSources.length} sources
+              </p>
+            </div>
+            <CardContent className="p-4">
+              <div className="prose prose-sm dark:prose-invert max-w-none">
+                {(() => {
+                  try {
+                    return <MarkdownRenderer content={research.text || ""} />;
+                  } catch (error) {
+                    console.error("MarkdownRenderer error:", error);
+                    return (
+                      <div className="text-sm text-neutral-800 dark:text-neutral-200 whitespace-pre-wrap">
+                        {research.text}
+                      </div>
+                    );
+                  }
+                })()}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Show charts if any */}
         {allCharts.length > 0 && (
                       <div className="mb-4">
@@ -1337,6 +1379,7 @@ const ExtremeSearchComponent = ({
             </div>
           </div>
         )}
+
         
         {/* Then show the sources view */}
         {renderSources(uniqueSources)}
@@ -1360,6 +1403,12 @@ const ExtremeSearchComponent = ({
           <div className="text-xs font-medium text-neutral-800 dark:text-neutral-200 truncate">
             {latestStatusTitle}
           </div>
+          {/* Show latest thinking message if available */}
+          {thinkingMessages.length > 0 && (
+            <div className="text-xs text-neutral-600 dark:text-neutral-400 mt-1 italic">
+              {thinkingMessages[thinkingMessages.length - 1].content}
+            </div>
+          )}
         </div>
         <CardContent className="p-3 pt-2">
           <AnimatePresence>

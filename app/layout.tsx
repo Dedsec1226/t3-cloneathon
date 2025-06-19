@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
 	title: "T3 Chat – The Best AI Assistant & ChatGPT Alternative",
 	description:
-		"T3 is your personal thinking partner. It completes your thoughts, remembers your context, and adapts the interface as you write. Built for developers, powered by AI, and integrated with your tools.",
+		"T3 is your personal assistant. It completes your thoughts, remembers your context, and adapts the interface as you write. Built for developers, powered by AI, and integrated with your tools.",
 	keywords: [
 		"T3",
 		"AI",
@@ -28,38 +28,38 @@ export const metadata: Metadata = {
 	],
 	authors: [
 		{
-			name: "Railly Hugo",
-			url: "https://github.com/raillyhugo",
+			name: "Abhinav",
+			url: "https://github.com/abhinavkale-dev",
 		},
 		{
-			name: "Anthony Cueva",
-			url: "https://github.com/anthonycuervo",
+			name: "Pratik",
+			url: "https://github.com/Prtik12",
 		},
 	],
 	applicationName: "T3",
-	metadataBase: new URL("https://t3.dev"),
+	metadataBase: new URL("https://t3.chat"),
 	openGraph: {
 		type: "website",
 		locale: "en_US",
-		title: "T3 – The AI-Native Personal Text Editor",
+		title: "T3 Chat – The Best AI Assistant & ChatGPT Alternative",
 		description:
-			"T3 is your personal thinking partner. It completes your thoughts, remembers your context, and adapts the interface as you write. Built for developers, powered by AI, and integrated with your tools.",
-		url: "https://t3.dev",
+			"T3 is your personal assistant. It completes your thoughts, remembers your context, and adapts the interface as you write. Built for developers, powered by AI, and integrated with your tools.",
+		url: "https://t3.chat",
 		images: [
 			{
-				url: "https://t3.dev/og.png",
+				url: "https://t3.chat/og.png",
 				width: 1200,
 				height: 630,
-				alt: "T3 – Built by Railly Hugo and Anthony Cueva",
+				alt: "T3 – Built by Abhinav and Pratik",
 			},
 		],
 	},
 	twitter: {
 		card: "summary_large_image",
-		title: "T3 – The AI-Native Text Editor That Thinks With You",
+		title: "T3 Chat – The Best AI Assistant & ChatGPT Alternative",
 		description:
-			"More than autocomplete. T3 remembers your context, adapts the interface, and integrates your tools into your flow. Write with AI that feels personal.",
-		images: ["https://t3.dev/og.png"],
+			"T3 is your personal assistant. It completes your thoughts, remembers your context, and adapts the interface as you write. Built for developers, powered by AI, and integrated with your tools.",
+		images: ["https://t3.chat/og.png"],
 	},
 };
 

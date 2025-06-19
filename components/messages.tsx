@@ -38,6 +38,7 @@ interface MessagesProps {
   onVisibilityChange?: (visibility: 'public' | 'private') => void; // Add visibility change handler
   initialMessages?: UIMessage[]; // Add initial messages prop to detect existing chat
   isOwner?: boolean; // Add ownership prop
+  isStoppedByUser?: boolean;
 }
 
 // Create a consistent logo header component to reuse
@@ -67,7 +68,8 @@ const Messages: React.FC<MessagesProps> = ({
   chatId,
   onVisibilityChange,
   initialMessages,
-  isOwner
+  isOwner,
+  isStoppedByUser
 }) => {
   // Track visibility state for each reasoning section using messageIndex-partIndex as key
   const [reasoningVisibilityMap, setReasoningVisibilityMap] = useState<Record<string, boolean>>({});
@@ -114,37 +116,11 @@ const Messages: React.FC<MessagesProps> = ({
     return lastMessage?.role === 'user' && (status === 'submitted' || status === 'streaming');
   }, [memoizedMessages, status]);
 
-  // Check if we need to show retry due to missing assistant response (different from error status)
+  // DISABLED: Incomplete response detection completely turned off
   const isMissingAssistantResponse = useMemo(() => {
-    const lastMessage = memoizedMessages[memoizedMessages.length - 1];
-    
-    // Case 1: Last message is user and no assistant response
-    if (lastMessage?.role === 'user' && status === 'ready' && !error) {
-      return true;
-    }
-    
-    // Case 2: Last message is assistant but is completely empty (no meaningful content)
-    if (lastMessage?.role === 'assistant' && status === 'ready' && !error) {
-      const parts = lastMessage.parts || [];
-      
-      // Check if message has any meaningful content
-      const hasTextContent = parts.some((part: any) => 
-        part.type === 'text' && part.text && part.text.trim() !== ''
-      );
-      const hasToolInvocations = parts.some((part: any) => part.type === 'tool-invocation');
-      const hasReasoningContent = parts.some((part: any) => part.type === 'reasoning');
-      
-      // Also check legacy content field
-      const hasLegacyContent = lastMessage.content && lastMessage.content.trim() !== '';
-      
-      // If there's no meaningful content at all, show retry
-      if (!hasTextContent && !hasToolInvocations && !hasReasoningContent && !hasLegacyContent) {
-        return true;
-      }
-    }
-    
+    // Always return false - never show "Incomplete Response" message
     return false;
-  }, [memoizedMessages, status, error]);
+  }, []);
 
   // Handle rendering of message parts
   const renderPart = (
@@ -159,8 +135,8 @@ const Messages: React.FC<MessagesProps> = ({
       // For empty text parts in a streaming message, show loading animation
       if ((!part.text || part.text.trim() === "") && status === 'streaming') {
         
-        return (
-          <div key={`${messageIndex}-${partIndex}-loading`} className="flex flex-col min-h-[calc(100vh-18rem)]">
+                        return (
+          <div key={`${messageIndex}-${partIndex}-loading`} className="flex flex-col min-h-[calc(50vh-14rem)]">
             <T3LogoHeader />
             <div className="flex space-x-2 ml-8 mt-2">
               <div className="w-2 h-2 rounded-full bg-neutral-400 dark:bg-neutral-600 animate-bounce" style={{ animationDelay: '0ms' }}></div>
@@ -491,7 +467,7 @@ const Messages: React.FC<MessagesProps> = ({
 
       {/* Loading animation when status is submitted with min-height to reserve space */}
       {status === 'submitted' && (
-        <div className="flex items-start min-h-[calc(100vh-18rem)]">
+        <div className="flex items-start min-h-[calc(50vh-14rem)]">
           <div className="w-full">
             <T3LogoHeader />
             <div className="flex space-x-2 ml-8 mt-2">
@@ -505,13 +481,20 @@ const Messages: React.FC<MessagesProps> = ({
 
       {/* Reserve space for empty/streaming assistant message */}
       {status === 'streaming' && isWaitingForResponse && (
-        <div className="min-h-[calc(100vh-18rem)] mt-2">
+        <div className="min-h-[calc(50vh-14rem)] mt-2">
           <T3LogoHeader />
           {/* Content will be populated by the streaming message */}
         </div>
       )}
 
-      
+      {/* Show "Stopped by user" message when user stops generation */}
+      {isStoppedByUser && status === 'ready' && (
+        <div className="w-full mx-auto px-2 sm:px-4 mb-4">
+          <div className="bg-red-100 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg px-4 py-3 text-red-700 dark:text-red-300 text-sm font-medium">
+            Stopped by user
+          </div>
+        </div>
+      )}
 
       <div ref={reasoningScrollRef} />
       <div ref={messagesEndRef} />

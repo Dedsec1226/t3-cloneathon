@@ -1,6 +1,6 @@
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
-import { Globe, Book, Youtube, MessageCircle, BarChart3, Hash } from 'lucide-react';
+import { Globe, Book, Youtube, MessageCircle, BarChart3, Hash, Telescope, Brain } from 'lucide-react';
 import { RedditLogo, XLogo } from '@phosphor-icons/react';
 
 export function cn(...inputs: ClassValue[]) {
@@ -19,13 +19,13 @@ export interface SearchGroup {
 }
 
 export const searchGroups: SearchGroup[] = [
-  { id: 'web', name: 'Web', icon: Globe, description: 'Search the web', show: false },
   { id: 'academic', name: 'Academic', icon: Book, description: 'Academic research', show: true },
   { id: 'youtube', name: 'YouTube', icon: Youtube, description: 'YouTube videos', show: true },
   { id: 'reddit', name: 'Reddit', icon: RedditLogo, description: 'Reddit discussions', show: true },
   { id: 'x', name: 'X', icon: XLogo, description: 'X (Twitter) posts', show: true },
   { id: 'analysis', name: 'Analytics', icon: BarChart3, description: 'Data analysis', show: true },
-  { id: 'memory', name: 'Memory', icon: Hash, description: 'Personal memory', show: true, requireAuth: true },
+
+  { id: 'memory', name: 'Memory', icon: Brain, description: 'Personal AI memory', show: true, requireAuth: true },
 ];
 
 export function invalidateChatsCache() {

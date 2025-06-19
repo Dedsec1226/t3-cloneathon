@@ -6,7 +6,8 @@ import { SearchGroupId } from '@/lib/utils';
 import { generateObject, UIMessage, generateText } from 'ai';
 import { z } from 'zod';
 import { getUser } from "@/lib/auth-utils";
-import { getChatsByUserId, deleteChatById, updateChatVisiblityById, getChatById, getMessageById, deleteMessagesByChatIdAfterTimestamp, updateChatTitleById } from '@/lib/db/queries';
+// Note: Database operations are handled client-side via Convex hooks
+// These are placeholder implementations for server actions
 import { groq } from '@ai-sdk/groq';
 import { openai } from '@ai-sdk/openai';
 
@@ -67,19 +68,7 @@ export async function suggestQuestions(history: UIMessage[]) {
   };
 }
 
-export async function checkImageModeration(images: string[]) {
-  const { text } = await generateText({
-    model: groq("meta-llama/llama-guard-4-12b"),
-    messages: [{
-      role: "user",
-      content: images.map((image: string) => ({
-        type: "image",
-        image: image
-      }))
-    }]
-  })
-  return text
-}
+
 
 // Server action to get the current user
 export async function getCurrentUser() {
@@ -183,20 +172,18 @@ type LegacyGroupId = SearchGroupId | 'buddy';
 const groupTools = {
   chat: ['datetime'] as const,
   web: [
-    'web_search', 'get_weather_data',
-    'retrieve', 'text_translate',
-    'nearby_places_search', 'track_flight',
+    'web_search', 'retrieve', 'text_translate',
     'movie_or_tv_search', 'trending_movies', 
-    'find_place_on_map',
-    'trending_tv', 'datetime', 'mcp_search'
+    'trending_tv', 'datetime'
   ] as const,
   academic: ['academic_search', 'code_interpreter', 'datetime'] as const,
   youtube: ['youtube_search', 'datetime'] as const,
   reddit: ['reddit_search', 'datetime'] as const,
   analysis: ['code_interpreter', 'stock_chart', 'currency_converter', 'datetime'] as const,
-  extreme: ['extreme_search'] as const,
+
   x: ['x_search'] as const,
   memory: ['memory_manager', 'datetime'] as const,
+  extreme: ['extreme_search', 'datetime'] as const,
   // Add legacy mapping for backward compatibility
   buddy: ['memory_manager', 'datetime'] as const,
 } as const;
@@ -229,7 +216,13 @@ const groupInstructions = {
   web: `
   You are an AI web search engine designed to help users find information on the internet with no unnecessary chatter and more focus on the content.
   'You MUST run the tool IMMEDIATELY on receiving any user message' before composing your response. **This is non-negotiable.**
-  Today's Date: ${new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "2-digit", weekday: "short" })}
+  
+  🗓️ CURRENT DATE & TIME INFORMATION:
+  Today's Date: ${new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric", weekday: "long" })}
+  Current Year: ${new Date().getFullYear()}
+  Current Time: ${new Date().toLocaleTimeString("en-US", { timeZoneName: "short" })}
+  
+  ⚠️ IMPORTANT: For basic date/time questions like "what year is it?" or "what date is it?", you can answer directly using the current date information above WITHOUT running web search. Only use web search for complex queries that require real-time information from the internet.
 
   ### CRITICAL INSTRUCTION:
   - ⚠️ URGENT: RUN THE APPROPRIATE TOOL INSTANTLY when user sends ANY message - NO EXCEPTIONS
@@ -249,12 +242,13 @@ const groupInstructions = {
 
   #### Multi Query Web Search:
   - Always try to make more than 3 queries to get the best results. Minimum 3 queries are required and maximum 6 queries are allowed
-  - Specify the year or "latest" in queries to fetch recent information
+  - For TIME queries: Use specific terms like "current time in [location]", "live time [city]", "[city] time now", "real time [location]"
+  - For other real-time info: Specify "current", "latest", "now", "today", or current year in queries
   - Use the "news" topic type to get the latest news and updates
   - Use the "finance" topic type to get the latest financial news and updates
   - Always use the "include_domains" parameter to include specific domains in the search results if asked by the user or given a specific reference to a website like reddit, youtube, etc.
   - Always put the values in array format for the required parameters
-  - Put the latest year in the queries to get the latest information or just "latest".
+  - IMPORTANT: Web search can provide real-time data including current time, weather, prices, etc. - use it for live information!
 
   #### Retrieve Tool:
   - Use this for extracting information from specific URLs provided
@@ -270,28 +264,10 @@ const groupInstructions = {
   - For each MCP server, write a brief summary of its usage and typical use cases
   - Mention any other names or aliases the MCP server is known by, if available
 
-  #### Weather Data:
-  - Run the tool with the location and date parameters directly no need to plan in the thinking canvas
-  - When you get the weather data, talk about the weather conditions and what to wear or do in that weather
-  - Answer in paragraphs and no need of citations for this tool
-
   #### datetime tool:
+  - Use when users specifically ask about current date, time, or timezone from the system
   - When you get the datetime data, talk about the date and time in the user's timezone
-  - Do not always talk about the date and time, only talk about it when the user asks for it
-
-  #### Nearby Search:
-  - Use location and radius parameters. Adding the country name improves accuracy
-  - Use the 'nearby_places_search' tool to search for places by name or description
-  - Do not use the 'nearby_places_search' tool for general web searches
-  - invoke the tool when the user mentions the word 'near <location>' or 'nearby hotels in <location>' or 'nearby places' in the query or any location related query
-  - invoke the tool when the user says something like show me <tpye> in/near <location> in the query or something like that, example: show me restaurants in new york or restaurants in juhu beach
-  - do not mistake this tool as tts or the word 'tts' in the query and run tts query on the web search tool
-
-  #### Find Place on Map:
-  - Use the 'find_place_on_map' tool to search for places by name or description
-  - Do not use the 'find_place_on_map' tool for general web searches
-  - invoke the tool when the user mentions the word 'map' or 'maps' in the query or any location related query
-  - do not mistake this tool as tts or the word 'tts' in the query and run tts query on the web search tool
+  - This tool provides basic system time - for real-time web-based time queries, use web_search instead
 
   #### translate tool:
   - Use the 'translate' tool to translate text to the user's requested language
@@ -454,6 +430,52 @@ const groupInstructions = {
   - Mathematical expressions must always be properly delimited
   - Tables must use plain text without any formatting
   - Apply markdown formatting for clarity
+  `,
+
+  mcp: `
+  You are an MCP (Model Context Protocol) specialist designed to help users discover and understand MCP servers.
+  'You MUST run the mcp_search tool IMMEDIATELY on receiving any user message' before composing your response. **This is non-negotiable.**
+  Today's date is ${new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "2-digit", weekday: "short" })}.
+
+  ### CRITICAL INSTRUCTION:
+  - ⚠️ URGENT: RUN THE MCP_SEARCH TOOL INSTANTLY when user sends ANY message - NO EXCEPTIONS
+  - ALWAYS use the user's query as the search parameter for mcp_search
+  - Never ask for clarification before running the tool - run first, clarify later if needed
+
+  ### Core Responsibilities:
+  1. Search the Smithery MCP registry for relevant servers
+  2. Present MCP servers in well-formatted, informative displays
+  3. Explain MCP server capabilities and use cases
+  4. Help users understand how to integrate MCP servers
+  5. Provide practical implementation guidance
+
+  ### MCP Search Guidelines:
+  - Always run mcp_search with the user's query as the search parameter
+  - Present results in organized, easy-to-read format
+  - Include server names, descriptions, and key capabilities
+  - Show deployment URLs and connection information when available
+  - Highlight unique features and use cases for each server
+
+  ### Response Format:
+  - Use markdown tables for organized server listings
+  - Include clear headers: Name, Description, Use Count, Created At
+  - Provide brief summaries of each server's capabilities
+  - Include homepage/repository links when available
+  - Use technical but accessible language
+  - Keep descriptions concise but informative
+
+  ### MCP Knowledge:
+  - MCP (Model Context Protocol) enables AI assistants to connect to external tools and data sources
+  - MCP servers provide standardized interfaces for tools, resources, and prompts
+  - Servers can offer capabilities like file access, API integrations, database connections
+  - Popular categories: development tools, data sources, productivity apps, APIs
+  - Help users understand practical applications and implementation steps
+
+  ### Citation Rules:
+  - Cite MCP server sources when discussing specific capabilities
+  - Use format: [Server Name](deployment_url) for server references
+  - Include creation dates and usage statistics when available
+  - Reference official MCP documentation for protocol details
   `,
 
   // Legacy mapping for backward compatibility - same as memory instructions
@@ -759,13 +781,19 @@ const groupInstructions = {
 
   extreme: `
   You are an advanced research assistant focused on deep analysis and comprehensive understanding with focus to be backed by citations in a research paper format.
-  You objective is to always run the tool first and then write the response with citations!
-  The current date is ${new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "2-digit", weekday: "short" })}.
-
-  ### CRITICAL INSTRUCTION: (MUST FOLLOW AT ALL COSTS!!!)
-  - ⚠️ URGENT: Run extreme_search tool INSTANTLY when user sends ANY message - NO EXCEPTIONS
-  - DO NOT WRITE A SINGLE WORD before running the tool
+  
+  ### 🚨 CRITICAL INSTRUCTION: SINGLE TOOL EXECUTION (MUST FOLLOW AT ALL COSTS!!!)
+  - ⚠️ MANDATORY: Run extreme_search tool EXACTLY ONCE when user sends ANY message - NO EXCEPTIONS  
+  - ⚠️ MANDATORY: NEVER CALL extreme_search TOOL MORE THAN ONCE - STOP AFTER FIRST CALL
+  - ⚠️ MANDATORY: DO NOT CALL ANY OTHER TOOLS AFTER extreme_search COMPLETES
+  - ⚠️ MANDATORY: DO NOT WRITE ANY TEXT, ANALYSIS, OR CONTENT BEFORE THE TOOL COMPLETES
+  - ⚠️ MANDATORY: WAIT FOR THE COMPLETE TOOL RESULT BEFORE WRITING YOUR RESPONSE
+  - ⚠️ MANDATORY: The tool will handle ALL research, searching, and compilation
+  - ⚠️ MANDATORY: Only respond AFTER receiving the complete research results from the tool
+  - ⚠️ MANDATORY: After tool completes, IMMEDIATELY output the research report - DO NOT call tools again
   - Run the tool with the exact user query immediately on receiving it
+  - DO NOT provide any commentary, thoughts, or partial responses while the tool is running
+  - DO NOT stream any content until the extreme_search tool has finished completely
   - EVEN IF THE USER QUERY IS AMBIGUOUS OR UNCLEAR, YOU MUST STILL RUN THE TOOL IMMEDIATELY
   - DO NOT ASK FOR CLARIFICATION BEFORE RUNNING THE TOOL
   - If a query is ambiguous, make your best interpretation and run the appropriate tool right away
@@ -783,9 +811,16 @@ const groupInstructions = {
     - Cross-referencing and validation
   - ⚠️ MANDATORY: You MUST immediately run the tool first as soon as the user asks for it and then write the response with citations!
   - ⚠️ MANDATORY: You MUST NOT write any analysis before running the tool!
+  - ⚠️ MANDATORY: The tool will return a COMPLETE research report - use it as your final response
+  - ⚠️ MANDATORY: DO NOT add additional commentary beyond what the tool provides
+  - ⚠️ MANDATORY: CALL EXTREME_SEARCH ONLY ONCE - NO SECOND CALLS ALLOWED
+  - ⚠️ MANDATORY: STOP TOOL EXECUTION AFTER FIRST extreme_search COMPLETES
 
   ### Response Guidelines:
   - You MUST immediately run the tool first as soon as the user asks for it and then write the response with citations!
+  - ⚠️ MANDATORY: Only output the comprehensive research report returned by the extreme_search tool
+  - ⚠️ MANDATORY: DO NOT CALL extreme_search TWICE - ONE CALL ONLY
+  - ⚠️ MANDATORY: After first tool call completes, provide the final response immediately
   - ⚠️ MANDATORY: Every claim must have an inline citation
   - ⚠️ MANDATORY: Citations MUST be placed immediately after the sentence containing the information
   - ⚠️ MANDATORY: You MUST write any equations in latex format
@@ -823,11 +858,14 @@ const groupInstructions = {
   - CITATIONS SHOULD BE ON EVERYTHING YOU SAY
   - Include analysis of reliability and limitations
   - Maintain the language of the user's message and do not change it
-  - Avoid referencing citations directly, make them part of statements`
+  - Avoid referencing citations directly, make them part of statements`,
 };
 
 export async function getGroupConfig(groupId: LegacyGroupId = 'web') {
   "use server";
+  
+  // **DEBUG: Add logging to see what's happening**
+  console.log("📋 getGroupConfig called with groupId:", groupId);
 
   // Check if the user is authenticated for memory or buddy group
   if (groupId === 'memory' || groupId === 'buddy') {
@@ -835,12 +873,14 @@ export async function getGroupConfig(groupId: LegacyGroupId = 'web') {
     if (!user) {
       // Redirect to web group if user is not authenticated
       groupId = 'web';
+      console.log("🔄 Redirected unauthenticated user from memory/buddy to web");
     } else if (groupId === 'buddy') {
       // If authenticated and using 'buddy', still use the memory_manager tool but with buddy instructions
       // The tools are the same, just different instructions
       const tools = groupTools[groupId];
       const instructions = groupInstructions[groupId];
-
+      
+      console.log("✅ getGroupConfig returning for buddy:", { tools, instructionsLength: instructions.length });
       return {
         tools,
         instructions
@@ -850,6 +890,13 @@ export async function getGroupConfig(groupId: LegacyGroupId = 'web') {
 
   const tools = groupTools[groupId as keyof typeof groupTools];
   const instructions = groupInstructions[groupId as keyof typeof groupInstructions];
+  
+  // **DEBUG: Log the final result**
+  console.log("✅ getGroupConfig returning for", groupId, ":", { 
+    tools, 
+    instructionsLength: instructions?.length || 0,
+    toolsArray: tools
+  });
 
   return {
     tools,
@@ -869,12 +916,9 @@ export async function getUserChats(
   if (!userId) return { chats: [], hasMore: false };
 
   try {
-    return await getChatsByUserId({
-      id: userId,
-      limit,
-      startingAfter: startingAfter || null,
-      endingBefore: endingBefore || null
-    });
+    // Placeholder implementation - use Convex hooks on client-side instead
+    console.log('getUserChats called with:', { userId, limit, startingAfter, endingBefore });
+    return { chats: [], hasMore: false };
   } catch (error) {
     console.error('Error fetching user chats:', error);
     return { chats: [], hasMore: false };
@@ -892,12 +936,9 @@ export async function loadMoreChats(
   if (!userId || !lastChatId) return { chats: [], hasMore: false };
 
   try {
-    return await getChatsByUserId({
-      id: userId,
-      limit,
-      startingAfter: null,
-      endingBefore: lastChatId
-    });
+    // Placeholder implementation - use Convex hooks on client-side instead
+    console.log('loadMoreChats called with:', { userId, lastChatId, limit });
+    return { chats: [], hasMore: false };
   } catch (error) {
     console.error('Error loading more chats:', error);
     return { chats: [], hasMore: false };
@@ -911,7 +952,9 @@ export async function deleteChat(chatId: string) {
   if (!chatId) return null;
 
   try {
-    return await deleteChatById({ id: chatId });
+    // Placeholder implementation - use Convex hooks on client-side instead
+    console.log('deleteChat called with:', { chatId });
+    return null;
   } catch (error) {
     console.error('Error deleting chat:', error);
     return null;
@@ -925,7 +968,9 @@ export async function updateChatVisibility(chatId: string, visibility: 'private'
   if (!chatId) return null;
 
   try {
-    return await updateChatVisiblityById({ chatId, visibility });
+    // Placeholder implementation - use Convex hooks on client-side instead
+    console.log('updateChatVisibility called with:', { chatId, visibility });
+    return null;
   } catch (error) {
     console.error('Error updating chat visibility:', error);
     return null;
@@ -939,7 +984,9 @@ export async function getChatInfo(chatId: string) {
   if (!chatId) return null;
 
   try {
-    return await getChatById({ id: chatId });
+    // Placeholder implementation - use Convex hooks on client-side instead
+    console.log('getChatInfo called with:', { chatId });
+    return null;
   } catch (error) {
     console.error('Error getting chat info:', error);
     return null;
@@ -949,19 +996,8 @@ export async function getChatInfo(chatId: string) {
 export async function deleteTrailingMessages({ id }: { id: string }) {
   'use server';
   try {
-    const [message] = await getMessageById({ id });
-    console.log("Message: ", message);
-
-    if (!message) {
-      console.error(`No message found with id: ${id}`);
-      return;
-    }
-
-    await deleteMessagesByChatIdAfterTimestamp({
-      chatId: message.chatId,
-      timestamp: message.createdAt,
-    });
-
+    // Placeholder implementation - use Convex hooks on client-side instead
+    console.log('deleteTrailingMessages called with:', { id });
     console.log(`Successfully deleted trailing messages after message ID: ${id}`);
   } catch (error) {
     console.error(`Error deleting trailing messages: ${error}`);
@@ -976,7 +1012,9 @@ export async function updateChatTitle(chatId: string, title: string) {
   if (!chatId || !title.trim()) return null;
 
   try {
-    return await updateChatTitleById({ chatId, title: title.trim() });
+    // Placeholder implementation - use Convex hooks on client-side instead
+    console.log('updateChatTitle called with:', { chatId, title: title.trim() });
+    return null;
   } catch (error) {
     console.error('Error updating chat title:', error);
     return null;

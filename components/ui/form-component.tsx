@@ -12,6 +12,7 @@ import { UIMessage } from '@ai-sdk/ui-utils';
 import useWindowSize from '@/hooks/use-window-size';
 import { SearchGroup, SearchGroupId, searchGroups } from '@/lib/utils';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { useDropdownStore } from '@/lib/dropdown-store';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -25,7 +26,7 @@ const RouteIcon = ({ size = 14, className }: { size?: number; className?: string
         <circle cx="18" cy="5" r="3"/>
     </svg>
 );
-import { checkImageModeration } from '@/app/actions';
+
 
 interface Attachment {
     url: string;
@@ -46,23 +47,10 @@ interface ModelSwitcherProps {
     isOpen?: boolean;
     onOpenChange?: (open: boolean) => void;
     onGroupSelectorClose?: () => void;
+    selectedFilters?: Set<string>;
 }
 
-const XAIIcon = ({ className }: { className?: string }) => (
-    <svg
-        width="440"
-        height="483"
-        viewBox="0 0 440 483"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        className={className}
-    >
-        <path d="M356.09 155.99L364.4 482.36H430.96L439.28 37.18L356.09 155.99Z" fill="currentColor" />
-        <path d="M439.28 0.910004H337.72L178.35 228.53L229.13 301.05L439.28 0.910004Z" fill="currentColor" />
-        <path d="M0.609985 482.36H102.17L152.96 409.84L102.17 337.31L0.609985 482.36Z" fill="currentColor" />
-        <path d="M0.609985 155.99L229.13 482.36H330.69L102.17 155.99H0.609985Z" fill="currentColor" />
-    </svg>
-);
+
 
 const OpenAIIcon = ({ className }: { className?: string }) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="118 120 480 480" fill="currentColor" className={`size-7 text-[--model-primary] ${className}`}>
@@ -178,18 +166,76 @@ const ImagePlusIcon = (props: SVGProps<SVGSVGElement>) => (
     </svg>
 );
 
+const TelescopeIcon = (props: SVGProps<SVGSVGElement>) => (
+    <svg
+        {...props}
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+    >
+        <path d="m10.065 12.493-6.18 1.318a.934.934 0 0 1-1.108-.702l-.537-2.15a1.07 1.07 0 0 1 .691-1.265l13.504-4.44"/>
+        <path d="m13.56 11.747 4.332-.924"/>
+        <path d="m16 21-3.105-6.21"/>
+        <circle cx="16" cy="13" r="2.5"/>
+    </svg>
+);
+
 const models = [
-    { value: "t3-default", label: "Grok 3.0 Mini", icon: XAIIcon, iconClass: "text-current", description: "xAI's most efficient reasoning model", color: "black", vision: false, reasoning: true, experimental: false, category: "Stable", pdf: false, fast: true, web: false, imageGeneration: false },
-    { value: "t3-grok-3", label: "Grok 3.0", icon: XAIIcon, iconClass: "text-current", description: "xAI's most intelligent model", color: "gray", vision: false, reasoning: false, experimental: false, category: "Stable", pdf: false, fast: false, web: true, imageGeneration: false },
-    { value: "t3-vision", label: "Grok 2.0 Vision", icon: XAIIcon, iconClass: "text-current", description: "xAI's advanced vision model", color: "indigo", vision: true, reasoning: false, experimental: false, category: "Stable", pdf: false, fast: false, web: false, imageGeneration: false },
-    { value: "t3-anthropic", label: "Claude 4 Sonnet", icon: AnthropicIcon, iconClass: "text-current", description: "Anthropic's most advanced model", color: "violet", vision: true, reasoning: false, experimental: false, category: "Stable", pdf: true, fast: false, web: false, imageGeneration: false },
-    { value: "t3-anthropic-thinking", label: "Claude 4 Sonnet Thinking", icon: AnthropicIcon, iconClass: "text-current", description: "Anthropic's most advanced reasoning model", color: "violet", vision: true, reasoning: true, experimental: false, category: "Stable", pdf: true, fast: false, web: false, imageGeneration: false },
-    { value: "t3-google", label: "Gemini 2.5 Flash (Thinking)", icon: GeminiIcon, iconClass: "text-current", description: "Google's advanced small reasoning model", color: "gemini", vision: true, reasoning: true, experimental: false, category: "Stable", pdf: true, fast: true, web: false, imageGeneration: false },
-    { value: "t3-google-pro", label: "Gemini 2.5 Pro (Preview)", icon: GeminiIcon, iconClass: "text-current", description: "Google's advanced reasoning model", color: "gemini", vision: true, reasoning: true, experimental: false, category: "Stable", pdf: true, fast: false, web: false, imageGeneration: false },
-    { value: "t3-4o", label: "GPT 4o", icon: OpenAIIcon, iconClass: "text-current", description: "OpenAI's flagship model", color: "blue", vision: true, reasoning: false, experimental: false, category: "Stable", pdf: true, fast: false, web: true, imageGeneration: true },
-    { value: "t3-o4-mini", label: "o4 mini", icon: OpenAIIcon, iconClass: "text-current", description: "OpenAI's faster mini reasoning model", color: "blue", vision: true, reasoning: true, experimental: false, category: "Stable", pdf: false, fast: true, web: false, imageGeneration: false },
-    { value: "t3-llama-4", label: "Llama 4 Maverick", icon: GroqIcon, iconClass: "text-current", description: "Meta's latest model", color: "blue", vision: true, reasoning: false, experimental: true, category: "Experimental", pdf: false, fast: true, web: false, imageGeneration: false },
-    { value: "t3-qwq", label: "QWQ 32B", icon: QwenIcon, iconClass: "text-current", description: "Alibaba's advanced reasoning model", color: "purple", vision: false, reasoning: true, experimental: true, category: "Experimental", pdf: false, fast: false, web: false, imageGeneration: false },
+    // ===== FAVORITES (Most Popular) - In your preferred order =====
+    // OpenAI Popular Models
+    { value: "t3-4o", label: "GPT 4o", icon: OpenAIIcon, iconClass: "text-current", description: "OpenAI's flagship multimodal model", color: "blue", vision: true, reasoning: false, experimental: false, category: "Favorites", pdf: true, fast: false, web: true, imageGeneration: true, extreme: true },
+    { value: "t3-dall-e-3", label: "DALL-E 3", icon: OpenAIIcon, iconClass: "text-current", description: "Advanced AI image generation", color: "blue", vision: false, reasoning: false, experimental: false, category: "Favorites", pdf: false, fast: false, web: false, imageGeneration: true, extreme: false },
+    
+    // Anthropic Latest Models (Claude 4) - NO WEB SEARCH = NO EXTREME MODE
+    { value: "t3-claude-4-sonnet", label: "Claude 4 Sonnet", icon: AnthropicIcon, iconClass: "text-current", description: "Latest Claude 4 Sonnet model", color: "violet", vision: true, reasoning: true, experimental: false, category: "Favorites", pdf: true, fast: false, web: false, imageGeneration: false, extreme: false },
+    { value: "t3-claude-4-opus", label: "Claude 4 Opus", icon: AnthropicIcon, iconClass: "text-current", description: "Most powerful Claude 4 model", color: "violet", vision: true, reasoning: true, experimental: false, category: "Favorites", pdf: true, fast: false, web: false, imageGeneration: false, extreme: false },
+    { value: "t3-claude-3-opus", label: "Claude 3 Opus", icon: AnthropicIcon, iconClass: "text-current", description: "Legacy powerful Claude model", color: "violet", vision: true, reasoning: false, experimental: false, category: "Favorites", pdf: true, fast: false, web: false, imageGeneration: false, extreme: false },
+    
+    // Google Gemini Models - HAS WEB SEARCH = EXTREME MODE COMPATIBLE
+    { value: "t3-gemini-2-5-flash", label: "Gemini 2.5 Flash", icon: GeminiIcon, iconClass: "text-current", description: "Latest Gemini model with optimized streaming", color: "gemini", vision: true, reasoning: false, experimental: false, category: "Favorites", pdf: true, fast: true, web: true, imageGeneration: false, extreme: true },
+    { value: "t3-gemini-1-5-pro", label: "Gemini 1.5 Pro", icon: GeminiIcon, iconClass: "text-current", description: "Professional Gemini model", color: "gemini", vision: true, reasoning: false, experimental: false, category: "Favorites", pdf: true, fast: false, web: true, imageGeneration: false, extreme: true },
+
+    // ===== OPENAI MODELS =====
+    { value: "t3-4o-mini", label: "GPT 4o mini", icon: OpenAIIcon, iconClass: "text-current", description: "Fast and efficient OpenAI model", color: "blue", vision: true, reasoning: false, experimental: false, category: "OpenAI", pdf: true, fast: true, web: false, imageGeneration: false, extreme: false },
+    { value: "t3-o1", label: "o1", icon: OpenAIIcon, iconClass: "text-current", description: "Advanced reasoning model", color: "blue", vision: false, reasoning: true, experimental: false, category: "OpenAI", pdf: false, fast: false, web: false, imageGeneration: false, extreme: false },
+    { value: "t3-o1-mini", label: "o1 mini", icon: OpenAIIcon, iconClass: "text-current", description: "Compact reasoning model", color: "blue", vision: false, reasoning: true, experimental: false, category: "OpenAI", pdf: false, fast: true, web: false, imageGeneration: false, extreme: false },
+    { value: "t3-gpt-4-turbo", label: "GPT 4 Turbo", icon: OpenAIIcon, iconClass: "text-current", description: "High-performance GPT-4 variant", color: "blue", vision: true, reasoning: false, experimental: false, category: "OpenAI", pdf: true, fast: false, web: false, imageGeneration: false, extreme: false },
+
+
+    // ===== ANTHROPIC MODELS ===== - NO WEB SEARCH SUPPORT
+    { value: "t3-claude-4-sonnet", label: "Claude 4 Sonnet", icon: AnthropicIcon, iconClass: "text-current", description: "Latest Claude 4 Sonnet model", color: "violet", vision: true, reasoning: true, experimental: false, category: "Anthropic", pdf: true, fast: false, web: false, imageGeneration: false, extreme: false },
+    { value: "t3-claude-4-opus", label: "Claude 4 Opus", icon: AnthropicIcon, iconClass: "text-current", description: "Most powerful Claude 4 model", color: "violet", vision: true, reasoning: true, experimental: false, category: "Anthropic", pdf: true, fast: false, web: false, imageGeneration: false, extreme: false },
+    { value: "t3-claude-3-5-sonnet", label: "Claude 3.5 Sonnet", icon: AnthropicIcon, iconClass: "text-current", description: "Previous generation Sonnet", color: "violet", vision: true, reasoning: false, experimental: false, category: "Anthropic", pdf: true, fast: false, web: false, imageGeneration: false, extreme: false },
+    { value: "t3-claude-3-5-haiku", label: "Claude 3.5 Haiku", icon: AnthropicIcon, iconClass: "text-current", description: "Fast and lightweight Claude", color: "violet", vision: true, reasoning: false, experimental: false, category: "Anthropic", pdf: true, fast: true, web: false, imageGeneration: false, extreme: false },
+    { value: "t3-claude-3-opus", label: "Claude 3 Opus", icon: AnthropicIcon, iconClass: "text-current", description: "Legacy powerful Claude model", color: "violet", vision: true, reasoning: false, experimental: false, category: "Anthropic", pdf: true, fast: false, web: false, imageGeneration: false, extreme: false },
+
+    // ===== GOOGLE MODELS ===== - HAS WEB SEARCH SUPPORT
+    { value: "t3-gemini-2-5-flash", label: "Gemini 2.5 Flash", icon: GeminiIcon, iconClass: "text-current", description: "Latest Gemini model with optimized streaming", color: "gemini", vision: true, reasoning: false, experimental: false, category: "Google", pdf: true, fast: true, web: true, imageGeneration: false, extreme: true },
+    { value: "t3-gemini-1-5-flash", label: "Gemini 1.5 Flash", icon: GeminiIcon, iconClass: "text-current", description: "Fast Gemini model", color: "gemini", vision: true, reasoning: false, experimental: false, category: "Google", pdf: true, fast: true, web: true, imageGeneration: false, extreme: true },
+    { value: "t3-gemini-1-5-pro", label: "Gemini 1.5 Pro", icon: GeminiIcon, iconClass: "text-current", description: "Professional Gemini model", color: "gemini", vision: true, reasoning: false, experimental: false, category: "Google", pdf: true, fast: false, web: true, imageGeneration: false, extreme: true },
+
+
+
+    // ===== SPECIALIZED MODELS ===== - ONLY MULTIMODAL HAS WEB SEARCH
+    { value: "t3-reasoning-best", label: "Best Reasoning", icon: BrainCapabilityIcon, iconClass: "text-current", description: "Best hybrid reasoning model", color: "purple", vision: true, reasoning: true, experimental: false, category: "Specialized", pdf: true, fast: false, web: false, imageGeneration: false, extreme: false },
+    { value: "t3-vision-best", label: "Best Vision", icon: EyeCapabilityIcon, iconClass: "text-current", description: "Best vision understanding", color: "indigo", vision: true, reasoning: false, experimental: false, category: "Specialized", pdf: true, fast: false, web: false, imageGeneration: false, extreme: false },
+    { value: "t3-code-best", label: "Best Coding", icon: OpenAIIcon, iconClass: "text-current", description: "Best for coding tasks", color: "green", vision: true, reasoning: true, experimental: false, category: "Specialized", pdf: true, fast: false, web: false, imageGeneration: false, extreme: false },
+    { value: "t3-multimodal-best", label: "Best Multimodal", icon: AnthropicIcon, iconClass: "text-current", description: "Best multimodal capabilities", color: "violet", vision: true, reasoning: true, experimental: false, category: "Specialized", pdf: true, fast: false, web: true, imageGeneration: false, extreme: true },
+    
+    // ===== FAST MODELS ===== - ONLY FLASH HAS WEB SEARCH
+    { value: "t3-fast", label: "Fast (GPT-4o mini)", icon: ZapIcon, iconClass: "text-current", description: "Quick responses", color: "yellow", vision: true, reasoning: false, experimental: false, category: "Fast", pdf: true, fast: true, web: false, imageGeneration: false, extreme: false },
+    { value: "t3-fast-haiku", label: "Fast (Claude Haiku)", icon: ZapIcon, iconClass: "text-current", description: "Lightning fast Claude", color: "yellow", vision: true, reasoning: false, experimental: false, category: "Fast", pdf: true, fast: true, web: false, imageGeneration: false, extreme: false },
+    { value: "t3-fast-flash", label: "Fast (Gemini Flash)", icon: ZapIcon, iconClass: "text-current", description: "Super fast Gemini", color: "yellow", vision: true, reasoning: false, experimental: false, category: "Fast", pdf: true, fast: true, web: true, imageGeneration: false, extreme: true },
+
+    // ===== IMAGE GENERATION ===== - NO WEB SEARCH NEEDED
+    { value: "t3-dall-e-3", label: "DALL-E 3", icon: ImagePlusIcon, iconClass: "text-current", description: "High quality image generation", color: "pink", vision: false, reasoning: false, experimental: false, category: "Image Generation", pdf: false, fast: false, web: false, imageGeneration: true, extreme: false },
+    { value: "t3-dall-e-2", label: "DALL-E 2", icon: ImagePlusIcon, iconClass: "text-current", description: "Standard image generation", color: "pink", vision: false, reasoning: false, experimental: false, category: "Image Generation", pdf: false, fast: true, web: false, imageGeneration: true, extreme: false },
 ];
 
 const getColorClasses = (color: string, isSelected: boolean = false) => {
@@ -217,6 +263,12 @@ const getColorClasses = (color: string, isSelected: boolean = false) => {
                 return `${baseClasses} ${selectedClasses} bg-accent! dark:bg-accent/80! text-accent-foreground! hover:bg-accent/80! dark:hover:bg-accent/70! border-accent! dark:border-accent/80!`;
         case 'vercel-gray':
                 return `${baseClasses} ${selectedClasses} bg-secondary! dark:bg-secondary/80! text-secondary-foreground! hover:bg-secondary/80! dark:hover:bg-secondary/70! border-secondary! dark:border-secondary/80!`;
+        case 'green':
+                return `${baseClasses} ${selectedClasses} bg-accent! dark:bg-accent/80! text-accent-foreground! hover:bg-accent/80! dark:hover:bg-accent/70! border-accent! dark:border-accent/80!`;
+        case 'yellow':
+                return `${baseClasses} ${selectedClasses} bg-secondary! dark:bg-secondary/80! text-secondary-foreground! hover:bg-secondary/80! dark:hover:bg-secondary/70! border-secondary! dark:border-secondary/80!`;
+        case 'pink':
+                return `${baseClasses} ${selectedClasses} bg-accent! dark:bg-accent/80! text-accent-foreground! hover:bg-accent/80! dark:hover:bg-accent/70! border-accent! dark:border-accent/80!`;
         default:
                 return `${baseClasses} ${selectedClasses} bg-accent! dark:bg-accent/80! text-accent-foreground! hover:bg-accent/80! dark:hover:bg-accent/70! border-accent! dark:border-accent/80!`;
         }
@@ -241,6 +293,12 @@ const getColorClasses = (color: string, isSelected: boolean = false) => {
                 return `${baseClasses} text-accent-foreground! dark:text-accent! hover:bg-accent! hover:text-accent-foreground! dark:hover:bg-accent/80! dark:hover:text-white!`;
             case 'vercel-gray':
                 return `${baseClasses} text-secondary-foreground! dark:text-secondary! hover:bg-secondary! hover:text-secondary-foreground! dark:hover:bg-secondary/80! dark:hover:text-white!`;
+            case 'green':
+                return `${baseClasses} text-accent-foreground! dark:text-accent! hover:bg-accent! hover:text-accent-foreground! dark:hover:bg-accent/80! dark:hover:text-white!`;
+            case 'yellow':
+                return `${baseClasses} text-secondary-foreground! dark:text-secondary! hover:bg-secondary! hover:text-secondary-foreground! dark:hover:bg-secondary/80! dark:hover:text-white!`;
+            case 'pink':
+                return `${baseClasses} text-accent-foreground! dark:text-accent! hover:bg-accent! hover:text-accent-foreground! dark:hover:bg-accent/80! dark:hover:text-white!`;
             default:
                 return `${baseClasses} text-accent-foreground! dark:text-accent! hover:bg-accent! hover:text-accent-foreground! dark:hover:bg-accent/80! dark:hover:text-white!`;
         }
@@ -249,17 +307,27 @@ const getColorClasses = (color: string, isSelected: boolean = false) => {
 
 const ModelSwitcher: React.FC<ModelSwitcherProps & {
     onFilterClick: () => void;
-}> = memo(({ selectedModel, setSelectedModel, className, showExperimentalModels, attachments, messages, status, onModelSelect, isOpen: externalIsOpen, onOpenChange, onGroupSelectorClose, onFilterClick }) => {
+}> = memo(({ selectedModel, setSelectedModel, className, showExperimentalModels, attachments, messages, status, onModelSelect, isOpen: externalIsOpen, onOpenChange, onGroupSelectorClose, onFilterClick, selectedFilters = new Set() }) => {
     const selectedModelData = models.find(model => model.value === selectedModel);
     const [internalIsOpen, setInternalIsOpen] = useState(false);
     const [mounted, setMounted] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [showAllModels, setShowAllModels] = useState(false);
+    const [internalSelectedFilters, setInternalSelectedFilters] = useState<Set<string>>(new Set());
+    const [showFilters, setShowFilters] = useState(true); // Default to true so filters are visible
+
     const isProcessing = status === 'submitted' || status === 'streaming';
     
-    // Use external state if provided, otherwise use internal state
-    const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen;
-    const setIsOpen = onOpenChange || setInternalIsOpen;
+    // Use internal filters if no external filters provided
+    const activeFilters = selectedFilters || internalSelectedFilters;
+    const setSelectedFilters = setInternalSelectedFilters;
+    
+    // Use Zustand store for dropdown state management
+    const { modelSelectorOpen, filterDropdownOpen, setModelSelectorOpen, setFilterDropdownOpen, toggleFilterDropdown, handleFilterInteraction } = useDropdownStore();
+    
+    // Use external state if provided, otherwise use Zustand state
+    const isOpen = externalIsOpen !== undefined ? externalIsOpen : modelSelectorOpen;
+    const setIsOpen = onOpenChange || setModelSelectorOpen;
 
     useEffect(() => {
         setMounted(true);
@@ -285,11 +353,41 @@ const ModelSwitcher: React.FC<ModelSwitcherProps & {
             model.category.toLowerCase().includes(searchQuery.toLowerCase())
         );
 
-    // No filtering inside ModelSwitcher - will be handled externally
-    const capabilityFilteredModels = searchFilteredModels;
+    // Apply capability filtering based on selected filters
+    const capabilityFilteredModels = activeFilters.size === 0 
+        ? searchFilteredModels 
+        : searchFilteredModels.filter(model => {
+            // If any filter is selected, model must match at least one filter
+            const matches = Array.from(activeFilters).some(filterKey => {
+                switch (filterKey) {
+                    case 'fast':
+                        return model.fast === true;
+                    case 'vision':
+                        return model.vision === true;
+                    case 'web':
+                        return model.web === true;
+                    case 'pdf':
+                        return model.pdf === true;
+                    case 'reasoning':
+                        return model.reasoning === true;
+                    case 'imageGeneration':
+                        return model.imageGeneration === true;
+                    case 'extreme':
+                        return model.extreme === true && model.web === true;
+                    default:
+                        return false;
+                }
+            });
+            
+
+            
+            return matches;
+        });
 
     // Limit to first 8 models unless showing all
     const limitedModels = showAllModels ? capabilityFilteredModels : capabilityFilteredModels.slice(0, 8);
+    
+
 
     // Group filtered models by category
     const groupedModels = limitedModels.reduce((acc, model) => {
@@ -300,6 +398,27 @@ const ModelSwitcher: React.FC<ModelSwitcherProps & {
         acc[category].push(model);
         return acc;
     }, {} as Record<string, typeof models>);
+
+    // All models grouped by category (used when showAllModels is true)
+    const allGroupedModels = capabilityFilteredModels.reduce((acc, model) => {
+        const category = model.category;
+        if (!acc[category]) {
+            acc[category] = [];
+        }
+        acc[category].push(model);
+        return acc;
+    }, {} as Record<string, typeof models>);
+
+    // Ensure Specialized category appears first in the "Show All" section
+    const orderedGroupedModels = {} as Record<string, typeof models>;
+    if (allGroupedModels['Specialized']) {
+        orderedGroupedModels['Specialized'] = allGroupedModels['Specialized'];
+    }
+    Object.keys(allGroupedModels).forEach(category => {
+        if (category !== 'Specialized') {
+            orderedGroupedModels[category] = allGroupedModels[category];
+        }
+    });
 
     // Get hover color classes using consistent theme colors like Gemini and OpenAI
     const getHoverColorClasses = (modelColor: string) => {
@@ -312,6 +431,9 @@ const ModelSwitcher: React.FC<ModelSwitcherProps & {
             case 'gemini': return 'hover:bg-accent/20! dark:hover:bg-accent/15!';
             case 'blue': return 'hover:bg-secondary/20! dark:hover:bg-secondary/15!';
             case 'vercel-gray': return 'hover:bg-secondary/20! dark:hover:bg-secondary/15!';
+            case 'green': return 'hover:bg-accent/20! dark:hover:bg-accent/15!';
+            case 'yellow': return 'hover:bg-secondary/20! dark:hover:bg-secondary/15!';
+            case 'pink': return 'hover:bg-accent/20! dark:hover:bg-accent/15!';
             default: return 'hover:bg-accent/20! dark:hover:bg-accent/15!';
         }
     };
@@ -350,8 +472,19 @@ const ModelSwitcher: React.FC<ModelSwitcherProps & {
     }
 
     return (
-        <DropdownMenu
+        <>
+            <DropdownMenu
             onOpenChange={(open) => {
+                // Don't close model selector if filter dropdown is open
+                if (!open && filterDropdownOpen) {
+                    return; // Prevent closing
+                }
+                
+                // Don't close model selector if filters are active  
+                if (!open && activeFilters.size > 0) {
+                    return; // Keep open when filters are selected
+                }
+                
                 setIsOpen(open);
                 // Close group selector when model selector opens
                 if (open && onGroupSelectorClose) {
@@ -361,6 +494,9 @@ const ModelSwitcher: React.FC<ModelSwitcherProps & {
                 if (!open) {
                     setSearchQuery('');
                     setShowAllModels(false);
+                    setShowFilters(false);
+                    // Also close filter dropdown when model selector closes
+                    setFilterDropdownOpen(false);
                 }
             }}
             open={isOpen && !isProcessing}
@@ -435,8 +571,14 @@ const ModelSwitcher: React.FC<ModelSwitcherProps & {
             </DropdownMenuTrigger>
             <DropdownMenuContent
                 className={cn(
-                    "w-[400px] p-0 rounded-xl bg-background border border-border shadow-xl overflow-hidden",
-                    showAllModels ? "max-h-[500px]" : "max-h-[600px]"
+                    "p-0 rounded-xl shadow-xl overflow-hidden bg-popover border-border text-popover-foreground",
+                    showAllModels 
+                        ? showFilters 
+                            ? "w-[800px] max-h-[85vh]" 
+                            : "w-[800px] max-h-[80vh]"
+                        : showFilters
+                            ? "w-[400px] max-h-[650px]"
+                            : "w-[400px] max-h-[600px]"
                 )}
                 align="start"
                 style={{
@@ -445,9 +587,9 @@ const ModelSwitcher: React.FC<ModelSwitcherProps & {
                 }}
             >
                 {/* Search Bar */}
-                <div className="sticky top-0 rounded-t-lg bg-background px-3.5 pt-2 pb-1">
+                <div className="sticky top-0 rounded-t-lg px-3.5 pt-2 pb-1 bg-popover">
                     <div className="flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-search ml-px mr-3 !size-4 text-muted-foreground/75">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-search ml-px mr-3 !size-4 text-muted-foreground">
                             <circle cx="11" cy="11" r="8"></circle>
                             <path d="m21 21-4.3-4.3"></path>
                         </svg>
@@ -455,16 +597,126 @@ const ModelSwitcher: React.FC<ModelSwitcherProps & {
                             role="searchbox" 
                             aria-label="Search models" 
                             placeholder="Search models..." 
-                            className="w-full bg-transparent py-2 text-sm text-foreground placeholder-muted-foreground/50 placeholder:select-none focus:outline-none" 
+                            className="w-full bg-transparent py-2 text-sm placeholder:select-none focus:outline-none text-popover-foreground placeholder:text-muted-foreground" 
                             value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
+                            onChange={(e) => {
+                                setSearchQuery(e.target.value);
+                            }}
                         />
+                        {/* Model count indicator */}
+                        {(activeFilters.size > 0 || searchQuery.trim() !== '') && (
+                            <div className="ml-2 px-2 py-1 rounded-md bg-secondary text-xs text-secondary-foreground">
+                                {capabilityFilteredModels.length} model{capabilityFilteredModels.length !== 1 ? 's' : ''}
+                            </div>
+                        )}
                     </div>
+                    
+                    {/* Filter Chips */}
+                    {showFilters && (
+                        <motion.div 
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: "auto" }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="flex flex-wrap gap-2 mt-3 mb-2"
+                        >
+                            {[
+                                { key: 'fast', label: 'Fast', icon: ZapIcon, color: '#f59e0b' },
+                                { key: 'vision', label: 'Vision', icon: EyeCapabilityIcon, color: '#10b981' },
+                                { key: 'web', label: 'Web', icon: GlobeCapabilityIcon, color: '#3b82f6' },
+                                { key: 'pdf', label: 'PDFs', icon: FileTextIcon, color: '#8b5cf6' },
+                                { key: 'reasoning', label: 'Reasoning', icon: BrainCapabilityIcon, color: '#a855f7' },
+                                { key: 'imageGeneration', label: 'Images', icon: ImagePlusIcon, color: '#f97316' },
+                                { key: 'extreme', label: 'Extreme', icon: TelescopeIcon, color: '#ec4899' }
+                            ].map(({ key, label, icon: Icon, color }) => (
+                                <motion.button
+                                    key={key}
+                                    initial={{ opacity: 0, scale: 0.8 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.8 }}
+                                    transition={{ duration: 0.15 }}
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        const newFilters = new Set(activeFilters);
+                                        if (activeFilters.has(key)) {
+                                            newFilters.delete(key);
+                                        } else {
+                                            newFilters.add(key);
+                                        }
+                                        setSelectedFilters(newFilters as Set<string>);
+                                    }}
+                                    className={cn(
+                                        "inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 hover:scale-105 border",
+                                        activeFilters.has(key) 
+                                            ? "text-primary-foreground shadow-lg" 
+                                            : "text-muted-foreground hover:text-foreground bg-secondary/50 border-border hover:border-border/60"
+                                    )}
+                                    style={{
+                                        backgroundColor: activeFilters.has(key) 
+                                            ? color 
+                                            : undefined,
+                                        borderColor: activeFilters.has(key) 
+                                            ? color 
+                                            : undefined,
+                                        boxShadow: activeFilters.has(key) 
+                                            ? `0 4px 12px ${color}40` 
+                                            : undefined
+                                    }}
+                                >
+                                    <Icon className="w-3.5 h-3.5" />
+                                    {label}
+                                    {activeFilters.has(key) && (
+                                        <motion.div
+                                            initial={{ scale: 0 }}
+                                            animate={{ scale: 1 }}
+                                            className="w-3.5 h-3.5 bg-white/20 rounded-full flex items-center justify-center ml-1"
+                                        >
+                                            <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                                                <path d="M18 6L6 18M6 6l12 12" />
+                                            </svg>
+                                        </motion.div>
+                                    )}
+                                </motion.button>
+                            ))}
+                            {/* Clear all filters button */}
+                            {activeFilters.size > 0 && (
+                                <motion.button
+                                    initial={{ opacity: 0, scale: 0.8 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.8 }}
+                                    transition={{ duration: 0.15 }}
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        setSelectedFilters(new Set());
+                                    }}
+                                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 hover:scale-105 border text-muted-foreground hover:text-foreground bg-secondary/50 border-border hover:border-border/60"
+                                >
+                                    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <path d="M18 6L6 18M6 6l12 12" />
+                                    </svg>
+                                    Clear all
+                                </motion.button>
+                            )}
+                        </motion.div>
+                    )}
+                    
                     <div className="border-b border-border"></div>
                 </div>
                 
-                                <div className={cn("p-2", showAllModels && "overflow-y-auto max-h-[400px]")}>
-                <AnimatePresence>
+                                <div className={cn(
+                    "p-2", 
+                    showAllModels && "overflow-y-auto",
+                    showAllModels 
+                        ? showFilters 
+                            ? "max-h-[55vh]" 
+                            : "max-h-[65vh]"
+                        : showFilters
+                            ? "max-h-[450px] overflow-y-auto"
+                            : "max-h-auto"
+                )}>
+                <AnimatePresence mode="wait">
                 {Object.entries(groupedModels).length === 0 && searchQuery.trim() !== '' ? (
                     <div className="flex items-center justify-center py-8 text-muted-foreground">
                         <div className="text-center">
@@ -473,126 +725,531 @@ const ModelSwitcher: React.FC<ModelSwitcherProps & {
                         </div>
                     </div>
                 ) : (
-                    Object.entries(groupedModels).map(([category, categoryModels], categoryIndex) => (
-                        <div key={category} className="space-y-1">
+                    <motion.div
+                        key={showAllModels ? 'expanded' : 'limited'}
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ 
+                            duration: 0.3,
+                            ease: "easeInOut",
+                            height: { duration: 0.4 }
+                        }}
+                        className="space-y-1"
+                    >
+                        {showAllModels ? (
+                            // Expanded view with all models in grid layout
+                            <div className="space-y-6">
+                                {/* All Models Section */}
+                                {Object.entries(orderedGroupedModels).map(([category, categoryModels], categoryIndex) => {
+                                    return (
+                                        <motion.div
+                                            key={category}
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ duration: 0.3, delay: 0.2 + categoryIndex * 0.1 }}
+                                        >
+                                            <div className="px-2 mb-3">
+                                                <h3 className="text-sm font-medium text-foreground">{category}</h3>
+                                            </div>
+                                            <div className="grid grid-cols-3 gap-2">
                                 {categoryModels.map((model, modelIndex) => (
+                                                    <motion.div
+                                                        key={model.value}
+                                                        initial={{ opacity: 0, scale: 0.8 }}
+                                                        animate={{ opacity: 1, scale: 1 }}
+                                                        transition={{ duration: 0.2, delay: 0.3 + categoryIndex * 0.1 + modelIndex * 0.05 }}
+                                                    >
                                     <DropdownMenuItem
-                                        key={model.value}
-                                        onSelect={() => {
-                                            console.log("Selected model:", model.value);
-                                            setSelectedModel(model.value.trim());
-
-                                            // Call onModelSelect if provided
-                                            if (onModelSelect) {
-                                                onModelSelect(model);
-                                            }
-
-                                            // Close the dropdown after selection
-                                            setIsOpen(false);
-                                        }}
-                                        className={cn(
-                                            "flex items-center justify-between p-3 rounded-lg cursor-pointer transition-all duration-200",
-                                            "hover:bg-muted focus:bg-muted",
-                                            selectedModel === model.value
-                                                ? "bg-muted border border-border"
-                                                : "bg-transparent hover:bg-muted/50"
-                                        )}
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <div className="flex items-center justify-center w-6 h-6">
-                                                {typeof model.icon === 'string' ? (
-                                                    <img
-                                                        src={model.icon}
-                                                        alt={model.label}
-                                                        className="w-5 h-5 object-contain"
-                                                    />
-                                                ) : (
-                                                    <model.icon className="w-5 h-5 text-foreground" />
-                                                )}
+                                                            onSelect={() => {
+                                                                setSelectedModel(model.value.trim());
+                                                                if (onModelSelect) {
+                                                                    onModelSelect(model);
+                                                                }
+                                                                setIsOpen(false);
+                                                            }}
+                                                            className={cn(
+                                                                "flex flex-col items-center p-3 rounded-lg cursor-pointer transition-all duration-200 hover:scale-105",
+                                                                selectedModel === model.value 
+                                                                    ? "bg-accent text-accent-foreground border border-border" 
+                                                                    : "hover:bg-accent/50 text-popover-foreground"
+                                                            )}
+                                                        >
+                                                            <div className="flex items-center justify-center w-8 h-8 mb-2">
+                                                                {typeof model.icon === 'string' ? (
+                                                                    <img
+                                                                        src={model.icon}
+                                                                        alt={model.label}
+                                                                        className="w-6 h-6 object-contain"
+                                                                    />
+                                                                ) : (
+                                                                    <model.icon className="w-6 h-6 text-foreground" />
+                                                                )}
+                                                            </div>
+                                                            <p className="text-xs font-medium text-center leading-tight mb-1">
+                                                                {model.label}
+                                                            </p>
+                                                            <div className="flex flex-wrap gap-1 justify-center">
+                                                                {model.vision && (
+                                                                    <div className="w-3 h-3 rounded bg-teal-500/20 flex items-center justify-center">
+                                                                        <EyeCapabilityIcon className="w-2 h-2 text-teal-400" />
+                                                                    </div>
+                                                                )}
+                                                                {model.web && (
+                                                                    <div className="w-3 h-3 rounded bg-blue-500/20 flex items-center justify-center">
+                                                                        <GlobeCapabilityIcon className="w-2 h-2 text-blue-400" />
+                                                                    </div>
+                                                                )}
+                                                                {model.pdf && (
+                                                                    <div className="w-3 h-3 rounded bg-purple-500/20 flex items-center justify-center">
+                                                                        <FileTextIcon className="w-2 h-2 text-purple-400" />
+                                                                    </div>
+                                                                )}
+                                                                {model.reasoning && (
+                                                                    <div className="w-3 h-3 rounded bg-violet-500/20 flex items-center justify-center">
+                                                                        <BrainCapabilityIcon className="w-2 h-2 text-violet-400" />
+                                                                    </div>
+                                                                )}
+                                                                {model.fast && (
+                                                                    <div className="w-3 h-3 rounded bg-yellow-500/20 flex items-center justify-center">
+                                                                        <ZapIcon className="w-2 h-2 text-yellow-400" />
+                                                                    </div>
+                                                                )}
+                                                                {model.imageGeneration && (
+                                                                    <div className="w-3 h-3 rounded bg-orange-500/20 flex items-center justify-center">
+                                                                        <ImagePlusIcon className="w-2 h-2 text-orange-400" />
+                                                                    </div>
+                                                                )}
+                                                                {model.extreme && model.web && (
+                                                                    <div className="w-3 h-3 rounded bg-pink-500/20 flex items-center justify-center">
+                                                                        <TelescopeIcon className="w-2 h-2 text-pink-400" />
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </DropdownMenuItem>
+                                                    </motion.div>
+                                                ))}
                                             </div>
-                                            <div>
-                                                <p className="text-sm font-medium text-foreground leading-none">
-                                                    {model.label}
-                                                </p>
-                                            </div>
-                                        </div>
-                                        
-                                        <div className="flex items-center gap-2">
-                                            {model.vision && (
-                                                <Tooltip delayDuration={300}>
-                                                    <TooltipTrigger asChild>
-                                                        <div className="w-5 h-5 rounded bg-teal-500/20 flex items-center justify-center">
-                                                            <EyeCapabilityIcon className="w-3 h-3 text-teal-400" />
-                                                        </div>
-                                                    </TooltipTrigger>
-                                                    <TooltipContent side="top" className="bg-popover border-border">
-                                                        <span className="text-xs text-popover-foreground">Vision</span>
-                                                    </TooltipContent>
-                                                </Tooltip>
-                                            )}
-                                            {model.web && (
-                                                <Tooltip delayDuration={300}>
-                                                    <TooltipTrigger asChild>
-                                                        <div className="w-5 h-5 rounded bg-blue-500/20 flex items-center justify-center">
-                                                            <GlobeCapabilityIcon className="w-3 h-3 text-blue-400" />
-                                                        </div>
-                                                    </TooltipTrigger>
-                                                    <TooltipContent side="top" className="bg-popover border-border">
-                                                        <span className="text-xs text-popover-foreground">Web Search</span>
-                                                    </TooltipContent>
-                                                </Tooltip>
-                                            )}
-                                            {model.pdf && (
-                                                <Tooltip delayDuration={300}>
-                                                    <TooltipTrigger asChild>
-                                                        <div className="w-5 h-5 rounded bg-purple-500/20 flex items-center justify-center">
-                                                            <FileTextIcon className="w-3 h-3 text-purple-400" />
-                                                        </div>
-                                                    </TooltipTrigger>
-                                                    <TooltipContent side="top" className="bg-popover border-border">
-                                                        <span className="text-xs text-popover-foreground">PDF Support</span>
-                                                    </TooltipContent>
-                                                </Tooltip>
-                                            )}
-                                            {model.reasoning && (
-                                                <Tooltip delayDuration={300}>
-                                                    <TooltipTrigger asChild>
-                                                        <div className="w-5 h-5 rounded bg-violet-500/20 flex items-center justify-center">
-                                                            <BrainCapabilityIcon className="w-3 h-3 text-violet-400" />
-                                                        </div>
-                                                    </TooltipTrigger>
-                                                    <TooltipContent side="top" className="bg-popover border-border">
-                                                        <span className="text-xs text-popover-foreground">Reasoning</span>
-                                                    </TooltipContent>
-                                                </Tooltip>
-                                            )}
-                                            {model.imageGeneration && (
-                                                <Tooltip delayDuration={300}>
-                                                    <TooltipTrigger asChild>
-                                                        <div className="w-5 h-5 rounded bg-orange-500/20 flex items-center justify-center">
-                                                            <ImagePlusIcon className="w-3 h-3 text-orange-400" />
-                                                        </div>
-                                                    </TooltipTrigger>
-                                                    <TooltipContent side="top" className="bg-popover border-border">
-                                                        <span className="text-xs text-popover-foreground">Image Generation</span>
-                                                    </TooltipContent>
-                                                </Tooltip>
-                                            )}
-                                        </div>
-                                    </DropdownMenuItem>
-                                ))}
+                                        </motion.div>
+                                    );
+                                })}
                             </div>
-                    ))
+                        ) : (
+                            // Limited view with Favorites section and simple list
+                            <div className="space-y-4">
+                                {/* Favorites Section in Limited View */}
+                                {groupedModels.Stable && groupedModels.Stable.length > 0 && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ duration: 0.2, delay: 0.05 }}
+                                    >
+                                        <div className="flex items-center gap-2 mb-2 px-2">
+                                            <svg className="w-4 h-4 text-orange-400" fill="currentColor" viewBox="0 0 20 20">
+                                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                            </svg>
+                                            <h3 className="text-sm font-medium text-foreground">Favorites</h3>
+                                        </div>
+                                        <div className="space-y-1">
+                                            {groupedModels.Stable.slice(0, 3).map((model, modelIndex) => (
+                                                <motion.div
+                                                    key={model.value}
+                                                    initial={{ opacity: 0, x: -20 }}
+                                                    animate={{ opacity: 1, x: 0 }}
+                                                    transition={{ duration: 0.2, delay: 0.1 + modelIndex * 0.03 }}
+                                                >
+                                                    <DropdownMenuItem
+                                                        onSelect={() => {
+                                                            setSelectedModel(model.value.trim());
+                                                            if (onModelSelect) {
+                                                                onModelSelect(model);
+                                                            }
+                                                            setIsOpen(false);
+                                                        }}
+                                                        className={cn(
+                                                            "flex items-center justify-between p-3 rounded-lg cursor-pointer transition-all duration-200",
+                                                            selectedModel === model.value 
+                                                                ? "bg-accent text-accent-foreground border border-border" 
+                                                                : "hover:bg-accent/50 text-popover-foreground"
+                                                        )}
+                                                    >
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="flex items-center justify-center w-6 h-6">
+                                                                {typeof model.icon === 'string' ? (
+                                                                    <img
+                                                                        src={model.icon}
+                                                                        alt={model.label}
+                                                                        className="w-5 h-5 object-contain"
+                                                                    />
+                                                                ) : (
+                                                                    <model.icon className="w-5 h-5 text-foreground" />
+                                                                )}
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-sm font-medium text-foreground leading-none">
+                                                                    {model.label}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div className="flex items-center gap-2">
+                                                            {model.vision && (
+                                                                <Tooltip delayDuration={300}>
+                                                                    <TooltipTrigger asChild>
+                                                                        <div className="w-5 h-5 rounded bg-teal-500/20 flex items-center justify-center">
+                                                                            <EyeCapabilityIcon className="w-3 h-3 text-teal-400" />
+                                                                        </div>
+                                                                    </TooltipTrigger>
+                                                                    <TooltipContent side="top" className="bg-popover border-border">
+                                                                        <span className="text-xs text-popover-foreground">Vision</span>
+                                                                    </TooltipContent>
+                                                                </Tooltip>
+                                                            )}
+                                                            {model.web && (
+                                                                <Tooltip delayDuration={300}>
+                                                                    <TooltipTrigger asChild>
+                                                                        <div className="w-5 h-5 rounded bg-blue-500/20 flex items-center justify-center">
+                                                                            <GlobeCapabilityIcon className="w-3 h-3 text-blue-400" />
+                                                                        </div>
+                                                                    </TooltipTrigger>
+                                                                    <TooltipContent side="top" className="bg-popover border-border">
+                                                                        <span className="text-xs text-popover-foreground">Web Search</span>
+                                                                    </TooltipContent>
+                                                                </Tooltip>
+                                                            )}
+                                                            {model.pdf && (
+                                                                <Tooltip delayDuration={300}>
+                                                                    <TooltipTrigger asChild>
+                                                                        <div className="w-5 h-5 rounded bg-purple-500/20 flex items-center justify-center">
+                                                                            <FileTextIcon className="w-3 h-3 text-purple-400" />
+                                                                        </div>
+                                                                    </TooltipTrigger>
+                                                                    <TooltipContent side="top" className="bg-popover border-border">
+                                                                        <span className="text-xs text-popover-foreground">PDF Support</span>
+                                                                    </TooltipContent>
+                                                                </Tooltip>
+                                                            )}
+                                                            {model.reasoning && (
+                                                                <Tooltip delayDuration={300}>
+                                                                    <TooltipTrigger asChild>
+                                                                        <div className="w-5 h-5 rounded bg-violet-500/20 flex items-center justify-center">
+                                                                            <BrainCapabilityIcon className="w-3 h-3 text-violet-400" />
+                                                                        </div>
+                                                                    </TooltipTrigger>
+                                                                    <TooltipContent side="top" className="bg-popover border-border">
+                                                                        <span className="text-xs text-popover-foreground">Reasoning</span>
+                                                                    </TooltipContent>
+                                                                </Tooltip>
+                                                            )}
+                                                            {model.imageGeneration && (
+                                                                <Tooltip delayDuration={300}>
+                                                                    <TooltipTrigger asChild>
+                                                                        <div className="w-5 h-5 rounded bg-orange-500/20 flex items-center justify-center">
+                                                                            <ImagePlusIcon className="w-3 h-3 text-orange-400" />
+                                                                        </div>
+                                                                    </TooltipTrigger>
+                                                                    <TooltipContent side="top" className="bg-popover border-border">
+                                                                        <span className="text-xs text-popover-foreground">Image Generation</span>
+                                                                    </TooltipContent>
+                                                                </Tooltip>
+                                                            )}
+                                                            {model.extreme && model.web && (
+                                                                <Tooltip delayDuration={300}>
+                                                                    <TooltipTrigger asChild>
+                                                                        <div className="w-5 h-5 rounded bg-pink-500/20 flex items-center justify-center">
+                                                                            <TelescopeIcon className="w-3 h-3 text-pink-400" />
+                                                                        </div>
+                                                                    </TooltipTrigger>
+                                                                    <TooltipContent side="top" className="bg-popover border-border">
+                                                                        <span className="text-xs text-popover-foreground">Extreme Mode</span>
+                                                                    </TooltipContent>
+                                                                </Tooltip>
+                                                            )}
+                                                        </div>
+                                                    </DropdownMenuItem>
+                                                </motion.div>
+                                            ))}
+                                        </div>
+                                    </motion.div>
+                                )}
+
+                                {/* Other Models */}
+                                {Object.entries(groupedModels).map(([category, categoryModels], categoryIndex) => {
+                                    if (category === 'Stable') {
+                                        // Show remaining Stable models after the first 3
+                                        const remainingStableModels = categoryModels.slice(3);
+                                        if (remainingStableModels.length === 0) return null;
+                                        
+                                        return (
+                                            <motion.div 
+                                                key={`${category}-remaining`} 
+                                                className="space-y-1"
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                transition={{ duration: 0.2, delay: 0.2 + categoryIndex * 0.05 }}
+                                            >
+                                                {remainingStableModels.map((model, modelIndex) => (
+                                                    <motion.div
+                                                        key={model.value}
+                                                        initial={{ opacity: 0, x: -20 }}
+                                                        animate={{ opacity: 1, x: 0 }}
+                                                        transition={{ duration: 0.2, delay: 0.25 + categoryIndex * 0.05 + modelIndex * 0.03 }}
+                                                    >
+                                                        <DropdownMenuItem
+                                                            onSelect={() => {
+                                                                setSelectedModel(model.value.trim());
+                                                                if (onModelSelect) {
+                                                                    onModelSelect(model);
+                                                                }
+                                                                setIsOpen(false);
+                                                            }}
+                                                            className={cn(
+                                                                "flex items-center justify-between p-3 rounded-lg cursor-pointer transition-all duration-200",
+                                                                selectedModel === model.value 
+                                                                    ? "bg-accent text-accent-foreground border border-border" 
+                                                                    : "hover:bg-accent/50 text-popover-foreground"
+                                                            )}
+                                                        >
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="flex items-center justify-center w-6 h-6">
+                                                                    {typeof model.icon === 'string' ? (
+                                                                        <img
+                                                                            src={model.icon}
+                                                                            alt={model.label}
+                                                                            className="w-5 h-5 object-contain"
+                                                                        />
+                                                                    ) : (
+                                                                        <model.icon className="w-5 h-5 text-foreground" />
+                                                                    )}
+                                                                </div>
+                                                                <div>
+                                                                    <p className="text-sm font-medium text-foreground leading-none">
+                                                                        {model.label}
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                            
+                                                            <div className="flex items-center gap-2">
+                                                                {model.vision && (
+                                                                    <Tooltip delayDuration={300}>
+                                                                        <TooltipTrigger asChild>
+                                                                            <div className="w-5 h-5 rounded bg-teal-500/20 flex items-center justify-center">
+                                                                                <EyeCapabilityIcon className="w-3 h-3 text-teal-400" />
+                                                                            </div>
+                                                                        </TooltipTrigger>
+                                                                        <TooltipContent side="top" className="bg-popover border-border">
+                                                                            <span className="text-xs text-popover-foreground">Vision</span>
+                                                                        </TooltipContent>
+                                                                    </Tooltip>
+                                                                )}
+                                                                {model.web && (
+                                                                    <Tooltip delayDuration={300}>
+                                                                        <TooltipTrigger asChild>
+                                                                            <div className="w-5 h-5 rounded bg-blue-500/20 flex items-center justify-center">
+                                                                                <GlobeCapabilityIcon className="w-3 h-3 text-blue-400" />
+                                                                            </div>
+                                                                        </TooltipTrigger>
+                                                                        <TooltipContent side="top" className="bg-popover border-border">
+                                                                            <span className="text-xs text-popover-foreground">Web Search</span>
+                                                                        </TooltipContent>
+                                                                    </Tooltip>
+                                                                )}
+                                                                {model.pdf && (
+                                                                    <Tooltip delayDuration={300}>
+                                                                        <TooltipTrigger asChild>
+                                                                            <div className="w-5 h-5 rounded bg-purple-500/20 flex items-center justify-center">
+                                                                                <FileTextIcon className="w-3 h-3 text-purple-400" />
+                                                                            </div>
+                                                                        </TooltipTrigger>
+                                                                        <TooltipContent side="top" className="bg-popover border-border">
+                                                                            <span className="text-xs text-popover-foreground">PDF Support</span>
+                                                                        </TooltipContent>
+                                                                    </Tooltip>
+                                                                )}
+                                                                {model.reasoning && (
+                                                                    <Tooltip delayDuration={300}>
+                                                                        <TooltipTrigger asChild>
+                                                                            <div className="w-5 h-5 rounded bg-violet-500/20 flex items-center justify-center">
+                                                                                <BrainCapabilityIcon className="w-3 h-3 text-violet-400" />
+                                                                            </div>
+                                                                        </TooltipTrigger>
+                                                                        <TooltipContent side="top" className="bg-popover border-border">
+                                                                            <span className="text-xs text-popover-foreground">Reasoning</span>
+                                                                        </TooltipContent>
+                                                                    </Tooltip>
+                                                                )}
+                                                                {model.imageGeneration && (
+                                                                    <Tooltip delayDuration={300}>
+                                                                        <TooltipTrigger asChild>
+                                                                            <div className="w-5 h-5 rounded bg-orange-500/20 flex items-center justify-center">
+                                                                                <ImagePlusIcon className="w-3 h-3 text-orange-400" />
+                                                                            </div>
+                                                                        </TooltipTrigger>
+                                                                        <TooltipContent side="top" className="bg-popover border-border">
+                                                                            <span className="text-xs text-popover-foreground">Image Generation</span>
+                                                                        </TooltipContent>
+                                                                    </Tooltip>
+                                                                )}
+                                                                {model.extreme && model.web && (
+                                                                    <div className="w-3 h-3 rounded bg-pink-500/20 flex items-center justify-center">
+                                                                        <TelescopeIcon className="w-2 h-2 text-pink-400" />
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </DropdownMenuItem>
+                                                    </motion.div>
+                                                ))}
+                                            </motion.div>
+                                        );
+                                    }
+                                    
+                                    return (
+                                        <motion.div 
+                                            key={category} 
+                                            className="space-y-1"
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ duration: 0.2, delay: categoryIndex * 0.05 }}
+                                        >
+                                            {categoryModels.map((model, modelIndex) => (
+                                                <motion.div
+                                                    key={model.value}
+                                                    initial={{ opacity: 0, x: -20 }}
+                                                    animate={{ opacity: 1, x: 0 }}
+                                                    transition={{ duration: 0.2, delay: categoryIndex * 0.05 + modelIndex * 0.03 }}
+                                                >
+                                                    <DropdownMenuItem
+                                                        onSelect={() => {
+                                                            setSelectedModel(model.value.trim());
+                                                            if (onModelSelect) {
+                                                                onModelSelect(model);
+                                                            }
+                                                            setIsOpen(false);
+                                                        }}
+                                                        className={cn(
+                                                            "flex items-center justify-between p-3 rounded-lg cursor-pointer transition-all duration-200",
+                                                            selectedModel === model.value 
+                                                                ? "bg-accent text-accent-foreground border border-border" 
+                                                                : "hover:bg-accent/50 text-popover-foreground"
+                                                        )}
+                                                    >
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="flex items-center justify-center w-6 h-6">
+                                                                {typeof model.icon === 'string' ? (
+                                                                    <img
+                                                                        src={model.icon}
+                                                                        alt={model.label}
+                                                                        className="w-5 h-5 object-contain"
+                                                                    />
+                                                                ) : (
+                                                                    <model.icon className="w-5 h-5 text-foreground" />
+                                                                )}
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-sm font-medium text-foreground leading-none">
+                                                                    {model.label}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div className="flex items-center gap-2">
+                                                            {model.vision && (
+                                                                <Tooltip delayDuration={300}>
+                                                                    <TooltipTrigger asChild>
+                                                                        <div className="w-5 h-5 rounded bg-teal-500/20 flex items-center justify-center">
+                                                                            <EyeCapabilityIcon className="w-3 h-3 text-teal-400" />
+                                                                        </div>
+                                                                    </TooltipTrigger>
+                                                                    <TooltipContent side="top" className="bg-popover border-border">
+                                                                        <span className="text-xs text-popover-foreground">Vision</span>
+                                                                    </TooltipContent>
+                                                                </Tooltip>
+                                                            )}
+                                                            {model.web && (
+                                                                <Tooltip delayDuration={300}>
+                                                                    <TooltipTrigger asChild>
+                                                                        <div className="w-5 h-5 rounded bg-blue-500/20 flex items-center justify-center">
+                                                                            <GlobeCapabilityIcon className="w-3 h-3 text-blue-400" />
+                                                                        </div>
+                                                                    </TooltipTrigger>
+                                                                    <TooltipContent side="top" className="bg-popover border-border">
+                                                                        <span className="text-xs text-popover-foreground">Web Search</span>
+                                                                    </TooltipContent>
+                                                                </Tooltip>
+                                                            )}
+                                                            {model.pdf && (
+                                                                <Tooltip delayDuration={300}>
+                                                                    <TooltipTrigger asChild>
+                                                                        <div className="w-5 h-5 rounded bg-purple-500/20 flex items-center justify-center">
+                                                                            <FileTextIcon className="w-3 h-3 text-purple-400" />
+                                                                        </div>
+                                                                    </TooltipTrigger>
+                                                                    <TooltipContent side="top" className="bg-popover border-border">
+                                                                        <span className="text-xs text-popover-foreground">PDF Support</span>
+                                                                    </TooltipContent>
+                                                                </Tooltip>
+                                                            )}
+                                                            {model.reasoning && (
+                                                                <Tooltip delayDuration={300}>
+                                                                    <TooltipTrigger asChild>
+                                                                        <div className="w-5 h-5 rounded bg-violet-500/20 flex items-center justify-center">
+                                                                            <BrainCapabilityIcon className="w-3 h-3 text-violet-400" />
+                                                                        </div>
+                                                                    </TooltipTrigger>
+                                                                    <TooltipContent side="top" className="bg-popover border-border">
+                                                                        <span className="text-xs text-popover-foreground">Reasoning</span>
+                                                                    </TooltipContent>
+                                                                </Tooltip>
+                                                            )}
+                                                            {model.imageGeneration && (
+                                                                <Tooltip delayDuration={300}>
+                                                                    <TooltipTrigger asChild>
+                                                                        <div className="w-5 h-5 rounded bg-orange-500/20 flex items-center justify-center">
+                                                                            <ImagePlusIcon className="w-3 h-3 text-orange-400" />
+                                                                        </div>
+                                                                    </TooltipTrigger>
+                                                                    <TooltipContent side="top" className="bg-popover border-border">
+                                                                        <span className="text-xs text-popover-foreground">Image Generation</span>
+                                                                    </TooltipContent>
+                                                                </Tooltip>
+                                                            )}
+                                                            {model.extreme && model.web && (
+                                                                <Tooltip delayDuration={300}>
+                                                                    <TooltipTrigger asChild>
+                                                                        <div className="w-5 h-5 rounded bg-pink-500/20 flex items-center justify-center">
+                                                                            <TelescopeIcon className="w-3 h-3 text-pink-400" />
+                                                                        </div>
+                                                                    </TooltipTrigger>
+                                                                    <TooltipContent side="top" className="bg-popover border-border">
+                                                                        <span className="text-xs text-popover-foreground">Extreme Mode</span>
+                                                                    </TooltipContent>
+                                                                </Tooltip>
+                                                            )}
+                                                        </div>
+                                                    </DropdownMenuItem>
+                                                </motion.div>
+                                            ))}
+                                        </motion.div>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </motion.div>
                 )}
                 </AnimatePresence>
                 </div>
                 
                 {/* Bottom Controls */}
-                {!showAllModels && capabilityFilteredModels.length > 8 && (
-                    <div className="relative flex items-center justify-between rounded-b-lg bg-background pb-1 pl-1 pr-2.5 pt-1.5 mx-4">
+                {!showAllModels && (
+                    <div className="relative flex items-center justify-between rounded-b-lg pb-1 pl-1 pr-2.5 pt-1.5 mx-4 bg-popover">
                         <div className="absolute inset-x-3 top-0 border-b border-border"></div>
+                        {capabilityFilteredModels.length > 8 && (
                         <button 
-                            onClick={() => setShowAllModels(true)}
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setShowAllModels(true);
+                            }}
                             className="justify-center whitespace-nowrap rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent disabled:cursor-not-allowed disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-accent/20 hover:text-accent-foreground disabled:hover:bg-transparent disabled:hover:text-muted-foreground/50 h-9 px-4 py-2 flex items-center gap-2 pl-2 text-sm text-muted-foreground"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-up h-4 w-4">
@@ -600,20 +1257,78 @@ const ModelSwitcher: React.FC<ModelSwitcherProps & {
                             </svg>
                             Show all
                         </button>
+                        )}
                         <button 
-                            onClick={onFilterClick}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setShowFilters(!showFilters);
+                            }}
                             data-filter-button
-                            className="inline-flex items-center justify-center whitespace-nowrap font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent disabled:cursor-not-allowed disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-accent/20 hover:text-accent-foreground disabled:hover:bg-transparent disabled:hover:text-muted-foreground/50 h-8 rounded-md text-xs gap-2 px-2 text-muted-foreground" 
+                            className={cn(
+                                "inline-flex items-center justify-center whitespace-nowrap font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent disabled:cursor-not-allowed disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-accent/20 hover:text-accent-foreground disabled:hover:bg-transparent disabled:hover:text-muted-foreground/50 h-8 rounded-md text-xs gap-2 px-2 text-muted-foreground relative",
+                                (showFilters || activeFilters.size > 0) && "bg-accent/20 text-accent-foreground"
+                            )}
                             type="button"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-filter h-4 w-4">
                                 <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
                             </svg>
+                            {activeFilters.size > 0 && (
+                                <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full flex items-center justify-center">
+                                    <span className="text-[10px] font-bold text-white">{activeFilters.size}</span>
+                                </div>
+                            )}
                         </button>
                     </div>
                 )}
+
+                {/* Show All Models Toggle */}
+                {showAllModels && (
+                    <div className="relative flex items-center justify-between rounded-b-lg pb-1 pl-1 pr-2.5 pt-1.5 mx-4 bg-popover">
+                        <div className="absolute inset-x-3 top-0 border-b border-border"></div>
+                        <button
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setShowAllModels(false);
+                            }}
+                            className="justify-center whitespace-nowrap rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent disabled:cursor-not-allowed disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-accent/20 hover:text-accent-foreground disabled:hover:bg-transparent disabled:hover:text-muted-foreground/50 h-9 px-4 py-2 flex items-center gap-2 pl-2 text-sm text-muted-foreground"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-left h-4 w-4">
+                                <path d="m15 18-6-6 6-6"></path>
+                            </svg>
+                            Favourites
+                        </button>
+                                        <button
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setShowFilters(!showFilters);
+                            }}
+                            data-filter-button
+                            className={cn(
+                                "inline-flex items-center justify-center whitespace-nowrap font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent disabled:cursor-not-allowed disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-accent/20 hover:text-accent-foreground disabled:hover:bg-transparent disabled:hover:text-muted-foreground/50 h-8 rounded-md text-xs gap-2 px-2 text-muted-foreground relative",
+                                (showFilters || activeFilters.size > 0) && "bg-accent/20 text-accent-foreground"
+                            )}
+                            type="button"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-filter h-4 w-4">
+                                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                            </svg>
+                            {activeFilters.size > 0 && (
+                                <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full flex items-center justify-center">
+                                    <span className="text-[10px] font-bold text-white">{activeFilters.size}</span>
+                                </div>
+                            )}
+                                        </button>
+                                </div>
+                )}
             </DropdownMenuContent>
         </DropdownMenu>
+
+
+    </>
     );
 });
 
@@ -1034,9 +1749,9 @@ const FormComponent: React.FC<FormComponentProps> = ({
     const [isDragging, setIsDragging] = useState(false);
     const [isGroupSelectorExpanded, setIsGroupSelectorExpanded] = useState(false);
     const [showGroupSelector, setShowGroupSelector] = useState(false);
-    const [modelSelectorOpen, setModelSelectorOpen] = useState(false);
-    const [selectedFilters, setSelectedFilters] = useState<Set<string>>(new Set());
-    const [filterDropdownOpen, setFilterDropdownOpen] = useState(false);
+    
+    // Use Zustand store for dropdown state management
+    const { modelSelectorOpen, filterDropdownOpen, setModelSelectorOpen, setFilterDropdownOpen, toggleFilterDropdown, handleFilterInteraction } = useDropdownStore();
     
     // Close filter dropdown when clicking outside
     useEffect(() => {
@@ -1179,13 +1894,24 @@ const FormComponent: React.FC<FormComponentProps> = ({
         setMounted(true);
     }, []);
 
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Reset submitting state when status changes to ready
+    useEffect(() => {
+        if (status === 'ready') {
+            setIsSubmitting(false);
+        }
+    }, [status]);
+
     const onSubmit = useCallback((event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
-        if (status !== 'ready') {
+        if (status !== 'ready' || isSubmitting) {
             toast.error("Please wait for the current response to complete!");
             return;
         }
+
+        setIsSubmitting(true);
 
         // Check if input exceeds character limit
         if (input.length > MAX_INPUT_CHARS) {
@@ -1194,10 +1920,6 @@ const FormComponent: React.FC<FormComponentProps> = ({
         }
 
         if (input.trim() || attachments.length > 0) {
-            if (user) {
-                window.history.replaceState({}, '', `/search/${chatId}`);
-            }
-
             setHasSubmitted(true);
             lastSubmittedQueryRef.current = input.trim();
 
@@ -1209,11 +1931,14 @@ const FormComponent: React.FC<FormComponentProps> = ({
             if (fileInputRef.current) {
                 fileInputRef.current.value = '';
             }
+
+            // Reset submitting state after a delay
+            setTimeout(() => setIsSubmitting(false), 2000);
         } else {
             toast.error("Please enter a search query or attach an image.");
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [input, attachments, handleSubmit, setAttachments, fileInputRef, lastSubmittedQueryRef, status, selectedModel, setHasSubmitted]);
+    }, [input, attachments, handleSubmit, setAttachments, fileInputRef, lastSubmittedQueryRef, status, selectedModel, setHasSubmitted, isSubmitting]);
 
     const submitForm = useCallback(() => {
         onSubmit({ preventDefault: () => { }, stopPropagation: () => { } } as React.FormEvent<HTMLFormElement>);
@@ -1252,6 +1977,54 @@ const FormComponent: React.FC<FormComponentProps> = ({
             }
         }
     };
+
+    // Get models that support web search
+    const webSupportedModels = models.filter(model => model.web === true);
+    const currentModelSupportsWeb = models.find(model => model.value === selectedModel)?.web === true;
+    
+    // Get models that support extreme mode (requires both extreme and web search)
+    const extremeSupportedModels = models.filter(model => model.extreme === true && model.web === true);
+    const currentModelSupportsExtreme = models.find(model => model.value === selectedModel)?.extreme === true && models.find(model => model.value === selectedModel)?.web === true;
+
+    const handleWebSearchToggle = useCallback((e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Check if current model supports web search
+        if (!currentModelSupportsWeb) {
+            // Show toast suggesting web-compatible models
+            const webModelSuggestions = webSupportedModels.slice(0, 3).map(m => m.label).join(', ');
+            showSwitchNotification(
+                'Web Search Unavailable',
+                `Switch to a web-compatible model like ${webModelSuggestions}`,
+                <Globe className="size-4" />,
+                'web',
+                'group'
+            );
+            return;
+        }
+
+        // Toggle web search mode
+        if (selectedGroup === 'web') {
+            setSelectedGroup(null);
+            showSwitchNotification(
+                'Chat Mode',
+                'No group selected - default chat mode',
+                <MessageCircle className="size-4" />,
+                'default',
+                'group'
+            );
+        } else {
+            setSelectedGroup('web');
+            showSwitchNotification(
+                'Web Search',
+                'Web search mode is now active',
+                <Globe className="size-4" />,
+                'web',
+                'group'
+            );
+        }
+    }, [selectedGroup, setSelectedGroup, currentModelSupportsWeb, webSupportedModels, showSwitchNotification]);
 
     return (
         <div className={cn("flex flex-col w-full")} suppressHydrationWarning>
@@ -1306,7 +2079,7 @@ const FormComponent: React.FC<FormComponentProps> = ({
                          suppressHydrationWarning
                      />
 
-                        <div className="rounded-t-3xl p-2 backdrop-blur-lg bg-background border border-border/50" style={{
+                        <div className="rounded-t-3xl pt-2 px-2 backdrop-blur-lg bg-background" style={{
                          paddingBottom: "0px",
                          marginBottom: "0px"
                      } as React.CSSProperties} suppressHydrationWarning>
@@ -1315,9 +2088,9 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                 "--start": "#000000e0",
                                 "--opacity": "0.6"
                             } as React.CSSProperties}>
-                                <div className="relative flex w-full flex-col items-stretch gap-2 rounded-t-2xl border-0 backdrop-blur-md px-3 pt-3 pb-safe text-secondary-foreground outline-0 sm:max-w-3xl bg-[rgb(249,239,250)] dark:bg-[rgb(40,34,44)]" style={{
+                                <div className="relative flex w-full flex-col items-stretch gap-2 rounded-t-2xl border-0 backdrop-blur-md px-3 pt-3 text-secondary-foreground outline-0 sm:max-w-3xl bg-[rgb(249,239,250)] dark:bg-[rgb(40,34,44)]" style={{
                             marginBottom: "0px",
-                            paddingBottom: "max(12px, env(safe-area-inset-bottom))"
+                            paddingBottom: "env(safe-area-inset-bottom)"
                         }} suppressHydrationWarning>
                             <Textarea
                                 ref={inputRef}
@@ -1359,8 +2132,8 @@ const FormComponent: React.FC<FormComponentProps> = ({
                         {/* Toolbar */}
                             <div
                                 className={cn(
-                                "flex justify-between items-center pt-3 mt-2",
-                                    isProcessing ? "opacity-20! cursor-not-allowed!" : ""
+                                "flex justify-between items-center pt-3 mt-2 pb-3"
+                                // Remove opacity and cursor styles that prevent interaction
                                 )}
                             suppressHydrationWarning
                         >
@@ -1377,7 +2150,7 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                          setShowGroupSelector(!showGroupSelector);
                                          // Close model selector if it's open
                                          setModelSelectorOpen(false);
-                                     }}
+                                     }} 
                                      suppressHydrationWarning
                                  >
                                      <RouteIcon 
@@ -1401,7 +2174,11 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                                  damping: 30,
                                                  duration: 0.2
                                              }}
-                                             className="absolute bottom-full left-0 mb-3 bg-background backdrop-blur-md rounded-xl shadow-xl border border-neutral-200 dark:border-neutral-700 p-3 z-50 min-w-[220px]"
+                                             className="absolute bottom-full left-0 mb-3 backdrop-blur-md rounded-xl shadow-xl border p-3 z-50 min-w-[220px] fix-pointer-events fix-z-index-higher"
+                                             style={{
+                                                 backgroundColor: 'rgb(15, 10, 14)',
+                                                 borderColor: 'rgb(35, 30, 34)'
+                                             }}
                                          >
                                              <div className="flex flex-col gap-1.5">
                                                  {searchGroups.filter(group => group.show).map((group, index) => (
@@ -1420,13 +2197,21 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                                              <TooltipTrigger asChild>
                                                                  <Button
                                                                      variant="ghost"
-                                                                     className={cn(
-                                                                         "w-full justify-start gap-3 h-11 px-3 transition-all duration-300 rounded-lg",
-                                                                         "hover:scale-[1.02] active:scale-[0.98]",
-                                                                         selectedGroup === group.id
-                                                                             ? "bg-primary text-primary-foreground shadow-sm"
-                                                                             : "text-foreground hover:bg-muted/40 hover:text-foreground"
-                                                                     )}
+                                                                     className="w-full justify-start gap-3 h-11 px-3 transition-all duration-300 rounded-lg hover:scale-[1.02] active:scale-[0.98]"
+                                                                     style={{
+                                                                         backgroundColor: selectedGroup === group.id ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
+                                                                         color: '#ffffff'
+                                                                     }}
+                                                                     onMouseEnter={(e) => {
+                                                                         if (selectedGroup !== group.id) {
+                                                                             e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.05)';
+                                                                         }
+                                                                     }}
+                                                                     onMouseLeave={(e) => {
+                                                                         if (selectedGroup !== group.id) {
+                                                                             e.currentTarget.style.backgroundColor = 'transparent';
+                                                                         }
+                                                                     }}
                                                                      onClick={(e) => {
                                                                          e.preventDefault();
                                                                          e.stopPropagation();
@@ -1471,7 +2256,8 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                          isOpen={modelSelectorOpen}
                                          onOpenChange={setModelSelectorOpen}
                                          onGroupSelectorClose={() => setShowGroupSelector(false)}
-                                            onFilterClick={() => setFilterDropdownOpen(!filterDropdownOpen)}
+                                            onFilterClick={() => {}}
+                                            selectedFilters={undefined}
                                             onModelSelect={(model) => {
                                                 const isVisionModel = model.vision === true;
                                                 showSwitchNotification(
@@ -1490,65 +2276,7 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                             }}
                                         />
                                         
-                                                                {/* External Filter Dropdown - positioned to the right of model selector */}
-                        {filterDropdownOpen && (
-                            <div 
-                                data-filter-dropdown
-                                className="fixed z-50 min-w-[12rem] bg-background p-2 text-foreground shadow-xl border border-border w-48 rounded-xl"
-                                style={{ 
-                                    zIndex: 9999,
-                                    left: 'calc(50% + 120px)', // Reduce horizontal space
-                                    top: 'calc(50% - 150px)', // Move up more to match model selector level
-                                    transform: 'translateY(-50%)'
-                                }}
-                            >
-                                                <div className="px-2 py-1 mb-2 text-xs font-semibold text-muted-foreground border-b border-border/20">
-                                                    Filter by Capabilities
-                                                </div>
-                                            {[
-                                                { key: 'fast', label: 'Fast', icon: ZapIcon, color: 'hsl(46 77% 52%)', colorDark: 'hsl(46 77% 79%)' },
-                                                { key: 'vision', label: 'Vision', icon: EyeCapabilityIcon, color: 'hsl(168 54% 52%)', colorDark: 'hsl(168 54% 74%)' },
-                                                { key: 'web', label: 'Search', icon: GlobeCapabilityIcon, color: 'hsl(208 56% 52%)', colorDark: 'hsl(208 56% 74%)' },
-                                                { key: 'pdf', label: 'PDFs', icon: FileTextIcon, color: 'hsl(237 55% 57%)', colorDark: 'hsl(237 75% 77%)' },
-                                                { key: 'reasoning', label: 'Reasoning', icon: BrainCapabilityIcon, color: 'hsl(263 58% 53%)', colorDark: 'hsl(263 58% 75%)' },
-                                                { key: 'imageGeneration', label: 'Image Generation', icon: ImagePlusIcon, color: 'hsl(12 60% 45%)', colorDark: 'hsl(12 60% 60%)' }
-                                            ].map(({ key, label, icon: Icon, color }) => (
-                                                <div
-                                                    key={key}
-                                                    onClick={() => {
-                                                        const newFilters = new Set(selectedFilters);
-                                                        if (selectedFilters.has(key)) {
-                                                            newFilters.delete(key);
-                                                        } else {
-                                                            newFilters.add(key);
-                                                        }
-                                                        setSelectedFilters(newFilters);
-                                                    }}
-                                                    className="relative cursor-default select-none rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent/30 hover:text-accent-foreground flex items-center justify-between cursor-pointer"
-                                                >
-                                                    <div className="-ml-0.5 flex items-center gap-2">
-                                                        <div 
-                                                            className="relative flex h-6 w-6 items-center justify-center overflow-hidden rounded-md text-current"
-                                                            style={{ 
-                                                                color: color,
-                                                            } as React.CSSProperties}
-                                                        >
-                                                            <div className="absolute inset-0 bg-current opacity-20 dark:opacity-15"></div>
-                                                            <Icon className="h-4 w-4" />
-                                                        </div>
-                                                        <span>{label}</span>
-                                                    </div>
-                                                    <span className="flex h-3.5 w-3.5 items-center justify-center">
-                                                        {selectedFilters.has(key) && (
-                                                            <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                                                                <path d="M20 6L9 17l-5-5" />
-                                                            </svg>
-                                                        )}
-                                                    </span>
-                                                </div>
-                                            ))}
-                                        </div>
-                                        )}
+                                                                
                                     </div>
 
                                     <div className={cn(
@@ -1562,93 +2290,59 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                             <Tooltip delayDuration={300}>
                                                 <TooltipTrigger asChild>
                                                     <button
-                                                        onClick={(e) => {
-                                                            e.preventDefault();
-                                                            e.stopPropagation();
-                                                         if (selectedGroup === 'web') {
-                                                             setSelectedGroup(null);
-                                                             showSwitchNotification(
-                                                                 'Chat Mode',
-                                                                 'No group selected - default chat mode',
-                                                                 <MessageCircle className="size-4" />,
-                                                                 'default',
-                                                                 'group'
-                                                             );
-                                                         } else {
-                                                             setSelectedGroup('web');
-                                                             showSwitchNotification(
-                                                                 'Web Search',
-                                                                 'Web search mode is now active',
-                                                                 <Globe className="size-4" />,
-                                                                 'web',
-                                                                 'group'
-                                                             );
-                                                         }
-                                                     }}
-                                                     className={cn(
-                                                         "flex items-center gap-1.5 h-8 transition-all duration-300",
-                                                         "rounded-full border border-secondary-foreground/10",
-                                                         "hover:shadow-md",
-                                                         selectedGroup === 'web'
-                                                             ? "bg-blue-500 dark:bg-blue-500 text-white px-2"
-                                                             : "bg-background text-muted-foreground hover:bg-muted/40 hover:text-foreground px-1.5 w-8",
-                                                     )}
-                                                     suppressHydrationWarning
-                                                 >
-                                                     <Globe className="h-3.5 w-3.5 mx-auto" />
-                                                     {selectedGroup === 'web' && <span className="text-xs font-medium">Web Search</span>}
-                                                 </button>
-                                             </TooltipTrigger>
-                                             <TooltipContent
-                                                 side="bottom"
-                                                 sideOffset={6}
-                                                 className="border-0 shadow-lg backdrop-blur-xs py-2 px-3"
-                                             >
-                                                 <div className="flex flex-col gap-0.5">
-                                                     <span className="font-medium text-[11px]">Web Search</span>
-                                                                                                             <span className="text-[10px] text-muted-foreground leading-tight">Search the web for information</span>
-                                                 </div>
-                                             </TooltipContent>
-                                         </Tooltip>
-                                     ) : (
-                                         <button
-                                             onClick={(e) => {
-                                                 e.preventDefault();
-                                                 e.stopPropagation();
-                                                 if (selectedGroup === 'web') {
-                                                     setSelectedGroup(null);
-                                                     showSwitchNotification(
-                                                         'Chat Mode',
-                                                         'No group selected - default chat mode',
-                                                         <MessageCircle className="size-4" />,
-                                                         'default',
-                                                         'group'
-                                                     );
-                                                 } else {
-                                                     setSelectedGroup('web');
-                                                     showSwitchNotification(
-                                                         'Web Search',
-                                                         'Web search mode is now active',
-                                                         <Globe className="size-4" />,
-                                                         'web',
-                                                         'group'
-                                                     );
-                                                 }
-                                             }}
-                                             className={cn(
-                                                 "flex items-center gap-1.5 h-8 transition-all duration-300",
-                                                 "rounded-full border border-secondary-foreground/10",
-                                                 "hover:shadow-md",
-                                                 selectedGroup === 'web'
-                                                     ? "bg-blue-500 dark:bg-blue-500 text-white px-2"
-                                                     : "bg-background text-muted-foreground hover:bg-muted/40 hover:text-foreground px-1.5 w-8",
-                                             )}
-                                             suppressHydrationWarning
-                                         >
-                                             <Globe className="h-3.5 w-3.5 mx-auto" />
-                                             {selectedGroup === 'web' && <span className="text-xs font-medium">Web Search</span>}
-                                         </button>
-                                     )}
+                                                        onClick={handleWebSearchToggle}
+                                                        className={cn(
+                                                            "flex items-center gap-1.5 h-8 transition-all duration-300",
+                                                            "rounded-full border border-secondary-foreground/10",
+                                                            "hover:shadow-md",
+                                                            selectedGroup === 'web' && currentModelSupportsWeb
+                                                                ? "bg-blue-500 dark:bg-blue-500 text-white px-2"
+                                                                : currentModelSupportsWeb
+                                                                    ? "bg-background text-muted-foreground hover:bg-muted/40 hover:text-foreground px-1.5 w-8"
+                                                                    : "bg-background text-muted-foreground/50 hover:bg-muted/20 px-1.5 w-8 cursor-not-allowed opacity-60",
+                                                        )}
+                                                        suppressHydrationWarning
+                                                    >
+                                                        <Globe className="h-3.5 w-3.5 mx-auto" />
+                                                        {selectedGroup === 'web' && currentModelSupportsWeb && <span className="text-xs font-medium">Web Search</span>}
+                                                    </button>
+                                                </TooltipTrigger>
+                                                <TooltipContent
+                                                    side="bottom"
+                                                    sideOffset={6}
+                                                    className="border-0 shadow-lg backdrop-blur-xs py-2 px-3"
+                                                >
+                                                    <div className="flex flex-col gap-0.5">
+                                                        <span className="font-medium text-[11px]">
+                                                            {currentModelSupportsWeb ? "Web Search" : "Web Search Unavailable"}
+                                                        </span>
+                                                        <span className="text-[10px] text-white leading-tight">
+                                                            {currentModelSupportsWeb 
+                                                                ? "Search the web for information" 
+                                                                : "Switch to a web-compatible model"}
+                                                        </span>
+                                                    </div>
+                                                </TooltipContent>
+                                            </Tooltip>
+                                        ) : (
+                                            <button
+                                                onClick={handleWebSearchToggle}
+                                                className={cn(
+                                                    "flex items-center gap-1.5 h-8 transition-all duration-300",
+                                                    "rounded-full border border-secondary-foreground/10",
+                                                    "hover:shadow-md",
+                                                    selectedGroup === 'web' && currentModelSupportsWeb
+                                                        ? "bg-blue-500 dark:bg-blue-500 text-white px-2"
+                                                        : currentModelSupportsWeb
+                                                            ? "bg-background text-muted-foreground hover:bg-muted/40 hover:text-foreground px-1.5 w-8"
+                                                            : "bg-background text-muted-foreground/50 hover:bg-muted/20 px-1.5 w-8 cursor-not-allowed opacity-60",
+                                                )}
+                                                suppressHydrationWarning
+                                            >
+                                                <Globe className="h-3.5 w-3.5 mx-auto" />
+                                                {selectedGroup === 'web' && currentModelSupportsWeb && <span className="text-xs font-medium">Web Search</span>}
+                                            </button>
+                                        )}
 
                                      {/* Extreme Mode Button */}
                                      {!isMobile ? (
@@ -1658,9 +2352,22 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                                      onClick={(e) => {
                                                          e.preventDefault();
                                                          e.stopPropagation();
+                                                         
+                                                         // Check if current model supports extreme mode
+                                                         if (!currentModelSupportsExtreme) {
+                                                             showSwitchNotification(
+                                                                 'Model Not Compatible',
+                                                                 `Switch to a compatible model for Extreme Mode. Try ${extremeSupportedModels[0]?.label || 'GPT 4o'}`,
+                                                                 <Telescope className="size-4" />,
+                                                                 'purple',
+                                                                 'model'
+                                                             );
+                                                             return;
+                                                         }
+                                                         
                                                          if (selectedGroup === 'extreme') {
                                                              setSelectedGroup(null);
-                                                            showSwitchNotification(
+                                                             showSwitchNotification(
                                                                  'Chat Mode',
                                                                  'No group selected - default chat mode',
                                                                  <MessageCircle className="size-4" />,
@@ -1671,46 +2378,50 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                                              setSelectedGroup('extreme');
                                                              showSwitchNotification(
                                                                  'Extreme Mode',
-                                                                 'Extreme mode is now active',
+                                                                 'Deep research mode is now active',
                                                                  <Telescope className="size-4" />,
                                                                  'extreme',
                                                                  'group'
                                                              );
                                                          }
-                                                        }}
-                                                        className={cn(
+                                                     }}
+                                                     className={cn(
                                                          "flex items-center gap-1.5 h-8 transition-all duration-300",
                                                          "rounded-full border border-secondary-foreground/10",
-                                                            "hover:shadow-md",
-                                                            selectedGroup === 'extreme'
+                                                         "hover:shadow-md",
+                                                         selectedGroup === 'extreme' && currentModelSupportsExtreme
                                                              ? "bg-purple-500 dark:bg-purple-500 text-white px-2"
-                                                             : "bg-background text-muted-foreground hover:bg-muted/40 hover:text-foreground px-1.5 w-8",
-                                                        )}
+                                                             : currentModelSupportsExtreme
+                                                                 ? "bg-background text-muted-foreground hover:bg-muted/40 hover:text-foreground px-1.5 w-8"
+                                                                 : "bg-background text-muted-foreground/50 hover:bg-muted/20 px-1.5 w-8 cursor-not-allowed opacity-60",
+                                                     )}
                                                      suppressHydrationWarning
-                                                    >
-                                                     <Telescope className="h-3.5 w-3.5" />
-                                                     {selectedGroup === 'extreme' && <span className="text-xs font-medium">Extreme Mode</span>}
-                                                    </button>
-                                                </TooltipTrigger>
-                                                <TooltipContent
-                                                    side="bottom"
-                                                    sideOffset={6}
+                                                 >
+                                                     <Telescope className="h-3.5 w-3.5 mx-auto" />
+                                                     {selectedGroup === 'extreme' && currentModelSupportsExtreme && <span className="text-xs font-medium">Extreme Mode</span>}
+                                                 </button>
+                                             </TooltipTrigger>
+                                             <TooltipContent
+                                                 side="bottom"
+                                                 sideOffset={6}
                                                  className="border-0 shadow-lg backdrop-blur-xs py-2 px-3"
-                                                >
-                                                    <div className="flex flex-col gap-0.5">
-                                                        <span className="font-medium text-[11px]">Extreme Mode</span>
-                                                        <span className="text-[10px] text-muted-foreground leading-tight">Deep research with multiple sources and analysis</span>
-                                                    </div>
-                                                </TooltipContent>
-                                            </Tooltip>
-                                        ) : (
-                                            <button
-                                                onClick={(e) => {
-                                                    e.preventDefault();
-                                                    e.stopPropagation();
+                                             >
+                                                 <div className="flex flex-col gap-0.5">
+                                                     <span className="font-medium text-[11px]">Extreme Mode</span>
+                                                     <span className="text-[10px] text-white leading-tight">
+                                                         {currentModelSupportsExtreme ? 'Deep research mode' : 'Not available for current model'}
+                                                     </span>
+                                                 </div>
+                                             </TooltipContent>
+                                         </Tooltip>
+                                     ) : (
+                                         <button
+                                             onClick={(e) => {
+                                                 e.preventDefault();
+                                                 e.stopPropagation();
                                                  if (selectedGroup === 'extreme') {
                                                      setSelectedGroup(null);
-                                                    showSwitchNotification(
+                                                     showSwitchNotification(
                                                          'Chat Mode',
                                                          'No group selected - default chat mode',
                                                          <MessageCircle className="size-4" />,
@@ -1721,27 +2432,29 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                                      setSelectedGroup('extreme');
                                                      showSwitchNotification(
                                                          'Extreme Mode',
-                                                         'Extreme mode is now active',
+                                                         'Deep research mode is now active',
                                                          <Telescope className="size-4" />,
                                                          'extreme',
                                                          'group'
                                                      );
                                                  }
-                                                }}
-                                                className={cn(
+                                             }}
+                                             className={cn(
                                                  "flex items-center gap-1.5 h-8 transition-all duration-300",
                                                  "rounded-full border border-secondary-foreground/10",
-                                                    "hover:shadow-md",
-                                                    selectedGroup === 'extreme'
+                                                 "hover:shadow-md",
+                                                 selectedGroup === 'extreme'
                                                      ? "bg-purple-500 dark:bg-purple-500 text-white px-2"
                                                      : "bg-background text-muted-foreground hover:bg-muted/40 hover:text-foreground px-1.5 w-8",
-                                                )}
+                                             )}
                                              suppressHydrationWarning
-                                            >
-                                             <Telescope className="h-3.5 w-3.5" />
-                                             {selectedGroup === 'extreme' && <span className="text-xs font-medium">Extreme Mode</span>}
-                                            </button>
-                                        )}
+                                         >
+                                             <Telescope className="h-3.5 w-3.5 mx-auto" />
+                                             {selectedGroup === 'extreme' && <span className="text-xs font-medium">Extreme</span>}
+                                         </button>
+                                     )}
+
+
                                     </div>
                                 </div>
 
@@ -1806,7 +2519,7 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                             <Tooltip delayDuration={300}>
                                                 <TooltipTrigger asChild>
                                                     <Button
-                                                        className="rounded-full p-1.5 h-8 w-8"
+                                                        className="rounded-full p-1.5 h-8 w-8 pointer-events-auto" // Force pointer events to work
                                                         onClick={(event) => {
                                                             event.preventDefault();
                                                             event.stopPropagation();
@@ -1828,7 +2541,7 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                             </Tooltip>
                                         ) : (
                                             <Button
-                                                className="rounded-full p-1.5 h-8 w-8"
+                                                className="rounded-full p-1.5 h-8 w-8 pointer-events-auto" // Force pointer events to work
                                                 onClick={(event) => {
                                                     event.preventDefault();
                                                     event.stopPropagation();
@@ -1904,3 +2617,4 @@ const FormComponent: React.FC<FormComponentProps> = ({
 };
 
 export default FormComponent;
+
