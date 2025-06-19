@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-	title: "T3 Chat",
+	title: "T3 Chat – The Best AI Assistant & ChatGPT Alternative",
 	description:
 		"T3 is your personal assistant. It completes your thoughts, remembers your context, and adapts the interface as you write. Built for developers, powered by AI, and integrated with your tools.",
 	keywords: [
@@ -40,7 +40,7 @@ export const metadata: Metadata = {
 	openGraph: {
 		type: "website",
 		locale: "en_US",
-		title: "T3 Chat",
+		title: "T3 Chat – The Best AI Assistant & ChatGPT Alternative",
 		description:
 			"T3 is your personal assistant. It completes your thoughts, remembers your context, and adapts the interface as you write. Built for developers, powered by AI, and integrated with your tools.",
 		url: "https://t3.chat",
@@ -55,7 +55,7 @@ export const metadata: Metadata = {
 	},
 	twitter: {
 		card: "summary_large_image",
-		title: "T3 Chat",
+		title: "T3 Chat – The Best AI Assistant & ChatGPT Alternative",
 		description:
 			"T3 is your personal assistant. It completes your thoughts, remembers your context, and adapts the interface as you write. Built for developers, powered by AI, and integrated with your tools.",
 		images: ["https://t3.chat/og.png"],
