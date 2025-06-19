@@ -12,9 +12,9 @@ import {
   CommandList
 } from "@/components/ui/command";
 import { Trash, ArrowUpRight, History, Globe, Lock, Search, Calendar, Hash, Check, X, Pencil } from "lucide-react";
-import { ListMagnifyingGlass } from "@phosphor-icons/react";
 import { isToday, isYesterday, isThisWeek, isThisMonth, subWeeks, differenceInSeconds, differenceInMinutes, differenceInHours, differenceInDays, differenceInWeeks, differenceInMonths, differenceInYears } from "date-fns";
-import { deleteChat, getUserChats, loadMoreChats, updateChatTitle } from "@/app/actions";
+import { getUserChats, loadMoreChats } from "@/app/actions";
+import { useDeleteChat, useUpdateChatTitle } from "@/hooks/use-convex-chat";
 import { Button } from "./ui/button";
 import { toast } from "sonner";
 import { User } from "@/lib/db/schema";
@@ -27,6 +27,7 @@ import {
 import { cn, invalidateChatsCache } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { ClassicLoader } from "./ui/loading";
+import { Id } from "@/convex/_generated/dataModel";
 
 // Constants
 const SCROLL_BUFFER_MAX = 100;
@@ -274,6 +275,8 @@ export function ChatHistoryDialog({ open, onOpenChange, user }: ChatHistoryDialo
   const currentChatId = rawChatId && isValidChatId(rawChatId) ? rawChatId : null;
 
   const queryClient = useQueryClient();
+  const deleteChat = useDeleteChat();
+  const updateTitle = useUpdateChatTitle();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchMode, setSearchMode] = useState<SearchMode>('all');
   const [navigating, setNavigating] = useState<string | null>(null);
@@ -426,21 +429,24 @@ export function ChatHistoryDialog({ open, onOpenChange, user }: ChatHistoryDialo
   // Handle mutations with React Query
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      await deleteChat(id);
+      await deleteChat({ chatId: id as Id<"chats"> });
     },
     onSuccess: (_, id) => {
       toast.success("Chat deleted");
-      // Update cache after successful deletion
+      // Update cache after successful deletion - properly typed
       queryClient.setQueryData(['chats', user?.id], (oldData: any) => {
         if (!oldData) return oldData;
         return {
           ...oldData,
           pages: oldData.pages.map((page: any) => ({
             ...page,
-            chats: page.chats.filter((chat: Chat) => chat.id !== id)
+            chats: page.chats.filter((chat: any) => chat.id !== id)
           }))
         };
       });
+      
+      // Force refetch to ensure UI is updated
+      queryClient.invalidateQueries({ queryKey: ['chats', user?.id] });
     },
     onError: (error) => {
       console.error("Failed to delete chat:", error);
@@ -451,7 +457,7 @@ export function ChatHistoryDialog({ open, onOpenChange, user }: ChatHistoryDialo
 
   const updateTitleMutation = useMutation({
     mutationFn: async ({ id, title }: { id: string; title: string }) => {
-      return await updateChatTitle(id, title);
+      return await updateTitle({ chatId: id as Id<"chats">, title });
     },
     onSuccess: (updatedChat, { id, title }) => {
       if (updatedChat) {
@@ -786,19 +792,28 @@ export function ChatHistoryDialog({ open, onOpenChange, user }: ChatHistoryDialo
                 >
                   <Pencil className="h-4 w-4" />
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className={cn(
-                    "transition-colors hover:text-destructive h-7 w-7 flex-shrink-0",
-                    isCurrentChat ? "text-destructive/70 hover:text-destructive" : ""
-                  )}
-                  onClick={(e) => handleDeleteChat(e, chat.id, chat.title)}
-                  aria-label={`Delete ${displayTitle}`}
-                  disabled={navigating === chat.id || deleteMutation.isPending}
-                >
-                  <Trash className="h-4 w-4" />
-                </Button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className={cn(
+                        "transition-colors hover:text-destructive h-7 w-7 flex-shrink-0",
+                        "text-muted-foreground hover:bg-destructive/10",
+                        "dark:text-gray-400 dark:hover:text-red-400 dark:hover:bg-red-500/10",
+                        isCurrentChat ? "text-destructive/70 hover:text-destructive dark:text-red-400/70 dark:hover:text-red-400" : ""
+                      )}
+                      onClick={(e) => handleDeleteChat(e, chat.id, chat.title)}
+                      aria-label={`Delete ${displayTitle}`}
+                      disabled={navigating === chat.id || deleteMutation.isPending}
+                    >
+                      <Trash className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Delete conversation permanently</p>
+                  </TooltipContent>
+                </Tooltip>
                 <div className="w-6 flex justify-end">
                   {isCurrentChat ? (
                     <span className="text-xs bg-primary text-primary-foreground px-1.5 py-0.5 rounded-sm">
@@ -816,36 +831,10 @@ export function ChatHistoryDialog({ open, onOpenChange, user }: ChatHistoryDialo
     );
   };
 
-  // Redirect to sign in page
-  const handleSignIn = () => {
-    onOpenChange(false);
-    redirect('/sign-in');
-  };
-
   // Show sign in prompt if user is not logged in
   if (!user) {
-    return (
-      <CommandDialog open={open} onOpenChange={onOpenChange}>
-        <div className="flex flex-col items-center justify-center p-6 text-center h-full min-h-[250px]">
-          <History className="size-8 text-muted-foreground mb-4" />
-          <h3 className="text-lg font-semibold mb-1">Access Your Chat History</h3>
-          <p className="text-sm text-muted-foreground mb-6 max-w-xs">
-            Sign in to view, search, and manage all your previous conversations seamlessly.
-          </p>
-
-          <Button
-            onClick={handleSignIn}
-            className="w-full max-w-[200px]"
-          >
-            Sign In
-          </Button>
-
-          <p className="text-xs text-muted-foreground mt-4">
-            Your conversations are automatically saved when you are signed in.
-          </p>
-        </div>
-      </CommandDialog>
-    );
+    // Don't show any popup for unauthenticated users
+    return null;
   }
 
   return (
@@ -1026,7 +1015,7 @@ export function ChatHistoryButton({ onClick }: { onClick: () => void }) {
           className="bg-transparent hover:bg-neutral-100 dark:hover:bg-neutral-800 mx-2 flex items-center justify-center p-0"
           aria-label="Chat History"
         >
-          <ListMagnifyingGlass className="size-6" />
+          <Search className="size-6" />
           <span className="sr-only">Chat History</span>
         </Button>
       </TooltipTrigger>

@@ -44,6 +44,8 @@ import { differenceInSeconds } from 'date-fns';
 import { v4 as uuidv4 } from 'uuid';
 import { geolocation } from "@vercel/functions";
 import { getTweet } from 'react-tweet/api';
+import { updateChatTitleById } from '@/lib/db/queries';
+import { generateChatTitle } from '@/lib/chat-utils';
 
 type ResponseMessageWithoutId = CoreToolMessage | CoreAssistantMessage;
 type ResponseMessage = ResponseMessageWithoutId & { id: string };
@@ -2181,6 +2183,42 @@ Create a detailed analysis that compiles, connects, and contextualizes this info
                 },
                 onFinish: async (event) => {
                     console.log('Finished:', event.finishReason);
+                    
+                    // Generate title if this is the first user message and we have a chat ID
+                    const firstUserMessage = messages.find(msg => msg.role === 'user');
+                    const chatId = body.id || body.chat_id;
+                    
+                    if (firstUserMessage && chatId && messages.length <= 2) {
+                        try {
+                            console.log('Generating title for new chat:', chatId);
+                            
+                            // Generate title from first user message using AI
+                            const aiTitle = await generateTitleFromUserMessage({
+                                message: {
+                                    id: firstUserMessage.id || 'temp-id',
+                                    role: 'user',
+                                    content: firstUserMessage.content,
+                                    parts: [{ type: 'text', text: firstUserMessage.content }]
+                                }
+                            });
+                            
+                            // Fallback to utility function if AI generation fails
+                            const finalTitle = aiTitle || generateChatTitle(firstUserMessage.content);
+                            
+                            console.log('Generated title:', finalTitle);
+                            
+                            // Update chat title in database
+                            await updateChatTitleById({
+                                chatId: chatId,
+                                title: finalTitle
+                            });
+                            
+                            console.log('Successfully updated chat title');
+                        } catch (error) {
+                            console.error('Error generating/updating chat title:', error);
+                            // Continue without failing the entire request
+                        }
+                    }
                 },
                 onError(event) {
                     console.log('Error: ', event.error);

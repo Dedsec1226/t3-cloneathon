@@ -6,9 +6,10 @@ import { SearchGroupId } from '@/lib/utils';
 import { generateObject, UIMessage, generateText } from 'ai';
 import { z } from 'zod';
 import { getUser } from "@/lib/auth-utils";
+import { deleteChatById } from '@/lib/db/queries';
+import { invalidateChatsCache } from '@/lib/utils';
 // Note: Database operations are handled client-side via Convex hooks
 // These are placeholder implementations for server actions
-import { groq } from '@ai-sdk/groq';
 import { openai } from '@ai-sdk/openai';
 
 export async function suggestQuestions(history: UIMessage[]) {
@@ -88,13 +89,29 @@ export async function generateTitleFromUserMessage({
 }) {
   const { text: title } = await generateText({
     model: openai('gpt-4'),
-    system: `\n
-    - you will generate a short title based on the first message a user begins a conversation with
-    - ensure it is not more than 80 characters long
-    - the title should be a summary of the user's message
-    - the title should creative and unique
-    - do not use quotes or colons`,
-    prompt: JSON.stringify(message),
+    system: `You are an expert at creating concise, meaningful titles for chat conversations.
+
+    INSTRUCTIONS:
+    - Generate a short, descriptive title based on the conversation content provided
+    - Maximum 60 characters to ensure it fits well in UI
+    - Focus on the main topic, question, or task discussed
+    - Use clear, everyday language that users would understand
+    - Avoid generic words like "Question", "Help", "Chat", "Conversation"
+    - Don't use quotes, colons, or special formatting
+    - Make it specific enough to distinguish from other chats
+    - If it's a technical topic, include the key technology/concept
+    - If it's a creative task, mention the type of creation
+    - If it's a problem-solving conversation, focus on the problem domain
+
+    EXAMPLES:
+    User asks about Python loops → "Python For Loop Syntax"
+    User asks for recipe ideas → "Healthy Dinner Recipe Ideas"
+    User needs help with resume → "Resume Writing Tips"
+    User asks about travel plans → "Paris Travel Itinerary"
+    User wants to learn guitar → "Beginner Guitar Lessons"`,
+    prompt: `Create a title for this conversation:
+
+${message.content}`,
   });
 
   return title;
@@ -970,12 +987,16 @@ export async function deleteChat(chatId: string) {
   if (!chatId) return null;
 
   try {
-    // Placeholder implementation - use Convex hooks on client-side instead
-    console.log('deleteChat called with:', { chatId });
-    return null;
+    // Use the Convex deletion function to completely remove chat and all messages
+    const result = await deleteChatById({ id: chatId });
+    
+    // Invalidate the chats cache to refresh the UI
+    invalidateChatsCache();
+    
+    return result;
   } catch (error) {
     console.error('Error deleting chat:', error);
-    return null;
+    throw error; // Re-throw to let the UI handle the error properly
   }
 }
 

@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { useTheme } from 'next-themes';
 import { cn } from '@/lib/utils';
 import { ArrowUpRight, ArrowDownRight, ExternalLink, Newspaper } from 'lucide-react';
-import { ChartBar } from '@phosphor-icons/react';
+import { BarChart } from 'lucide-react';
 
 // Currency symbol mapping with modern design tokens
 const CURRENCY_SYMBOLS = {
@@ -583,7 +583,7 @@ export const InteractiveStockChart = React.memo(({ title, data, stock_symbols, c
           <div className="mt-5 pt-4 border-t border-border/30">
             <div className="flex items-center justify-between mb-2.5">
               <div className="flex items-center gap-1.5">
-                <ChartBar className="size-3.5 text-primary/80" />
+                <BarChart className="size-3.5 text-primary/80" />
                 <h3 className="text-xs font-medium text-foreground/90">Financial Reports</h3>
               </div>
             </div>

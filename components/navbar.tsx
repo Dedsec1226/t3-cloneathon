@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from '@/lib/utils';
 import { User } from '@/lib/db/schema';
-import { LinkedinLogo, RedditLogo, Share, XLogo } from '@phosphor-icons/react';
+import { Linkedin, MessageCircle, Share, MessageSquare } from 'lucide-react';
 import { ClassicLoader } from '@/components/ui/loading';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Message } from 'ai';
@@ -237,7 +237,7 @@ const Navbar = memo(({
                                                             title="Share on LinkedIn"
                                                         disabled={!chatId}
                                                         >
-                                                        <LinkedinLogo size={16} />
+                                                        <Linkedin size={16} />
                                                         </Button>
                                                         <Button
                                                             variant="outline"
@@ -247,7 +247,7 @@ const Navbar = memo(({
                                                         title="Share on X"
                                                         disabled={!chatId}
                                                         >
-                                                        <XLogo size={16} />
+                                                        <MessageSquare size={16} />
                                                         </Button>
                                                         <Button
                                                             variant="outline"
@@ -257,7 +257,7 @@ const Navbar = memo(({
                                                             title="Share on Reddit"
                                                         disabled={!chatId}
                                                         >
-                                                        <RedditLogo size={16} />
+                                                        <MessageCircle size={16} />
                                                         </Button>
                                                 </div>
                                                 

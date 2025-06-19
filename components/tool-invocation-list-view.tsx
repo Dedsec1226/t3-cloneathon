@@ -54,12 +54,17 @@ import {
     Play as PlayIcon,
     Server,
     TextIcon,
-    TrendingUpIcon,
+    TrendingUp,
     Tv,
+    Video,
+    Volume2,
     XCircle,
     YoutubeIcon,
+    Brain,
+    Clock,
+    MessageCircle,
+    MessageSquare,
 } from 'lucide-react';
-import { Memory, Clock as PhosphorClock, RedditLogo, RoadHorizon, XLogo } from '@phosphor-icons/react';
 
 // Components
 import InteractiveChart from '@/components/interactive-charts';
@@ -1066,7 +1071,7 @@ const ToolInvocationListView = memo(
                                         "w-fit flex items-center gap-3 px-4 py-2 rounded-full transition-colors duration-200",
                                         "bg-blue-200 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
                                     )}>
-                                    <TrendingUpIcon className="h-4 w-4" />
+                                    <TrendingUp className="h-4 w-4" />
                                     <span className="font-medium">{args.title}</span>
                                     <Loader2 className="h-4 w-4 animate-spin" />
                                 </Badge>
@@ -1285,7 +1290,7 @@ const ToolInvocationListView = memo(
                                             )}
                                             {result.results[0].publishedDate && (
                                                 <Badge variant="secondary" className="rounded-md bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:hover:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 border-0 transition-colors">
-                                                    <PhosphorClock className="h-3 w-3 mr-1" />
+                                                    <Clock className="h-3 w-3 mr-1" />
                                                     {new Date(result.results[0].publishedDate).toLocaleDateString()}
                                                 </Badge>
                                             )}
@@ -1458,7 +1463,7 @@ const ToolInvocationListView = memo(
                                                     Current Time
                                                 </h3>
                                                 <div className="bg-neutral-100 dark:bg-neutral-800 rounded px-2 py-1 text-xs text-neutral-600 dark:text-neutral-300 font-medium flex items-center gap-1.5">
-                                                    <PhosphorClock weight="regular" className="h-3 w-3 text-blue-500" />
+                                                    <Clock className="h-3 w-3 text-blue-500" />
                                                     {result.timezone || new Intl.DateTimeFormat().resolvedOptions().timeZone}
                                                 </div>
                                             </div>
@@ -1503,6 +1508,9 @@ const ToolInvocationListView = memo(
                                 text="Managing Memories"
                                 color="purple"
                                 subtext="Processing and organizing your conversation history..."
+                                icon={Brain}
+                                text="Managing memories..."
+                                color="violet"
                             />
                         );
                     }
@@ -1516,6 +1524,8 @@ const ToolInvocationListView = memo(
                         return <SearchLoadingState
                             icon={RedditLogo}
                             text="Searching Reddit"
+                            icon={MessageCircle}
+                            text="Searching Reddit..."
                             color="orange"
                             subtext="Finding relevant discussions and threads..."
                         />;
@@ -1529,6 +1539,8 @@ const ToolInvocationListView = memo(
                         return <SearchLoadingState
                             icon={XLogo}
                             text="Searching X (Twitter)"
+                            icon={MessageSquare}
+                            text="Searching X (Twitter)..."
                             color="gray"
                             subtext="Finding recent posts and conversations..."
                         />;

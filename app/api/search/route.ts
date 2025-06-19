@@ -3,6 +3,9 @@ import { streamText, CoreMessage } from 'ai';
 import { NextRequest } from 'next/server';
 import { serverEnv } from '@/env/server';
 import { measureTTFB } from './debug-gemini';
+import { generateTitleFromUserMessage } from '@/app/actions';
+import { createChatIfNotExists } from '@/lib/db/queries';
+import { generateChatTitle } from '@/lib/chat-utils';
 
 // Using Node.js runtime due to web search requiring Node.js modules (http, https)
 export const runtime = 'nodejs';
@@ -13,7 +16,7 @@ export async function POST(request: NextRequest) {
   
   try {
     const body = await request.json();
-    const { messages, model, group, id, timezone, selectedVisibilityType } = body;
+    const { messages, model, group, id } = body;
 
     console.log('API Request received:', { 
       model, 
@@ -33,7 +36,7 @@ export async function POST(request: NextRequest) {
       const { POST: webPost } = await import('./web/route');
       
       // Create a new request with the parsed body
-      const newRequest = new Request(request.url, {
+      const newRequest = new NextRequest(request.url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -43,7 +46,7 @@ export async function POST(request: NextRequest) {
       });
       
       console.log(`✅ WEB SEARCH: Successfully routed to web/route.ts`);
-      return await webPost(newRequest as any);
+      return await webPost(newRequest);
     }
 
     // Handle extreme mode and other complex features
@@ -54,7 +57,7 @@ export async function POST(request: NextRequest) {
       const { POST: complexPost } = await import('./route-complex');
       
       // Create a new request with the same body for the complex route
-      const newRequest = new Request(request.url, {
+      const newRequest = new NextRequest(request.url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -64,7 +67,7 @@ export async function POST(request: NextRequest) {
       });
       
       console.log(`✅ COMPLEX: Successfully routed to route-complex.ts for ${group}`);
-      return await complexPost(newRequest as any);
+      return await complexPost(newRequest);
     }
 
     // Log TTFB for Gemini models
@@ -81,7 +84,7 @@ export async function POST(request: NextRequest) {
     console.log(`Using model: ${modelToUse}`);
 
     // Convert messages to the correct format for AI SDK
-    const coreMessages: CoreMessage[] = messages.map((msg: any) => ({
+    const coreMessages: CoreMessage[] = messages.map((msg: { role: string; content: string | object }) => ({
       role: msg.role as 'user' | 'assistant' | 'system',
       content: typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content)
     }));
@@ -126,6 +129,76 @@ export async function POST(request: NextRequest) {
         ...(modelToUse.includes('gemini') && {
           experimental_streamingChunks: false, // Disable super-fast chunks for natural appearance
         }),
+        onFinish: async (event) => {
+          console.log('Simple route finished:', event.finishReason);
+          console.log('Messages length:', messages.length);
+          console.log('Chat ID:', id);
+          
+          // Generate title if this is the first conversation (first user message and assistant response)
+          const userMessages = messages.filter((msg: { role: string }) => msg.role === 'user');
+          const chatId = id;
+          
+          console.log('User messages count:', userMessages.length);
+          console.log('First user message:', userMessages[0]?.content);
+          
+          // Check if this is the first user message (only 1 user message in the conversation)
+          if (userMessages.length === 1 && chatId && event.finishReason !== 'error') {
+            try {
+              console.log('🎯 GENERATING TITLE for first conversation in chat:', chatId);
+              
+              const firstUserMessage = userMessages[0];
+              const assistantResponse = event.text || '';
+              
+              console.log('Assistant response length:', assistantResponse.length);
+              console.log('Assistant response preview:', assistantResponse.slice(0, 100));
+              
+              // Create a more comprehensive prompt for title generation
+              const titlePrompt = {
+                id: 'temp-id',
+                role: 'user' as const,
+                content: `User asked: "${firstUserMessage.content}"\nAssistant responded: "${assistantResponse.slice(0, 200)}..."`,
+                parts: [{ 
+                  type: 'text' as const, 
+                  text: `User: ${firstUserMessage.content}\nAssistant: ${assistantResponse.slice(0, 200)}...`
+                }]
+              };
+              
+              console.log('Title prompt created:', titlePrompt.content);
+              
+              // Generate title from the conversation context using AI
+              const aiTitle = await generateTitleFromUserMessage({
+                message: titlePrompt
+              });
+              
+              console.log('AI generated title:', aiTitle);
+              
+              // Fallback to utility function if AI generation fails
+              const finalTitle = aiTitle || generateChatTitle(firstUserMessage.content);
+              
+              console.log('Final title to save:', finalTitle);
+              
+              // Create chat if it doesn't exist and update title
+              await createChatIfNotExists({
+                chatId: chatId,
+                title: finalTitle,
+                firstUserMessage: firstUserMessage.content,
+                assistantResponse: assistantResponse
+              });
+              
+              console.log('✅ Successfully created/updated chat');
+            } catch (error) {
+              console.error('❌ Error generating/updating chat title:', error);
+              // Continue without failing the entire request
+            }
+          } else {
+            console.log('⏭️ Skipping title generation - not first message or missing requirements');
+            console.log('Conditions:', {
+              userMessagesLength: userMessages.length,
+              hasChatId: !!chatId,
+              finishReason: event.finishReason
+            });
+          }
+        },
       });
       
       console.log('StreamText result created successfully');
@@ -174,7 +247,7 @@ export async function POST(request: NextRequest) {
 }
 
 // Handle CORS preflight requests
-export async function OPTIONS(request: NextRequest) {
+export async function OPTIONS() {
   return new Response(null, {
     status: 200,
     headers: {
