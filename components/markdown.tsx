@@ -524,21 +524,37 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
         if (latexMatch) {
           const latexBlock = latexBlocks.find(block => block.id === children);
           if (latexBlock && latexBlock.isBlock) {
-            // Render block equations outside of paragraph tags
+            // Render block equations outside of paragraph tags to avoid div inside p
             return (
               <div className="my-6 text-center" key={generateKey()}>
-                          <LaTeX
-            delimiters={[
-              { left: '$$', right: '$$', display: true },
-              { left: '\\[', right: '\\]', display: true }
-            ]}
-            strict={false}
-          >
-            {latexBlock.content}
-          </LaTeX>
+                <LaTeX
+                  delimiters={[
+                    { left: '$$', right: '$$', display: true },
+                    { left: '\\[', right: '\\]', display: true }
+                  ]}
+                  strict={false}
+                >
+                  {latexBlock.content}
+                </LaTeX>
               </div>
             );
           }
+        }
+      }
+      
+      // Check if children contains any block-level elements that shouldn't be in a paragraph
+      if (React.Children.count(children) > 0) {
+        const hasBlockElements = React.Children.toArray(children).some(child => {
+          if (React.isValidElement(child)) {
+            // Check if this is a div or other block element
+            return typeof child.type === 'string' && ['div', 'table', 'figure'].includes(child.type);
+          }
+          return false;
+        });
+        
+        if (hasBlockElements) {
+          // Return children without wrapping in paragraph to avoid nesting issues
+          return <div key={generateKey()} className="my-5">{children}</div>;
         }
       }
       

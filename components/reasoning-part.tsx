@@ -54,15 +54,30 @@ const MarkdownRenderer = React.memo(({ content }: { content: string }) => {
       );
     },
     paragraph(text: ReactNode) {
-      const textWithKeys = Array.isArray(text) 
-        ? text.map((child, index) => (
-            React.isValidElement(child) 
-              ? React.cloneElement(child as React.ReactElement, { key: `paragraph-${index}` })
-              : <span key={`paragraph-${index}`}>{child}</span>
-          ))
-        : text;
-        
-      return <p className="mb-3 last:mb-0">{textWithKeys}</p>;
+      // Handle both array and non-array children
+      if (Array.isArray(text)) {
+        const textWithKeys = text.map((child, index) => {
+          if (React.isValidElement(child)) {
+            return React.cloneElement(child as React.ReactElement, { key: `paragraph-${index}` });
+          }
+          return <span key={`paragraph-${index}`}>{String(child)}</span>;
+        });
+        return <p className="mb-3 last:mb-0">{textWithKeys}</p>;
+      }
+      
+      // For non-array text, check if it's a string and wrap multiple lines with keys
+      if (typeof text === 'string' && text.includes('\n')) {
+        const lines = text.split('\n');
+        const linesWithKeys = lines.map((line, index) => (
+          <span key={`line-${index}`}>
+            {line}
+            {index < lines.length - 1 && <br />}
+          </span>
+        ));
+        return <p className="mb-3 last:mb-0">{linesWithKeys}</p>;
+      }
+      
+      return <p className="mb-3 last:mb-0">{text}</p>;
     },
     heading(text: ReactNode, level: number) {
       const Tag = `h${level}` as keyof JSX.IntrinsicElements;

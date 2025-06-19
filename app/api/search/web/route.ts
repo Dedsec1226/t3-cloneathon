@@ -170,25 +170,21 @@ export async function POST(request: NextRequest) {
     // Get the model from our custom provider
     const languageModel = t3.languageModel(selectedModel);
     
-    // Create the response promise
-    const responsePromise = (async () => {
-      try {
         // Stream the response with ChatGPT-like behavior
-        const result = await streamText({
+    const result = await streamText({
       model: languageModel,
       messages: finalMessages,
-      maxTokens: 512, // Optimized for faster streaming (per latency playbook)
+      maxTokens: 512, // Optimized for faster streaming
       temperature: 0.7,
-      maxSteps: 1, // Prevent multiple tool calls - only allow 1 step
-      maxToolRoundtrips: 1, // Limit to 1 tool execution to prevent duplicates
-      toolChoice: 'required', // Force web search tool usage
+      maxSteps: 1, // Prevent multiple tool calls
+      toolChoice: 'auto', // Allow model to choose when to use web search
       // Add timeout for faster responses with OpenAI models
       ...(selectedModel.includes('gpt') && {
         timeout: 10000,
       }),
       // Throttle Gemini models for natural ChatGPT-like streaming
       ...(selectedModel.includes('gemini') && {
-        experimental_streamingChunks: false, // Disable super-fast chunks
+        experimental_streamingChunks: false,
       }),
       tools: {
         web_search: tool({
@@ -210,127 +206,90 @@ export async function POST(request: NextRequest) {
             topics: ('general' | 'news' | 'finance')[];
             searchDepth: ('basic' | 'advanced')[];
           }) => {
-            const apiKey = serverEnv.TAVILY_API_KEY;
-            const tvly = tavily({ apiKey });
+            try {
+              const apiKey = serverEnv.TAVILY_API_KEY;
+              const tvly = tavily({ apiKey });
 
-            console.log('Web Search Queries:', queries);
+              console.log('Web Search Queries:', queries);
 
-            // Execute searches in parallel
-            const searchPromises = queries.map(async (query, index) => {
-              const data = await tvly.search(query, {
-                topic: topics[index] || topics[0] || 'general',
-                days: topics[index] === 'news' ? 7 : undefined,
-                maxResults: maxResults[index] || maxResults[0] || 8,
-                searchDepth: searchDepth[index] || searchDepth[0] || 'basic',
-                includeAnswer: true,
-                includeImages: true,
-                includeImageDescriptions: true,
-                // Force fresh results for real-time queries
-                includeRawContent: 'text',
-                // Optimize for comprehensive content
-                maxTokens: 6000, // Increased for better content compilation
+              // Execute searches in parallel
+              const searchPromises = queries.map(async (query, index) => {
+                const data = await tvly.search(query, {
+                  topic: topics[index] || topics[0] || 'general',
+                  days: topics[index] === 'news' ? 7 : undefined,
+                  maxResults: maxResults[index] || maxResults[0] || 8,
+                  searchDepth: searchDepth[index] || searchDepth[0] || 'basic',
+                  includeAnswer: true,
+                  includeImages: true,
+                  includeImageDescriptions: true,
+                  includeRawContent: 'text',
+                  maxTokens: 6000,
+                });
+
+                return {
+                  query,
+                  results: deduplicateByDomainAndUrl(data.results).map((obj: any) => ({
+                    url: obj.url,
+                    title: obj.title,
+                    content: obj.content,
+                    published_date: topics[index] === 'news' ? obj.published_date : undefined,
+                  })),
+                  images: await Promise.all(
+                    deduplicateByDomainAndUrl(data.images).map(
+                      async ({ url, description }: { url: string; description?: string }) => {
+                        try {
+                          const sanitizedUrl = sanitizeUrl(url);
+                          const imageValidation = await isValidImageUrl(sanitizedUrl);
+                          return imageValidation.valid
+                            ? {
+                              url: imageValidation.redirectedUrl || sanitizedUrl,
+                              description: description ?? '',
+                            }
+                            : null;
+                        } catch {
+                          return null;
+                        }
+                      },
+                    ),
+                  ).then((results) =>
+                    results.filter(
+                      (image): image is { url: string; description: string } =>
+                        image !== null &&
+                        typeof image === 'object' &&
+                        typeof image.description === 'string' &&
+                        image.description !== '',
+                    ),
+                  ),
+                };
               });
 
+              const searchResults = await Promise.all(searchPromises);
+
+              // Simplified: Just return search results without complex synthesis
+              const synthesizedReport = searchResults.length > 0 ? 
+                `Found ${searchResults.reduce((total, search) => total + search.results.length, 0)} relevant results for your query.` : 
+                null;
+
               return {
-                query,
-                results: deduplicateByDomainAndUrl(data.results).map((obj: any) => ({
-                  url: obj.url,
-                  title: obj.title,
-                  content: obj.content,
-                  published_date: topics[index] === 'news' ? obj.published_date : undefined,
-                })),
-                images: await Promise.all(
-                  deduplicateByDomainAndUrl(data.images).map(
-                    async ({ url, description }: { url: string; description?: string }) => {
-                      const sanitizedUrl = sanitizeUrl(url);
-                      const imageValidation = await isValidImageUrl(sanitizedUrl);
-                      return imageValidation.valid
-                        ? {
-                          url: imageValidation.redirectedUrl || sanitizedUrl,
-                          description: description ?? '',
-                        }
-                        : null;
-                    },
-                  ),
-                ).then((results) =>
-                  results.filter(
-                    (image): image is { url: string; description: string } =>
-                      image !== null &&
-                      typeof image === 'object' &&
-                      typeof image.description === 'string' &&
-                      image.description !== '',
-                  ),
-                ),
-              };
-            });
-
-            const searchResults = await Promise.all(searchPromises);
-
-            // **NEW: Add synthesis step - compile all information like ChatGPT**
-            let synthesizedReport = '';
-            try {
-                // Collect all content for synthesis
-                const allContent = searchResults.flatMap(search => 
-                    search.results.map(result => ({
-                        title: result.title,
-                        content: result.content,
-                        url: result.url,
-                        query: search.query
-                    }))
-                );
-
-                // Only synthesize if we have content
-                if (allContent.length > 0) {
-                    const contentForSynthesis = allContent
-                        .slice(0, 12) // Limit to top 12 results for synthesis
-                        .map(item => `**${item.title}**\n${item.content.slice(0, 600)}`)
-                        .join('\n\n---\n\n');
-
-                    const { object } = await generateObject({
-                        model: languageModel,
-                        system: `You are a helpful AI assistant. Based on web search results, provide a natural, conversational response that directly answers the user's question.
-
-RESPONSE GUIDELINES:
-1. **Natural Language**: Write in a conversational, ChatGPT-like style
-2. **Direct Answers**: Directly address what the user is asking about
-3. **Synthesize Information**: Combine information from multiple sources naturally
-4. **Current Information**: Focus on the most recent and relevant information
-5. **Clear Structure**: Use natural paragraph breaks, not formal headings
-6. **Factual Accuracy**: Only use information from the provided sources
-7. **Conversational Tone**: Write as if you're having a natural conversation
-8. **Helpful Context**: Provide useful background and context naturally
-
-Write a helpful, informative response that feels like a natural conversation rather than a formal report.`,
-                        prompt: `Based on the following web search results for queries: "${queries.join(', ')}", provide a natural, helpful response that answers the user's question:
-
-${contentForSynthesis}
-
-Please synthesize this information into a conversational response that directly addresses what the user is looking for.`,
-                        schema: z.object({
-                            synthesizedReport: z.string().describe("A natural, conversational response that synthesizes the web search information to directly answer the user's question in a ChatGPT-like style"),
-                            keyPoints: z.array(z.string()).describe("3-5 main takeaways from the search results"),
-                            summary: z.string().describe("A brief summary of the key information found")
-                        }),
-                    });
-
-                    synthesizedReport = object.synthesizedReport;
-                }
-            } catch (error) {
-                console.error('Error during information synthesis:', error);
-            }
-
-            return {
                 searches: searchResults,
                 synthesizedReport: synthesizedReport || null,
                 hasContent: searchResults.some(search => search.results.length > 0)
-            };
+              };
+            } catch (error) {
+              console.error('Web search tool error:', error);
+              return {
+                searches: [],
+                synthesizedReport: 'Error occurred during web search',
+                hasContent: false
+              };
+            }
           },
         }),
       },
     });
     
     // Create the response with proper streaming headers
-    const response = result.toDataStreamResponse({
+    return result.toDataStreamResponse({
       headers: {
         'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache, no-transform',
@@ -339,23 +298,6 @@ Please synthesize this information into a conversational response that directly 
         'X-Accel-Buffering': 'no',
       },
     });
-    
-    return response;
-      } catch (error) {
-        throw error;
-      }
-    })();
-    
-    // Track the active request
-    activeRequests.set(requestKey, responsePromise);
-    
-    // Clean up active request after completion
-    responsePromise.finally(() => {
-      activeRequests.delete(requestKey);
-    });
-    
-    const finalResponse = await responsePromise;
-    return finalResponse;
     
   } catch (error) {
     console.error('Web Search API Error:', error);

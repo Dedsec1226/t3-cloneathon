@@ -335,12 +335,30 @@ export async function POST(req: Request) {
         console.log("Active tools for extreme:", activeTools);
         console.log("Tool choice will be: required");
         console.log("Max steps will be: 2");
+        
+        // Validate that the model supports web search for extreme mode
+        const modelSupportsWeb = model.includes('gemini') || model.includes('t3-4o') || model.includes('t3-gpt');
+        if (!modelSupportsWeb) {
+            console.error("🚨 EXTREME MODE ERROR: Model doesn't support web search");
+            return new Response(
+                JSON.stringify({ 
+                    error: "Extreme mode requires a model with web search capabilities. Please switch to GPT-4o, Gemini, or another web-compatible model." 
+                }), 
+                { 
+                    status: 400, 
+                    headers: { 'Content-Type': 'application/json' } 
+                }
+            );
+        }
     }
 
     const stream = createDataStream({
         execute: async (dataStream) => {
+            // Model fallback for extreme mode if primary model fails
+            let selectedModelForExecution = model;
+            
             const result = streamText({
-                model: t3.languageModel(model),
+                model: t3.languageModel(selectedModelForExecution),
                 messages: convertToCoreMessages(messages),
                 // Optimized temperature settings for speed and quality
                 ...(model.includes('t3-claude-3-5-haiku') || model.includes('t3-fast') ? {
@@ -353,16 +371,16 @@ export async function POST(req: Request) {
                 } : {
                     temperature: 0, // Conservative default
                 }),
-                maxSteps: group === 'extreme' ? 1 : 1, // Single step for extreme mode to prevent early streaming
-                maxRetries: 1,
+                maxSteps: group === 'extreme' ? 2 : 1, // Allow 2 steps for extreme mode for complex research
+                maxRetries: 3, // Increased retries for API stability
                 experimental_activeTools: [...activeTools],
                 system: instructions + `\n\nThe user's location is ${latitude}, ${longitude}.`,
                 toolChoice: group === 'extreme' ? 'required' : 
                            group === 'web' ? 'required' : 'auto', // Force tool usage for extreme and web modes
-                // **EXTREME MODE: Prevent early streaming**
+                // **EXTREME MODE: Simplified approach for reliability**
                 ...(group === 'extreme' ? {
-                    maxToolRoundtrips: 1, // Only allow one tool execution
-                    experimental_continueSteps: false, // Disable continuation
+                    maxToolRoundtrips: 2, // Allow sufficient tool executions but keep it manageable
+                    experimental_continueSteps: false, // Disable continuation for stability
                 } : {}),
                 experimental_transform: smoothStream({
                     chunking: 'word',
@@ -452,11 +470,13 @@ export async function POST(req: Request) {
                         },
                         // Enable prompt caching for long contexts (79% latency reduction on subsequent calls)
                         cacheControl: { type: 'ephemeral' },
+                        // Add timeout configuration for API stability
+                        timeout: group === 'extreme' ? 120000 : 60000, // 2 minutes for extreme mode, 1 minute for others
                         // Thinking configuration with reduced budget for faster TTFT
                         ...(model === 't3-claude-4-sonnet' || model === 't3-claude-4-opus' ? {
                             thinking: { 
                                 type: 'enabled', 
-                                budgetTokens: 8000  // Reduced from 12000 for faster response
+                                budgetTokens: group === 'extreme' ? 6000 : 4000  // Optimized for extreme mode
                             },
                         } : {}),
                         // Speed optimizations
@@ -467,13 +487,17 @@ export async function POST(req: Request) {
                         } : {}),
                         ...(model.includes('t3-claude-3-5-sonnet') || model === 't3-claude-4-sonnet' ? {
                             // Sonnet optimizations for balanced speed/quality
-                            maxTokens: 512,  // Optimized for fastest streaming
+                            maxTokens: group === 'extreme' ? 4096 : 512,  // Higher tokens for extreme mode
                             stopSequences: ['</analysis>', '</thinking>']
                         } : {}),
                         ...(model.includes('t3-claude-3-opus') || model === 't3-claude-4-opus' ? {
                             // Opus optimizations - focus on quality but still optimize
-                            maxTokens: 512,  // Optimized for fastest streaming
+                            maxTokens: group === 'extreme' ? 4096 : 512,  // Higher tokens for extreme mode
                             stopSequences: ['</deep_analysis>', '</thinking>']
+                        } : {}),
+                        // Global max tokens for all Claude models
+                        ...(model.includes('t3-claude') ? {
+                            maxTokens: group === 'extreme' ? 4096 : 1024,  // Reasonable limits for all Claude models
                         } : {})
                     },
                 },
@@ -2030,8 +2054,9 @@ Create a detailed analysis that compiles, connects, and contextualizes this info
                     
                     // **EXTREME MODE: Suppress text streaming until tool completes**
                     if (group === 'extreme' && event.chunk.type === 'text-delta') {
-                        console.log('🚫 Suppressing text streaming for extreme mode until tool completes');
-                        return; // Don't stream text chunks in extreme mode
+                        // Allow text streaming in extreme mode - suppression was causing issues
+                        // console.log('🚫 Suppressing text streaming for extreme mode until tool completes');
+                        // return; // Don't stream text chunks in extreme mode
                     }
                 },
                 onStepFinish(event) {
@@ -2055,6 +2080,19 @@ Create a detailed analysis that compiles, connects, and contextualizes this info
         },
         onError(error) {
             console.log('Error: ', error);
+            
+            // Enhanced error handling for extreme mode
+            if (group === 'extreme') {
+                console.error("🚨 EXTREME MODE ERROR: API connection failed");
+                if (error instanceof Error && error.message.includes('Rate Limit')) {
+                    return 'Rate limit reached in Extreme Mode. Please try again later or switch to a different model.';
+                }
+                if (error instanceof Error && error.message.includes('Cannot connect')) {
+                    return 'Extreme mode encountered API connectivity issues. Try switching to Gemini 2.5 Flash or GPT 4o for better stability.';
+                }
+                return 'Extreme mode encountered an error. Try switching to a more stable model like Gemini 2.5 Flash.';
+            }
+            
             if (error instanceof Error && error.message.includes('Rate Limit')) {
                 return 'Oops, you have reached the rate limit! Please try again later.';
             }

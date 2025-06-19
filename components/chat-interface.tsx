@@ -73,6 +73,7 @@ const ChatInterface = memo(({ initialChatId, initialMessages, initialVisibility 
     const isAutoScrollingRef = useRef(false);
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const [user, setUser] = useState<User | null>(null);
+    const [isStoppedByUser, setIsStoppedByUser] = useState(false);
 
     // Generate random UUID once for greeting selection
     const greetingUuidRef = useRef<string>(uuidv4());
@@ -216,26 +217,44 @@ const ChatInterface = memo(({ initialChatId, initialMessages, initialVisibility 
         fetch: async (url, options) => {
             // Custom fetch with better error handling
             try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 60000); // 1 minute timeout for faster responses
+                // Use the existing signal from options if provided (this is from useChat's stop function)
+                const signal = options?.signal;
+                const timeoutController = new AbortController();
+                const timeoutId = setTimeout(() => timeoutController.abort(), 60000); // 1 minute timeout for faster responses
+                
+                // Create combined signal that respects both the stop button and timeout
+                const combinedController = new AbortController();
+                
+                // Listen for both signals
+                if (signal) {
+                    signal.addEventListener('abort', () => combinedController.abort());
+                }
+                timeoutController.signal.addEventListener('abort', () => combinedController.abort());
                 
                 const response = await fetch(url, {
                     ...options,
-                    signal: controller.signal,
+                    signal: combinedController.signal,
                 });
                 
                 clearTimeout(timeoutId);
                 return response;
             } catch (error) {
-                // Suppress common streaming errors
+                // Handle abort properly
                 if (error instanceof Error && (
                     error.name === 'AbortError' ||
-                    error.message.includes('Incomplete') ||
-                    error.message.includes('stream') ||
                     error.message.includes('aborted')
                 )) {
+                    console.log("🛑 Request aborted by user or timeout");
+                    // Return empty response for clean abort
+                    return new Response('', { status: 200 });
+                }
+                
+                // Suppress other common streaming errors
+                if (error instanceof Error && (
+                    error.message.includes('Incomplete') ||
+                    error.message.includes('stream')
+                )) {
                     console.warn("🔇 Suppressed fetch error:", error.message);
-                    // Return a minimal successful response to avoid error cascade
                     return new Response('', { status: 200 });
                 }
                 throw error;
@@ -292,7 +311,7 @@ const ChatInterface = memo(({ initialChatId, initialMessages, initialVisibility 
         },
         initialMessages: initialMessages,
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }), [chatId, initialChatId]); // Only recreate useChat when chatId changes, not on model/group changes
+    }), [chatId, initialChatId, selectedModel, selectedGroup, selectedVisibilityType]); // Recreate useChat when chatId, model, or group changes
 
     // Wrap useChat in try-catch to prevent any internal errors from bubbling up
     let chatHookResult;
@@ -332,15 +351,7 @@ const ChatInterface = memo(({ initialChatId, initialMessages, initialVisibility 
         experimental_resume
     } = chatHookResult;
 
-    // **DEBUG: Log selectedGroup changes**
-    useEffect(() => {
-        console.log("🔄 SELECTED GROUP CHANGED:", selectedGroup, "Messages count:", messages.length);
-    }, [selectedGroup, messages.length]);
-    
-    // **DEBUG: Log when useChat would have been recreated (but now shouldn't be)**
-    useEffect(() => {
-        console.log("🔧 Model/Group changed, but useChat should NOT reset:", { selectedModel, selectedGroup, selectedVisibilityType });
-    }, [selectedModel, selectedGroup, selectedVisibilityType]);
+    // Mode switching now properly recreates useChat with new configuration
 
     useAutoResume({
         autoResume: true,
@@ -422,6 +433,8 @@ const ChatInterface = memo(({ initialChatId, initialMessages, initialVisibility 
         if (status === 'streaming') {
             // Clear suggested questions when a new message is being streamed
             setSuggestedQuestions([]);
+            // Reset stopped by user state when new streaming starts
+            setIsStoppedByUser(false);
         }
     }, [status]);
 
@@ -445,14 +458,14 @@ const ChatInterface = memo(({ initialChatId, initialMessages, initialVisibility 
         return -1;
     }, [messages]);
 
-    // **SIMPLIFIED: Reset manual scroll state when streaming starts**
+    // **Reset manual scroll state when streaming starts**
     useEffect(() => {
         if (status === 'streaming') {
             setHasManuallyScrolled(false);
         }
     }, [status]);
 
-    // **SIMPLIFIED: Much more conservative scroll handling to prevent screen bouncing**
+    // **ENHANCED: Better scroll handling similar to ChatGPT**
     useEffect(() => {
         let scrollTimeout: NodeJS.Timeout;
 
@@ -460,10 +473,11 @@ const ChatInterface = memo(({ initialChatId, initialMessages, initialVisibility 
             const currentScrollTop = window.scrollY;
             const scrollHeight = document.documentElement.scrollHeight;
             const clientHeight = window.innerHeight;
-            const isAtBottom = currentScrollTop + clientHeight >= scrollHeight - 50;
+            const isAtBottom = currentScrollTop + clientHeight >= scrollHeight - 100; // More forgiving threshold
+            const hasScrolledUp = currentScrollTop < scrollHeight - clientHeight - 100; // Show button when scrolled up
 
-            // Update scroll-to-bottom button visibility
-            setShowScrollToBottom(!isAtBottom && messages.length > 0);
+            // Show scroll-to-bottom button when user has scrolled up and there are messages
+            setShowScrollToBottom(hasScrolledUp && messages.length > 0);
 
             // Track manual scrolling during streaming
             if (status === 'streaming' && !isAutoScrollingRef.current) {
@@ -475,25 +489,25 @@ const ChatInterface = memo(({ initialChatId, initialMessages, initialVisibility 
             }
         };
 
-        // Use passive scroll listener with throttling
+        // Use passive scroll listener with throttling for better performance
         let scrollThrottle: NodeJS.Timeout;
         const throttledScroll = () => {
             if (scrollThrottle) return;
             scrollThrottle = setTimeout(() => {
                 handleScroll();
                 scrollThrottle = null as any;
-            }, 100);
+            }, 50); // Faster throttling for more responsive button
         };
 
         window.addEventListener('scroll', throttledScroll, { passive: true });
 
-        // **VERY CONSERVATIVE auto-scroll: Only when streaming, user at bottom, and not manually scrolled**
+        // **AUTO-SCROLL: Enhanced auto-scroll behavior**
         if (status === 'streaming' && !hasManuallyScrolled && bottomRef.current) {
             scrollTimeout = setTimeout(() => {
                 if (!hasManuallyScrolled && bottomRef.current) {
                     isAutoScrollingRef.current = true;
                     
-                    // Use smooth scroll but with reduced frequency
+                    // Smooth scroll to bottom
                     bottomRef.current.scrollIntoView({ 
                         behavior: "smooth", 
                         block: "end",
@@ -504,7 +518,7 @@ const ChatInterface = memo(({ initialChatId, initialMessages, initialVisibility 
                         isAutoScrollingRef.current = false;
                     }, 300);
                 }
-            }, 1000); // Much longer delay
+            }, 200); // Faster response for better UX
         }
 
         return () => {
@@ -512,7 +526,7 @@ const ChatInterface = memo(({ initialChatId, initialMessages, initialVisibility 
             if (scrollTimeout) clearTimeout(scrollTimeout);
             if (scrollThrottle) clearTimeout(scrollThrottle);
         };
-    }, [messages.length, status, hasManuallyScrolled]); // Simplified dependencies
+    }, [messages.length, status, hasManuallyScrolled]);
 
     // Scroll to bottom function
     const scrollToBottom = useCallback(() => {
@@ -588,6 +602,13 @@ const ChatInterface = memo(({ initialChatId, initialMessages, initialVisibility 
             document.body.classList.remove('streaming-active');
         };
     }, [status]);
+
+    // Enhanced stop function with user feedback
+    const handleStop = useCallback(() => {
+        stop();
+        setIsStoppedByUser(true);
+        toast.error("Generation stopped by user");
+    }, [stop]);
 
     return (
         <TooltipProvider>
@@ -781,6 +802,15 @@ const ChatInterface = memo(({ initialChatId, initialMessages, initialVisibility 
                         />
                     )}
 
+                    {/* Show "Stopped by user" message when user stops generation */}
+                    {isStoppedByUser && status === 'ready' && (
+                        <div className="w-full max-w-[95%] sm:max-w-2xl mx-auto px-2 sm:px-4 mb-4">
+                            <div className="bg-red-100 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg px-4 py-3 text-red-700 dark:text-red-300 text-sm font-medium">
+                                Stopped by user
+                            </div>
+                        </div>
+                    )}
+
                     <div ref={bottomRef} />
                     </div>
 
@@ -801,7 +831,7 @@ const ChatInterface = memo(({ initialChatId, initialMessages, initialVisibility 
                     )}
                     </div>
 
-                    {/* Scroll to bottom button */}
+                    {/* Enhanced Scroll to bottom button with message indicator */}
                     <AnimatePresence>
                         {showScrollToBottom && (
                             <motion.div
@@ -813,7 +843,7 @@ const ChatInterface = memo(({ initialChatId, initialMessages, initialVisibility 
                             >
                                 <button
                                     onClick={scrollToBottom}
-                                    className="flex items-center justify-center w-10 h-10 bg-background border border-border/50 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 active:scale-95 backdrop-blur-sm"
+                                    className="group flex items-center justify-center gap-2 bg-background/95 backdrop-blur-sm border border-border/60 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 active:scale-95 px-3 py-2 text-sm font-medium text-foreground/80 hover:text-foreground"
                                     aria-label="Scroll to bottom"
                                 >
                                     <svg
@@ -825,10 +855,11 @@ const ChatInterface = memo(({ initialChatId, initialMessages, initialVisibility 
                                         strokeWidth="2"
                                         strokeLinecap="round"
                                         strokeLinejoin="round"
-                                        className="text-muted-foreground"
+                                        className="transition-transform group-hover:translate-y-0.5"
                                     >
                                         <path d="m6 9 6 6 6-6" />
                                     </svg>
+                                    <span className="hidden sm:inline">Scroll to bottom</span>
                                 </button>
                             </motion.div>
                         )}
@@ -850,7 +881,7 @@ const ChatInterface = memo(({ initialChatId, initialMessages, initialVisibility 
                                 handleSubmit={handleSubmit}
                                 fileInputRef={fileInputRef}
                                 inputRef={inputRef}
-                                stop={stop}
+                                stop={handleStop}
                                 messages={messages as any}
                                 append={append}
                                 selectedModel={selectedModel}

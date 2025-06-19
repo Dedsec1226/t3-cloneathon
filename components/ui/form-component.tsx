@@ -166,56 +166,68 @@ const ImagePlusIcon = (props: SVGProps<SVGSVGElement>) => (
     </svg>
 );
 
+const TelescopeIcon = (props: SVGProps<SVGSVGElement>) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-telescope h-4 w-4" {...props}>
+        <path d="m10.065 12.493-6.18 1.318a.934.934 0 0 1-1.108-.702l-.537-2.15a1.07 1.07 0 0 1 .691-1.265l13.504-4.44" />
+        <path d="m13.56 11.747 4.332-.924" />
+        <path d="m16 21-3.105-6.21" />
+        <path d="M16.485 5.94a2 2 0 0 1 1.455-2.425l1.09-.272a1 1 0 0 1 1.212.727l1.515 6.06a1 1 0 0 1-.727 1.213l-1.09.272a2 2 0 0 1-2.425-1.455z" />
+        <path d="m6.158 8.633 1.114 4.456" />
+        <path d="m8 21 3.105-6.21" />
+        <circle cx="12" cy="13" r="2" />
+    </svg>
+);
+
 const models = [
     // ===== FAVORITES (Most Popular) - In your preferred order =====
     // OpenAI Popular Models
-    { value: "t3-4o", label: "GPT 4o", icon: OpenAIIcon, iconClass: "text-current", description: "OpenAI's flagship multimodal model", color: "blue", vision: true, reasoning: false, experimental: false, category: "Favorites", pdf: true, fast: false, web: true, imageGeneration: true },
-    { value: "t3-dall-e-3", label: "DALL-E 3", icon: OpenAIIcon, iconClass: "text-current", description: "Advanced AI image generation", color: "blue", vision: false, reasoning: false, experimental: false, category: "Favorites", pdf: false, fast: false, web: false, imageGeneration: true },
+    { value: "t3-4o", label: "GPT 4o", icon: OpenAIIcon, iconClass: "text-current", description: "OpenAI's flagship multimodal model", color: "blue", vision: true, reasoning: false, experimental: false, category: "Favorites", pdf: true, fast: false, web: true, imageGeneration: true, extreme: true },
+    { value: "t3-dall-e-3", label: "DALL-E 3", icon: OpenAIIcon, iconClass: "text-current", description: "Advanced AI image generation", color: "blue", vision: false, reasoning: false, experimental: false, category: "Favorites", pdf: false, fast: false, web: false, imageGeneration: true, extreme: false },
     
     // Anthropic Latest Models (Claude 4)
-    { value: "t3-claude-4-sonnet", label: "Claude 4 Sonnet", icon: AnthropicIcon, iconClass: "text-current", description: "Latest Claude 4 Sonnet model", color: "violet", vision: true, reasoning: true, experimental: false, category: "Favorites", pdf: true, fast: false, web: false, imageGeneration: false },
-    { value: "t3-claude-4-opus", label: "Claude 4 Opus", icon: AnthropicIcon, iconClass: "text-current", description: "Most powerful Claude 4 model", color: "violet", vision: true, reasoning: true, experimental: false, category: "Favorites", pdf: true, fast: false, web: false, imageGeneration: false },
-    { value: "t3-claude-3-opus", label: "Claude 3 Opus", icon: AnthropicIcon, iconClass: "text-current", description: "Legacy powerful Claude model", color: "violet", vision: true, reasoning: false, experimental: false, category: "Favorites", pdf: true, fast: false, web: false, imageGeneration: false },
+    { value: "t3-claude-4-sonnet", label: "Claude 4 Sonnet", icon: AnthropicIcon, iconClass: "text-current", description: "Latest Claude 4 Sonnet model", color: "violet", vision: true, reasoning: true, experimental: false, category: "Favorites", pdf: true, fast: false, web: false, imageGeneration: false, extreme: true },
+    { value: "t3-claude-4-opus", label: "Claude 4 Opus", icon: AnthropicIcon, iconClass: "text-current", description: "Most powerful Claude 4 model", color: "violet", vision: true, reasoning: true, experimental: false, category: "Favorites", pdf: true, fast: false, web: false, imageGeneration: false, extreme: true },
+    { value: "t3-claude-3-opus", label: "Claude 3 Opus", icon: AnthropicIcon, iconClass: "text-current", description: "Legacy powerful Claude model", color: "violet", vision: true, reasoning: false, experimental: false, category: "Favorites", pdf: true, fast: false, web: false, imageGeneration: false, extreme: true },
     
     // Google Gemini Models
-    { value: "t3-gemini-2-5-flash", label: "Gemini 2.5 Flash", icon: GeminiIcon, iconClass: "text-current", description: "Latest Gemini model with optimized streaming", color: "gemini", vision: true, reasoning: false, experimental: false, category: "Favorites", pdf: true, fast: true, web: true, imageGeneration: false },
-    { value: "t3-gemini-1-5-pro", label: "Gemini 1.5 Pro", icon: GeminiIcon, iconClass: "text-current", description: "Professional Gemini model", color: "gemini", vision: true, reasoning: false, experimental: false, category: "Favorites", pdf: true, fast: false, web: false, imageGeneration: false },
+    { value: "t3-gemini-2-5-flash", label: "Gemini 2.5 Flash", icon: GeminiIcon, iconClass: "text-current", description: "Latest Gemini model with optimized streaming", color: "gemini", vision: true, reasoning: false, experimental: false, category: "Favorites", pdf: true, fast: true, web: true, imageGeneration: false, extreme: true },
+    { value: "t3-gemini-1-5-pro", label: "Gemini 1.5 Pro", icon: GeminiIcon, iconClass: "text-current", description: "Professional Gemini model", color: "gemini", vision: true, reasoning: false, experimental: false, category: "Favorites", pdf: true, fast: false, web: true, imageGeneration: false, extreme: true },
 
     // ===== OPENAI MODELS =====
-    { value: "t3-4o-mini", label: "GPT 4o mini", icon: OpenAIIcon, iconClass: "text-current", description: "Fast and efficient OpenAI model", color: "blue", vision: true, reasoning: false, experimental: false, category: "OpenAI", pdf: true, fast: true, web: false, imageGeneration: false },
-    { value: "t3-o1", label: "o1", icon: OpenAIIcon, iconClass: "text-current", description: "Advanced reasoning model", color: "blue", vision: false, reasoning: true, experimental: false, category: "OpenAI", pdf: false, fast: false, web: false, imageGeneration: false },
-    { value: "t3-o1-mini", label: "o1 mini", icon: OpenAIIcon, iconClass: "text-current", description: "Compact reasoning model", color: "blue", vision: false, reasoning: true, experimental: false, category: "OpenAI", pdf: false, fast: true, web: false, imageGeneration: false },
-    { value: "t3-gpt-4-turbo", label: "GPT 4 Turbo", icon: OpenAIIcon, iconClass: "text-current", description: "High-performance GPT-4 variant", color: "blue", vision: true, reasoning: false, experimental: false, category: "OpenAI", pdf: true, fast: false, web: false, imageGeneration: false },
+    { value: "t3-4o-mini", label: "GPT 4o mini", icon: OpenAIIcon, iconClass: "text-current", description: "Fast and efficient OpenAI model", color: "blue", vision: true, reasoning: false, experimental: false, category: "OpenAI", pdf: true, fast: true, web: false, imageGeneration: false, extreme: true },
+    { value: "t3-o1", label: "o1", icon: OpenAIIcon, iconClass: "text-current", description: "Advanced reasoning model", color: "blue", vision: false, reasoning: true, experimental: false, category: "OpenAI", pdf: false, fast: false, web: false, imageGeneration: false, extreme: false },
+    { value: "t3-o1-mini", label: "o1 mini", icon: OpenAIIcon, iconClass: "text-current", description: "Compact reasoning model", color: "blue", vision: false, reasoning: true, experimental: false, category: "OpenAI", pdf: false, fast: true, web: false, imageGeneration: false, extreme: false },
+    { value: "t3-gpt-4-turbo", label: "GPT 4 Turbo", icon: OpenAIIcon, iconClass: "text-current", description: "High-performance GPT-4 variant", color: "blue", vision: true, reasoning: false, experimental: false, category: "OpenAI", pdf: true, fast: false, web: false, imageGeneration: false, extreme: true },
 
 
     // ===== ANTHROPIC MODELS =====
-    { value: "t3-claude-4-sonnet", label: "Claude 4 Sonnet", icon: AnthropicIcon, iconClass: "text-current", description: "Latest Claude 4 Sonnet model", color: "violet", vision: true, reasoning: true, experimental: false, category: "Anthropic", pdf: true, fast: false, web: false, imageGeneration: false },
-    { value: "t3-claude-4-opus", label: "Claude 4 Opus", icon: AnthropicIcon, iconClass: "text-current", description: "Most powerful Claude 4 model", color: "violet", vision: true, reasoning: true, experimental: false, category: "Anthropic", pdf: true, fast: false, web: false, imageGeneration: false },
-    { value: "t3-claude-3-5-sonnet", label: "Claude 3.5 Sonnet", icon: AnthropicIcon, iconClass: "text-current", description: "Previous generation Sonnet", color: "violet", vision: true, reasoning: false, experimental: false, category: "Anthropic", pdf: true, fast: false, web: false, imageGeneration: false },
-    { value: "t3-claude-3-5-haiku", label: "Claude 3.5 Haiku", icon: AnthropicIcon, iconClass: "text-current", description: "Fast and lightweight Claude", color: "violet", vision: true, reasoning: false, experimental: false, category: "Anthropic", pdf: true, fast: true, web: false, imageGeneration: false },
-    { value: "t3-claude-3-opus", label: "Claude 3 Opus", icon: AnthropicIcon, iconClass: "text-current", description: "Legacy powerful Claude model", color: "violet", vision: true, reasoning: false, experimental: false, category: "Anthropic", pdf: true, fast: false, web: false, imageGeneration: false },
+    { value: "t3-claude-4-sonnet", label: "Claude 4 Sonnet", icon: AnthropicIcon, iconClass: "text-current", description: "Latest Claude 4 Sonnet model", color: "violet", vision: true, reasoning: true, experimental: false, category: "Anthropic", pdf: true, fast: false, web: false, imageGeneration: false, extreme: true },
+    { value: "t3-claude-4-opus", label: "Claude 4 Opus", icon: AnthropicIcon, iconClass: "text-current", description: "Most powerful Claude 4 model", color: "violet", vision: true, reasoning: true, experimental: false, category: "Anthropic", pdf: true, fast: false, web: false, imageGeneration: false, extreme: true },
+    { value: "t3-claude-3-5-sonnet", label: "Claude 3.5 Sonnet", icon: AnthropicIcon, iconClass: "text-current", description: "Previous generation Sonnet", color: "violet", vision: true, reasoning: false, experimental: false, category: "Anthropic", pdf: true, fast: false, web: false, imageGeneration: false, extreme: true },
+    { value: "t3-claude-3-5-haiku", label: "Claude 3.5 Haiku", icon: AnthropicIcon, iconClass: "text-current", description: "Fast and lightweight Claude", color: "violet", vision: true, reasoning: false, experimental: false, category: "Anthropic", pdf: true, fast: true, web: false, imageGeneration: false, extreme: true },
+    { value: "t3-claude-3-opus", label: "Claude 3 Opus", icon: AnthropicIcon, iconClass: "text-current", description: "Legacy powerful Claude model", color: "violet", vision: true, reasoning: false, experimental: false, category: "Anthropic", pdf: true, fast: false, web: false, imageGeneration: false, extreme: true },
 
     // ===== GOOGLE MODELS =====
-    { value: "t3-gemini-2-5-flash", label: "Gemini 2.5 Flash", icon: GeminiIcon, iconClass: "text-current", description: "Latest Gemini model with optimized streaming", color: "gemini", vision: true, reasoning: false, experimental: false, category: "Google", pdf: true, fast: true, web: true, imageGeneration: false },
-    { value: "t3-gemini-1-5-flash", label: "Gemini 1.5 Flash", icon: GeminiIcon, iconClass: "text-current", description: "Fast Gemini model", color: "gemini", vision: true, reasoning: false, experimental: false, category: "Google", pdf: true, fast: true, web: false, imageGeneration: false },
-    { value: "t3-gemini-1-5-pro", label: "Gemini 1.5 Pro", icon: GeminiIcon, iconClass: "text-current", description: "Professional Gemini model", color: "gemini", vision: true, reasoning: false, experimental: false, category: "Google", pdf: true, fast: false, web: false, imageGeneration: false },
+    { value: "t3-gemini-2-5-flash", label: "Gemini 2.5 Flash", icon: GeminiIcon, iconClass: "text-current", description: "Latest Gemini model with optimized streaming", color: "gemini", vision: true, reasoning: false, experimental: false, category: "Google", pdf: true, fast: true, web: true, imageGeneration: false, extreme: true },
+    { value: "t3-gemini-1-5-flash", label: "Gemini 1.5 Flash", icon: GeminiIcon, iconClass: "text-current", description: "Fast Gemini model", color: "gemini", vision: true, reasoning: false, experimental: false, category: "Google", pdf: true, fast: true, web: true, imageGeneration: false, extreme: true },
+    { value: "t3-gemini-1-5-pro", label: "Gemini 1.5 Pro", icon: GeminiIcon, iconClass: "text-current", description: "Professional Gemini model", color: "gemini", vision: true, reasoning: false, experimental: false, category: "Google", pdf: true, fast: false, web: true, imageGeneration: false, extreme: true },
 
 
 
     // ===== SPECIALIZED MODELS =====
-    { value: "t3-reasoning-best", label: "Best Reasoning", icon: BrainCapabilityIcon, iconClass: "text-current", description: "Best hybrid reasoning model", color: "purple", vision: true, reasoning: true, experimental: false, category: "Specialized", pdf: true, fast: false, web: false, imageGeneration: false },
-    { value: "t3-vision-best", label: "Best Vision", icon: EyeCapabilityIcon, iconClass: "text-current", description: "Best vision understanding", color: "indigo", vision: true, reasoning: false, experimental: false, category: "Specialized", pdf: true, fast: false, web: false, imageGeneration: false },
-    { value: "t3-code-best", label: "Best Coding", icon: OpenAIIcon, iconClass: "text-current", description: "Best for coding tasks", color: "green", vision: true, reasoning: true, experimental: false, category: "Specialized", pdf: true, fast: false, web: false, imageGeneration: false },
-    { value: "t3-multimodal-best", label: "Best Multimodal", icon: AnthropicIcon, iconClass: "text-current", description: "Best multimodal capabilities", color: "violet", vision: true, reasoning: true, experimental: false, category: "Specialized", pdf: true, fast: false, web: true, imageGeneration: false },
+    { value: "t3-reasoning-best", label: "Best Reasoning", icon: BrainCapabilityIcon, iconClass: "text-current", description: "Best hybrid reasoning model", color: "purple", vision: true, reasoning: true, experimental: false, category: "Specialized", pdf: true, fast: false, web: false, imageGeneration: false, extreme: true },
+    { value: "t3-vision-best", label: "Best Vision", icon: EyeCapabilityIcon, iconClass: "text-current", description: "Best vision understanding", color: "indigo", vision: true, reasoning: false, experimental: false, category: "Specialized", pdf: true, fast: false, web: false, imageGeneration: false, extreme: true },
+    { value: "t3-code-best", label: "Best Coding", icon: OpenAIIcon, iconClass: "text-current", description: "Best for coding tasks", color: "green", vision: true, reasoning: true, experimental: false, category: "Specialized", pdf: true, fast: false, web: false, imageGeneration: false, extreme: true },
+    { value: "t3-multimodal-best", label: "Best Multimodal", icon: AnthropicIcon, iconClass: "text-current", description: "Best multimodal capabilities", color: "violet", vision: true, reasoning: true, experimental: false, category: "Specialized", pdf: true, fast: false, web: true, imageGeneration: false, extreme: true },
     
     // ===== FAST MODELS =====
-    { value: "t3-fast", label: "Fast (GPT-4o mini)", icon: ZapIcon, iconClass: "text-current", description: "Quick responses", color: "yellow", vision: true, reasoning: false, experimental: false, category: "Fast", pdf: true, fast: true, web: false, imageGeneration: false },
-    { value: "t3-fast-haiku", label: "Fast (Claude Haiku)", icon: ZapIcon, iconClass: "text-current", description: "Lightning fast Claude", color: "yellow", vision: true, reasoning: false, experimental: false, category: "Fast", pdf: true, fast: true, web: false, imageGeneration: false },
-    { value: "t3-fast-flash", label: "Fast (Gemini Flash)", icon: ZapIcon, iconClass: "text-current", description: "Super fast Gemini", color: "yellow", vision: true, reasoning: false, experimental: false, category: "Fast", pdf: true, fast: true, web: false, imageGeneration: false },
+    { value: "t3-fast", label: "Fast (GPT-4o mini)", icon: ZapIcon, iconClass: "text-current", description: "Quick responses", color: "yellow", vision: true, reasoning: false, experimental: false, category: "Fast", pdf: true, fast: true, web: false, imageGeneration: false, extreme: true },
+    { value: "t3-fast-haiku", label: "Fast (Claude Haiku)", icon: ZapIcon, iconClass: "text-current", description: "Lightning fast Claude", color: "yellow", vision: true, reasoning: false, experimental: false, category: "Fast", pdf: true, fast: true, web: false, imageGeneration: false, extreme: true },
+    { value: "t3-fast-flash", label: "Fast (Gemini Flash)", icon: ZapIcon, iconClass: "text-current", description: "Super fast Gemini", color: "yellow", vision: true, reasoning: false, experimental: false, category: "Fast", pdf: true, fast: true, web: true, imageGeneration: false, extreme: true },
 
     // ===== IMAGE GENERATION =====
-    { value: "t3-dall-e-3", label: "DALL-E 3", icon: ImagePlusIcon, iconClass: "text-current", description: "High quality image generation", color: "pink", vision: false, reasoning: false, experimental: false, category: "Image Generation", pdf: false, fast: false, web: false, imageGeneration: true },
-    { value: "t3-dall-e-2", label: "DALL-E 2", icon: ImagePlusIcon, iconClass: "text-current", description: "Standard image generation", color: "pink", vision: false, reasoning: false, experimental: false, category: "Image Generation", pdf: false, fast: true, web: false, imageGeneration: true },
+    { value: "t3-dall-e-3", label: "DALL-E 3", icon: ImagePlusIcon, iconClass: "text-current", description: "High quality image generation", color: "pink", vision: false, reasoning: false, experimental: false, category: "Image Generation", pdf: false, fast: false, web: false, imageGeneration: true, extreme: false },
+    { value: "t3-dall-e-2", label: "DALL-E 2", icon: ImagePlusIcon, iconClass: "text-current", description: "Standard image generation", color: "pink", vision: false, reasoning: false, experimental: false, category: "Image Generation", pdf: false, fast: true, web: false, imageGeneration: true, extreme: false },
 ];
 
 const getColorClasses = (color: string, isSelected: boolean = false) => {
@@ -352,6 +364,8 @@ const ModelSwitcher: React.FC<ModelSwitcherProps & {
                         return model.reasoning === true;
                     case 'imageGeneration':
                         return model.imageGeneration === true;
+                    case 'extreme':
+                        return model.extreme === true;
                     default:
                         return false;
                 }
@@ -549,7 +563,7 @@ const ModelSwitcher: React.FC<ModelSwitcherProps & {
             </DropdownMenuTrigger>
             <DropdownMenuContent
                 className={cn(
-                    "p-0 rounded-xl shadow-xl overflow-hidden",
+                    "p-0 rounded-xl shadow-xl overflow-hidden bg-popover border-border text-popover-foreground",
                     showAllModels 
                         ? showFilters 
                             ? "w-[800px] max-h-[85vh]" 
@@ -561,16 +575,13 @@ const ModelSwitcher: React.FC<ModelSwitcherProps & {
                 align="start"
                 style={{
                     transform: 'translateY(-100%) translateY(-40px)',
-                    marginTop: '0px',
-                    backgroundColor: 'rgb(15, 10, 14)',
-                    borderColor: 'rgb(35, 30, 34)',
-                    color: '#ffffff'
+                    marginTop: '0px'
                 }}
             >
                 {/* Search Bar */}
-                <div className="sticky top-0 rounded-t-lg px-3.5 pt-2 pb-1" style={{ backgroundColor: 'rgb(15, 10, 14)' }}>
+                <div className="sticky top-0 rounded-t-lg px-3.5 pt-2 pb-1 bg-popover">
                     <div className="flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-search ml-px mr-3 !size-4" style={{ color: 'rgba(255, 255, 255, 0.75)' }}>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-search ml-px mr-3 !size-4 text-muted-foreground">
                             <circle cx="11" cy="11" r="8"></circle>
                             <path d="m21 21-4.3-4.3"></path>
                         </svg>
@@ -578,8 +589,7 @@ const ModelSwitcher: React.FC<ModelSwitcherProps & {
                             role="searchbox" 
                             aria-label="Search models" 
                             placeholder="Search models..." 
-                            className="w-full bg-transparent py-2 text-sm placeholder:select-none focus:outline-none" 
-                            style={{ color: '#ffffff', '--placeholder-color': 'rgba(255, 255, 255, 0.5)' } as React.CSSProperties}
+                            className="w-full bg-transparent py-2 text-sm placeholder:select-none focus:outline-none text-popover-foreground placeholder:text-muted-foreground" 
                             value={searchQuery}
                             onChange={(e) => {
                                 setSearchQuery(e.target.value);
@@ -587,7 +597,7 @@ const ModelSwitcher: React.FC<ModelSwitcherProps & {
                         />
                         {/* Model count indicator */}
                         {(activeFilters.size > 0 || searchQuery.trim() !== '') && (
-                            <div className="ml-2 px-2 py-1 rounded-md bg-white/10 text-xs text-white/70">
+                            <div className="ml-2 px-2 py-1 rounded-md bg-secondary text-xs text-secondary-foreground">
                                 {capabilityFilteredModels.length} model{capabilityFilteredModels.length !== 1 ? 's' : ''}
                             </div>
                         )}
@@ -630,8 +640,8 @@ const ModelSwitcher: React.FC<ModelSwitcherProps & {
                                     className={cn(
                                         "inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 hover:scale-105 border",
                                         activeFilters.has(key) 
-                                            ? "text-white shadow-lg" 
-                                            : "text-white/80 hover:text-white bg-white/5 border-white/20 hover:border-white/30"
+                                            ? "text-primary-foreground shadow-lg" 
+                                            : "text-muted-foreground hover:text-foreground bg-secondary/50 border-border hover:border-border/60"
                                     )}
                                     style={{
                                         backgroundColor: activeFilters.has(key) 
@@ -672,7 +682,7 @@ const ModelSwitcher: React.FC<ModelSwitcherProps & {
                                         e.stopPropagation();
                                         setSelectedFilters(new Set());
                                     }}
-                                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 hover:scale-105 border text-white/60 hover:text-white/80 bg-white/5 border-white/20 hover:border-white/30"
+                                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 hover:scale-105 border text-muted-foreground hover:text-foreground bg-secondary/50 border-border hover:border-border/60"
                                 >
                                     <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                         <path d="M18 6L6 18M6 6l12 12" />
@@ -683,7 +693,7 @@ const ModelSwitcher: React.FC<ModelSwitcherProps & {
                         </motion.div>
                     )}
                     
-                    <div style={{ borderBottom: '1px solid rgb(35, 30, 34)' }}></div>
+                    <div className="border-b border-border"></div>
                 </div>
                 
                                 <div className={cn(
@@ -731,7 +741,7 @@ const ModelSwitcher: React.FC<ModelSwitcherProps & {
                                             transition={{ duration: 0.3, delay: 0.2 + categoryIndex * 0.1 }}
                                         >
                                             <div className="px-2 mb-3">
-                                                <h3 className="text-sm font-medium" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>{category}</h3>
+                                                <h3 className="text-sm font-medium text-foreground">{category}</h3>
                                             </div>
                                             <div className="grid grid-cols-3 gap-2">
                                 {categoryModels.map((model, modelIndex) => (
@@ -749,22 +759,12 @@ const ModelSwitcher: React.FC<ModelSwitcherProps & {
                                                                 }
                                                                 setIsOpen(false);
                                                             }}
-                                                            className="flex flex-col items-center p-3 rounded-lg cursor-pointer transition-all duration-200 hover:scale-105"
-                                                            style={{
-                                                                backgroundColor: selectedModel === model.value ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
-                                                                border: selectedModel === model.value ? '1px solid rgb(35, 30, 34)' : 'none',
-                                                                color: '#ffffff'
-                                                            }}
-                                                            onMouseEnter={(e) => {
-                                                                if (selectedModel !== model.value) {
-                                                                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.05)';
-                                                                }
-                                                            }}
-                                                            onMouseLeave={(e) => {
-                                                                if (selectedModel !== model.value) {
-                                                                    e.currentTarget.style.backgroundColor = 'transparent';
-                                                                }
-                                                            }}
+                                                            className={cn(
+                                                                "flex flex-col items-center p-3 rounded-lg cursor-pointer transition-all duration-200 hover:scale-105",
+                                                                selectedModel === model.value 
+                                                                    ? "bg-accent text-accent-foreground border border-border" 
+                                                                    : "hover:bg-accent/50 text-popover-foreground"
+                                                            )}
                                                         >
                                                             <div className="flex items-center justify-center w-8 h-8 mb-2">
                                                                 {typeof model.icon === 'string' ? (
@@ -834,7 +834,7 @@ const ModelSwitcher: React.FC<ModelSwitcherProps & {
                                             <svg className="w-4 h-4 text-orange-400" fill="currentColor" viewBox="0 0 20 20">
                                                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                                             </svg>
-                                            <h3 className="text-sm font-medium" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>Favorites</h3>
+                                            <h3 className="text-sm font-medium text-foreground">Favorites</h3>
                                         </div>
                                         <div className="space-y-1">
                                             {groupedModels.Stable.slice(0, 3).map((model, modelIndex) => (
@@ -852,22 +852,12 @@ const ModelSwitcher: React.FC<ModelSwitcherProps & {
                                                             }
                                                             setIsOpen(false);
                                                         }}
-                                                        className="flex items-center justify-between p-3 rounded-lg cursor-pointer transition-all duration-200"
-                                                        style={{
-                                                            backgroundColor: selectedModel === model.value ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
-                                                            border: selectedModel === model.value ? '1px solid rgb(35, 30, 34)' : 'none',
-                                                            color: '#ffffff'
-                                                        }}
-                                                        onMouseEnter={(e) => {
-                                                            if (selectedModel !== model.value) {
-                                                                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.05)';
-                                                            }
-                                                        }}
-                                                        onMouseLeave={(e) => {
-                                                            if (selectedModel !== model.value) {
-                                                                e.currentTarget.style.backgroundColor = 'transparent';
-                                                            }
-                                                        }}
+                                                        className={cn(
+                                                            "flex items-center justify-between p-3 rounded-lg cursor-pointer transition-all duration-200",
+                                                            selectedModel === model.value 
+                                                                ? "bg-accent text-accent-foreground border border-border" 
+                                                                : "hover:bg-accent/50 text-popover-foreground"
+                                                        )}
                                                     >
                                                         <div className="flex items-center gap-3">
                                                             <div className="flex items-center justify-center w-6 h-6">
@@ -987,22 +977,12 @@ const ModelSwitcher: React.FC<ModelSwitcherProps & {
                                                                 }
                                                                 setIsOpen(false);
                                                             }}
-                                                            className="flex items-center justify-between p-3 rounded-lg cursor-pointer transition-all duration-200"
-                                                            style={{
-                                                                backgroundColor: selectedModel === model.value ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
-                                                                border: selectedModel === model.value ? '1px solid rgb(35, 30, 34)' : 'none',
-                                                                color: '#ffffff'
-                                                            }}
-                                                            onMouseEnter={(e) => {
-                                                                if (selectedModel !== model.value) {
-                                                                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.05)';
-                                                                }
-                                                            }}
-                                                            onMouseLeave={(e) => {
-                                                                if (selectedModel !== model.value) {
-                                                                    e.currentTarget.style.backgroundColor = 'transparent';
-                                                                }
-                                                            }}
+                                                            className={cn(
+                                                                "flex items-center justify-between p-3 rounded-lg cursor-pointer transition-all duration-200",
+                                                                selectedModel === model.value 
+                                                                    ? "bg-accent text-accent-foreground border border-border" 
+                                                                    : "hover:bg-accent/50 text-popover-foreground"
+                                                            )}
                                                         >
                                                             <div className="flex items-center gap-3">
                                                                 <div className="flex items-center justify-center w-6 h-6">
@@ -1115,22 +1095,12 @@ const ModelSwitcher: React.FC<ModelSwitcherProps & {
                                                             }
                                                             setIsOpen(false);
                                                         }}
-                                                        className="flex items-center justify-between p-3 rounded-lg cursor-pointer transition-all duration-200"
-                                                        style={{
-                                                            backgroundColor: selectedModel === model.value ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
-                                                            border: selectedModel === model.value ? '1px solid rgb(35, 30, 34)' : 'none',
-                                                            color: '#ffffff'
-                                                        }}
-                                                        onMouseEnter={(e) => {
-                                                            if (selectedModel !== model.value) {
-                                                                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.05)';
-                                                            }
-                                                        }}
-                                                        onMouseLeave={(e) => {
-                                                            if (selectedModel !== model.value) {
-                                                                e.currentTarget.style.backgroundColor = 'transparent';
-                                                            }
-                                                        }}
+                                                        className={cn(
+                                                            "flex items-center justify-between p-3 rounded-lg cursor-pointer transition-all duration-200",
+                                                            selectedModel === model.value 
+                                                                ? "bg-accent text-accent-foreground border border-border" 
+                                                                : "hover:bg-accent/50 text-popover-foreground"
+                                                        )}
                                                     >
                                                         <div className="flex items-center gap-3">
                                                             <div className="flex items-center justify-center w-6 h-6">
@@ -1228,8 +1198,8 @@ const ModelSwitcher: React.FC<ModelSwitcherProps & {
                 
                 {/* Bottom Controls */}
                 {!showAllModels && (
-                    <div className="relative flex items-center justify-between rounded-b-lg pb-1 pl-1 pr-2.5 pt-1.5 mx-4" style={{ backgroundColor: 'rgb(15, 10, 14)' }}>
-                        <div className="absolute inset-x-3 top-0" style={{ borderBottom: '1px solid rgb(35, 30, 34)' }}></div>
+                    <div className="relative flex items-center justify-between rounded-b-lg pb-1 pl-1 pr-2.5 pt-1.5 mx-4 bg-popover">
+                        <div className="absolute inset-x-3 top-0 border-b border-border"></div>
                         {capabilityFilteredModels.length > 8 && (
                         <button 
                                 onClick={(e) => {
@@ -1272,8 +1242,8 @@ const ModelSwitcher: React.FC<ModelSwitcherProps & {
 
                 {/* Show All Models Toggle */}
                 {showAllModels && (
-                    <div className="relative flex items-center justify-between rounded-b-lg pb-1 pl-1 pr-2.5 pt-1.5 mx-4" style={{ backgroundColor: 'rgb(15, 10, 14)' }}>
-                        <div className="absolute inset-x-3 top-0" style={{ borderBottom: '1px solid rgb(35, 30, 34)' }}></div>
+                    <div className="relative flex items-center justify-between rounded-b-lg pb-1 pl-1 pr-2.5 pt-1.5 mx-4 bg-popover">
+                        <div className="absolute inset-x-3 top-0 border-b border-border"></div>
                         <button
                             onClick={(e) => {
                                 e.preventDefault();
@@ -1969,6 +1939,54 @@ const FormComponent: React.FC<FormComponentProps> = ({
         }
     };
 
+    // Get models that support web search
+    const webSupportedModels = models.filter(model => model.web === true);
+    const currentModelSupportsWeb = models.find(model => model.value === selectedModel)?.web === true;
+    
+    // Get models that support extreme mode
+    const extremeSupportedModels = models.filter(model => model.extreme === true);
+    const currentModelSupportsExtreme = models.find(model => model.value === selectedModel)?.extreme === true;
+
+    const handleWebSearchToggle = useCallback((e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Check if current model supports web search
+        if (!currentModelSupportsWeb) {
+            // Show toast suggesting web-compatible models
+            const webModelSuggestions = webSupportedModels.slice(0, 3).map(m => m.label).join(', ');
+            showSwitchNotification(
+                'Web Search Unavailable',
+                `Switch to a web-compatible model like ${webModelSuggestions}`,
+                <Globe className="size-4" />,
+                'web',
+                'group'
+            );
+            return;
+        }
+
+        // Toggle web search mode
+        if (selectedGroup === 'web') {
+            setSelectedGroup(null);
+            showSwitchNotification(
+                'Chat Mode',
+                'No group selected - default chat mode',
+                <MessageCircle className="size-4" />,
+                'default',
+                'group'
+            );
+        } else {
+            setSelectedGroup('web');
+            showSwitchNotification(
+                'Web Search',
+                'Web search mode is now active',
+                <Globe className="size-4" />,
+                'web',
+                'group'
+            );
+        }
+    }, [selectedGroup, setSelectedGroup, currentModelSupportsWeb, webSupportedModels, showSwitchNotification]);
+
     return (
         <div className={cn("flex flex-col w-full")} suppressHydrationWarning>
             <TooltipProvider>
@@ -2075,8 +2093,8 @@ const FormComponent: React.FC<FormComponentProps> = ({
                         {/* Toolbar */}
                             <div
                                 className={cn(
-                                "flex justify-between items-center pt-3 mt-2 pb-3",
-                                    isProcessing ? "opacity-20! cursor-not-allowed!" : ""
+                                "flex justify-between items-center pt-3 mt-2 pb-3"
+                                // Remove opacity and cursor styles that prevent interaction
                                 )}
                             suppressHydrationWarning
                         >
@@ -2233,93 +2251,59 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                             <Tooltip delayDuration={300}>
                                                 <TooltipTrigger asChild>
                                                     <button
-                                                        onClick={(e) => {
-                                                            e.preventDefault();
-                                                            e.stopPropagation();
-                                                         if (selectedGroup === 'web') {
-                                                             setSelectedGroup(null);
-                                                             showSwitchNotification(
-                                                                 'Chat Mode',
-                                                                 'No group selected - default chat mode',
-                                                                 <MessageCircle className="size-4" />,
-                                                                 'default',
-                                                                 'group'
-                                                             );
-                                                         } else {
-                                                             setSelectedGroup('web');
-                                                             showSwitchNotification(
-                                                                 'Web Search',
-                                                                 'Web search mode is now active',
-                                                                 <Globe className="size-4" />,
-                                                                 'web',
-                                                                 'group'
-                                                             );
-                                                         }
-                                                     }}
-                                                     className={cn(
-                                                         "flex items-center gap-1.5 h-8 transition-all duration-300",
-                                                         "rounded-full border border-secondary-foreground/10",
-                                                         "hover:shadow-md",
-                                                         selectedGroup === 'web'
-                                                             ? "bg-blue-500 dark:bg-blue-500 text-white px-2"
-                                                             : "bg-background text-muted-foreground hover:bg-muted/40 hover:text-foreground px-1.5 w-8",
-                                                     )}
-                                                     suppressHydrationWarning
-                                                 >
-                                                     <Globe className="h-3.5 w-3.5 mx-auto" />
-                                                     {selectedGroup === 'web' && <span className="text-xs font-medium">Web Search</span>}
-                                                 </button>
-                                             </TooltipTrigger>
-                                             <TooltipContent
-                                                 side="bottom"
-                                                 sideOffset={6}
-                                                 className="border-0 shadow-lg backdrop-blur-xs py-2 px-3"
-                                             >
-                                                 <div className="flex flex-col gap-0.5">
-                                                     <span className="font-medium text-[11px]">Web Search</span>
-                                                     <span className="text-[10px] text-white leading-tight">Search the web for information</span>
-                                                 </div>
-                                             </TooltipContent>
-                                         </Tooltip>
-                                     ) : (
-                                         <button
-                                             onClick={(e) => {
-                                                 e.preventDefault();
-                                                 e.stopPropagation();
-                                                 if (selectedGroup === 'web') {
-                                                     setSelectedGroup(null);
-                                                     showSwitchNotification(
-                                                         'Chat Mode',
-                                                         'No group selected - default chat mode',
-                                                         <MessageCircle className="size-4" />,
-                                                         'default',
-                                                         'group'
-                                                     );
-                                                 } else {
-                                                     setSelectedGroup('web');
-                                                     showSwitchNotification(
-                                                         'Web Search',
-                                                         'Web search mode is now active',
-                                                         <Globe className="size-4" />,
-                                                         'web',
-                                                         'group'
-                                                     );
-                                                 }
-                                             }}
-                                             className={cn(
-                                                 "flex items-center gap-1.5 h-8 transition-all duration-300",
-                                                 "rounded-full border border-secondary-foreground/10",
-                                                 "hover:shadow-md",
-                                                 selectedGroup === 'web'
-                                                     ? "bg-blue-500 dark:bg-blue-500 text-white px-2"
-                                                     : "bg-background text-muted-foreground hover:bg-muted/40 hover:text-foreground px-1.5 w-8",
-                                             )}
-                                             suppressHydrationWarning
-                                         >
-                                             <Globe className="h-3.5 w-3.5 mx-auto" />
-                                             {selectedGroup === 'web' && <span className="text-xs font-medium">Web Search</span>}
-                                         </button>
-                                     )}
+                                                        onClick={handleWebSearchToggle}
+                                                        className={cn(
+                                                            "flex items-center gap-1.5 h-8 transition-all duration-300",
+                                                            "rounded-full border border-secondary-foreground/10",
+                                                            "hover:shadow-md",
+                                                            selectedGroup === 'web' && currentModelSupportsWeb
+                                                                ? "bg-blue-500 dark:bg-blue-500 text-white px-2"
+                                                                : currentModelSupportsWeb
+                                                                    ? "bg-background text-muted-foreground hover:bg-muted/40 hover:text-foreground px-1.5 w-8"
+                                                                    : "bg-background text-muted-foreground/50 hover:bg-muted/20 px-1.5 w-8 cursor-not-allowed opacity-60",
+                                                        )}
+                                                        suppressHydrationWarning
+                                                    >
+                                                        <Globe className="h-3.5 w-3.5 mx-auto" />
+                                                        {selectedGroup === 'web' && currentModelSupportsWeb && <span className="text-xs font-medium">Web Search</span>}
+                                                    </button>
+                                                </TooltipTrigger>
+                                                <TooltipContent
+                                                    side="bottom"
+                                                    sideOffset={6}
+                                                    className="border-0 shadow-lg backdrop-blur-xs py-2 px-3"
+                                                >
+                                                    <div className="flex flex-col gap-0.5">
+                                                        <span className="font-medium text-[11px]">
+                                                            {currentModelSupportsWeb ? "Web Search" : "Web Search Unavailable"}
+                                                        </span>
+                                                        <span className="text-[10px] text-white leading-tight">
+                                                            {currentModelSupportsWeb 
+                                                                ? "Search the web for information" 
+                                                                : "Switch to a web-compatible model"}
+                                                        </span>
+                                                    </div>
+                                                </TooltipContent>
+                                            </Tooltip>
+                                        ) : (
+                                            <button
+                                                onClick={handleWebSearchToggle}
+                                                className={cn(
+                                                    "flex items-center gap-1.5 h-8 transition-all duration-300",
+                                                    "rounded-full border border-secondary-foreground/10",
+                                                    "hover:shadow-md",
+                                                    selectedGroup === 'web' && currentModelSupportsWeb
+                                                        ? "bg-blue-500 dark:bg-blue-500 text-white px-2"
+                                                        : currentModelSupportsWeb
+                                                            ? "bg-background text-muted-foreground hover:bg-muted/40 hover:text-foreground px-1.5 w-8"
+                                                            : "bg-background text-muted-foreground/50 hover:bg-muted/20 px-1.5 w-8 cursor-not-allowed opacity-60",
+                                                )}
+                                                suppressHydrationWarning
+                                            >
+                                                <Globe className="h-3.5 w-3.5 mx-auto" />
+                                                {selectedGroup === 'web' && currentModelSupportsWeb && <span className="text-xs font-medium">Web Search</span>}
+                                            </button>
+                                        )}
 
                                      {/* Extreme Mode Button */}
                                      {!isMobile ? (
@@ -2329,6 +2313,19 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                                      onClick={(e) => {
                                                          e.preventDefault();
                                                          e.stopPropagation();
+                                                         
+                                                         // Check if current model supports extreme mode
+                                                         if (!currentModelSupportsExtreme) {
+                                                             showSwitchNotification(
+                                                                 'Model Not Compatible',
+                                                                 `Switch to a compatible model for Extreme Mode. Try ${extremeSupportedModels[0]?.label || 'GPT 4o'}`,
+                                                                 <Telescope className="size-4" />,
+                                                                 'purple',
+                                                                 'model'
+                                                             );
+                                                             return;
+                                                         }
+                                                         
                                                          if (selectedGroup === 'extreme') {
                                                              setSelectedGroup(null);
                                                              showSwitchNotification(
@@ -2353,14 +2350,16 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                                          "flex items-center gap-1.5 h-8 transition-all duration-300",
                                                          "rounded-full border border-secondary-foreground/10",
                                                          "hover:shadow-md",
-                                                         selectedGroup === 'extreme'
+                                                         selectedGroup === 'extreme' && currentModelSupportsExtreme
                                                              ? "bg-purple-500 dark:bg-purple-500 text-white px-2"
-                                                             : "bg-background text-muted-foreground hover:bg-muted/40 hover:text-foreground px-1.5 w-8",
+                                                             : currentModelSupportsExtreme
+                                                                 ? "bg-background text-muted-foreground hover:bg-muted/40 hover:text-foreground px-1.5 w-8"
+                                                                 : "bg-background text-muted-foreground/50 hover:bg-muted/20 px-1.5 w-8 cursor-not-allowed opacity-60",
                                                      )}
                                                      suppressHydrationWarning
                                                  >
                                                      <Telescope className="h-3.5 w-3.5 mx-auto" />
-                                                     {selectedGroup === 'extreme' && <span className="text-xs font-medium">Extreme Mode</span>}
+                                                     {selectedGroup === 'extreme' && currentModelSupportsExtreme && <span className="text-xs font-medium">Extreme Mode</span>}
                                                  </button>
                                              </TooltipTrigger>
                                              <TooltipContent
@@ -2370,7 +2369,9 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                              >
                                                  <div className="flex flex-col gap-0.5">
                                                      <span className="font-medium text-[11px]">Extreme Mode</span>
-                                                     <span className="text-[10px] text-white leading-tight">Deep research mode</span>
+                                                     <span className="text-[10px] text-white leading-tight">
+                                                         {currentModelSupportsExtreme ? 'Deep research mode' : 'Not available for current model'}
+                                                     </span>
                                                  </div>
                                              </TooltipContent>
                                          </Tooltip>
@@ -2479,7 +2480,7 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                             <Tooltip delayDuration={300}>
                                                 <TooltipTrigger asChild>
                                                     <Button
-                                                        className="rounded-full p-1.5 h-8 w-8"
+                                                        className="rounded-full p-1.5 h-8 w-8 pointer-events-auto" // Force pointer events to work
                                                         onClick={(event) => {
                                                             event.preventDefault();
                                                             event.stopPropagation();
@@ -2501,7 +2502,7 @@ const FormComponent: React.FC<FormComponentProps> = ({
                                             </Tooltip>
                                         ) : (
                                             <Button
-                                                className="rounded-full p-1.5 h-8 w-8"
+                                                className="rounded-full p-1.5 h-8 w-8 pointer-events-auto" // Force pointer events to work
                                                 onClick={(event) => {
                                                     event.preventDefault();
                                                     event.stopPropagation();

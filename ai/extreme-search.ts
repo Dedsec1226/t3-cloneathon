@@ -91,46 +91,58 @@ enum SearchCategory {
 const searchWeb = async (
     query: string,
     category?: SearchCategory
-) => {
-    // Enhance query based on category
-    const enhancedQuery = category ? `${query} ${category}` : query;
-    
-    const { results } = await exa.searchAndContents(enhancedQuery, {
-        numResults: 2, // Reduced to 2 for rate limit optimization
-        type: "auto", 
-        text: {
-            maxCharacters: 800, // Reduced content per result for faster processing
-            includeHtmlTags: false
-        },
-        livecrawl: "always",
-    });
-    return results.map((r) => ({
-        title: r.title,
-        url: r.url,
-        content: r.text || "",
-        publishedDate: r.publishedDate || "",
-        favicon: r.favicon || "",
-    })) as SearchResult[];
+): Promise<SearchResult[]> => {
+    try {
+        // Enhance query based on category
+        const enhancedQuery = category ? `${query} ${category}` : query;
+        
+        const { results } = await exa.searchAndContents(enhancedQuery, {
+            numResults: 2, // Reduced to 2 for rate limit optimization
+            type: "auto", 
+            text: {
+                maxCharacters: 800, // Reduced content per result for faster processing
+                includeHtmlTags: false
+            },
+            livecrawl: "always",
+        });
+        return results.map((r) => ({
+            title: r.title,
+            url: r.url,
+            content: r.text || "",
+            publishedDate: r.publishedDate || "",
+            favicon: r.favicon || "",
+        })) as SearchResult[];
+    } catch (error) {
+        console.error(`Search failed for query "${query}":`, error);
+        // Return empty results on search failure
+        return [];
+    }
 };
 
 const getContents = async (links: string[]) => {
-    const result = await exa.getContents(
-        links,
-        {
-                    text: {
-            maxCharacters: 1500,
-            includeHtmlTags: false
-        },
-            livecrawl: "always",
-        },
-    )
-    return result.results.map(r => ({
-        title: r.title,
-        url: r.url,
-        content: r.text,
-        publishedDate: r.publishedDate,
-        favicon: r.favicon,
-    }));
+    try {
+        const result = await exa.getContents(
+            links,
+            {
+                        text: {
+                maxCharacters: 1500,
+                includeHtmlTags: false
+            },
+                livecrawl: "always",
+            },
+        )
+        return result.results.map(r => ({
+            title: r.title,
+            url: r.url,
+            content: r.text,
+            publishedDate: r.publishedDate,
+            favicon: r.favicon,
+        }));
+    } catch (error) {
+        console.error(`Failed to get contents for links:`, error);
+        // Return empty results on failure
+        return [];
+    }
 }
 
 
@@ -153,18 +165,20 @@ const extremeSearch = async (
         status: { title: "Planning research" },
     });
 
-    // plan out the research
-    const { object: plan } = await generateObject({
-        model: t3.languageModel(selectedModel),
-        schema: z.object({
-            plan: z.array(
-                z.object({
-                    title: z.string().min(10).max(70).describe("A title for the research topic"),
-                    todos: z.array(z.string()).min(1).max(1).describe("Exactly 1 specific, focused search query for the given title"),
-                })
-            ).min(2).max(3),
-        }),
-        prompt: `
+    // plan out the research with fallback
+    let plan;
+    try {
+        const result = await generateObject({
+            model: t3.languageModel(selectedModel),
+            schema: z.object({
+                plan: z.array(
+                    z.object({
+                        title: z.string().min(10).max(70).describe("A title for the research topic"),
+                        todos: z.array(z.string()).min(1).max(1).describe("Exactly 1 specific, focused search query for the given title"),
+                    })
+                ).min(2).max(3),
+            }),
+            prompt: `
 Create a comprehensive research plan for: ${prompt}
 
 REQUIREMENTS:
@@ -182,7 +196,33 @@ SEARCH QUERY STYLE:
 - Include measurement units, specific terms, recent years
 - Vary between broad concepts and detailed specifics
 - Target different types of sources (academic, news, technical)`,
-    });
+        });
+        plan = result.object;
+    } catch (error) {
+        console.error("Failed to generate research plan with AI, using fallback:", error);
+        
+        // Fallback plan generation - create a basic plan based on the prompt
+        plan = {
+            plan: [
+                {
+                    title: `Core concepts and fundamentals of ${prompt}`,
+                    todos: [`${prompt} definition fundamentals basics`]
+                },
+                {
+                    title: `Current research and developments in ${prompt}`,
+                    todos: [`${prompt} latest research 2024 2025 developments`]
+                },
+                {
+                    title: `Applications and practical aspects of ${prompt}`,
+                    todos: [`${prompt} applications real world examples uses`]
+                }
+            ]
+        };
+        
+        dataStream.writeMessageAnnotation({
+            status: { title: "Using fallback research plan due to API connectivity issues" },
+        });
+    }
 
     console.log(plan.plan);
 
@@ -201,20 +241,22 @@ SEARCH QUERY STYLE:
     });
 
     let toolResults: any[] = [];
+    let text = "";
 
-    // Create the autonomous research agent with tools
-    const { text } = await generateText({
-        model: t3.languageModel(selectedModel),
-        maxSteps: Math.min(totalTodos, 4), // Limit to number of planned searches
-        system: `Execute ALL ${totalTodos} searches using webSearch tool:
+    // Create the autonomous research agent with tools - with fallback
+    try {
+        const result = await generateText({
+            model: t3.languageModel(selectedModel),
+            maxSteps: Math.min(totalTodos, 4), // Limit to number of planned searches
+            system: `Execute ALL ${totalTodos} searches using webSearch tool:
 
 ${plan.plan.map((item, idx) => `${idx + 1}. "${item.todos[0]}"`).join('\n')}
 
 CRITICAL: Complete all ${totalTodos} searches systematically. Use categories: research paper, news, company. STOP immediately after completing all ${totalTodos} searches - do not call additional tools.`,
-        prompt,
-        temperature: 0,
-        toolChoice: 'required', // Ensure searches are executed
-        tools: {
+            prompt,
+            temperature: 0,
+            toolChoice: 'required', // Ensure searches are executed
+            tools: {
             codeRunner: {
                 description: 'Run Python code in a sandbox',
                 parameters: z.object({
@@ -374,6 +416,41 @@ CRITICAL: Complete all ${totalTodos} searches systematically. Use categories: re
             }
         },
     });
+    text = result.text;
+    } catch (error) {
+        console.error("Failed to execute research agent, using direct search fallback:", error);
+        
+        dataStream.writeMessageAnnotation({
+            status: { title: "Using direct search fallback due to API connectivity issues" },
+        });
+        
+        // Fallback: Execute searches directly without AI agent
+        for (const item of plan.plan) {
+            for (const query of item.todos) {
+                try {
+                    dataStream.writeMessageAnnotation({
+                        status: { title: `Direct search for "${query}"` },
+                    });
+                    
+                    const results = await searchWeb(query);
+                    allSources.push(...results);
+                    
+                    dataStream.writeMessageAnnotation({
+                        type: "thinking",
+                        content: `✅ Found ${results.length} sources for "${query}"`
+                    });
+                } catch (searchError) {
+                    console.error(`Failed to search for "${query}":`, searchError);
+                    dataStream.writeMessageAnnotation({
+                        type: "thinking",
+                        content: `❌ Search failed for "${query}"`
+                    });
+                }
+            }
+        }
+        
+        text = "Research completed using direct search fallback due to connectivity issues.";
+    }
 
     dataStream.writeMessageAnnotation({
         status: { title: "Synthesizing research findings..." },
@@ -385,17 +462,31 @@ CRITICAL: Complete all ${totalTodos} searches systematically. Use categories: re
         content: `🧠 Analyzing ${allSources.length} sources and compiling comprehensive research report...`
     });
 
-    // Deduplicate sources
-    const uniqueSources = Array.from(
-        new Map(
-            allSources.map((s) => [s.url, s])
-        ).values()
-    );
+    // Get unique sources - enhanced deduplication to prevent duplicates
+    const uniqueSources = allSources.reduce((acc: SearchResult[], current) => {
+        // Check for duplicates by URL and title to prevent same content being added multiple times
+        const isDuplicate = acc.some(existing => 
+            existing.url === current.url || 
+            (existing.title === current.title && existing.title.length > 10)
+        );
+        if (!isDuplicate) {
+            acc.push(current);
+        }
+        return acc;
+    }, []);
 
-    // Create a comprehensive research synthesis
-    const { text: synthesizedReport } = await generateText({
-        model: t3.languageModel(selectedModel),
-        system: SYSTEM_PROMPT + `
+    console.log(`Total sources found: ${allSources.length}, Unique sources: ${uniqueSources.length}`);
+
+    // Enhanced synthesis to prevent code duplication
+    let synthesizedReport = "";
+    dataStream.writeMessageAnnotation({
+        status: { title: "Synthesizing comprehensive research report" },
+    });
+
+    try {
+        const result = await generateText({
+            model: t3.languageModel(selectedModel),
+            system: SYSTEM_PROMPT + `
 
 CRITICAL SYNTHESIS INSTRUCTIONS:
 - You are now in the SYNTHESIS PHASE of extreme research
@@ -406,11 +497,13 @@ CRITICAL SYNTHESIS INSTRUCTIONS:
 - Be thorough but concise - this is the final deliverable
 - Synthesize information across sources to identify patterns and insights
 - Present conflicting viewpoints if they exist
-- Include specific data, statistics, and examples from the sources`,
-        prompt: `Based on the research conducted for: "${prompt}"
+- Include specific data, statistics, and examples from the sources
+- AVOID REPEATING OR DUPLICATING CODE BLOCKS OR SIMILAR CONTENT
+- Focus on unique insights and comprehensive analysis rather than code repetition`,
+            prompt: `Based on the research conducted for: "${prompt}"
 
 SOURCES COLLECTED (${uniqueSources.length} total):
-${uniqueSources.map((source, i) => `
+${uniqueSources.slice(0, 10).map((source, i) => `
 ${i + 1}. **${source.title}**
    URL: ${source.url}
    Content: ${source.content.slice(0, 1000)}${source.content.length > 1000 ? '...' : ''}
@@ -429,9 +522,24 @@ Structure your response as a complete research report with:
 4. Sources and Evidence
 5. Conclusions and Implications
 
-Use proper markdown formatting and include inline citations.`,
-        temperature: 0.3,
-    });
+Use proper markdown formatting and include inline citations. Avoid duplicating content or code blocks.`,
+            temperature: 0.3,
+        });
+        synthesizedReport = result.text;
+    } catch (error) {
+        console.error("Synthesis failed, using source summary:", error);
+        
+        // Fallback synthesis
+        synthesizedReport = `# Research Summary: ${prompt}
+
+## Sources Found
+${uniqueSources.slice(0, 5).map((source, i) => `
+### ${i + 1}. [${source.title}](${source.url})
+${source.content.slice(0, 500)}...
+`).join('\n')}
+
+*Note: This is a simplified summary due to synthesis processing limitations.*`;
+    }
 
     dataStream.writeMessageAnnotation({
         status: { title: "Research synthesis completed" },

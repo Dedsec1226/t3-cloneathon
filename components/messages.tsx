@@ -38,6 +38,7 @@ interface MessagesProps {
   onVisibilityChange?: (visibility: 'public' | 'private') => void; // Add visibility change handler
   initialMessages?: UIMessage[]; // Add initial messages prop to detect existing chat
   isOwner?: boolean; // Add ownership prop
+  isStoppedByUser?: boolean;
 }
 
 // Create a consistent logo header component to reuse

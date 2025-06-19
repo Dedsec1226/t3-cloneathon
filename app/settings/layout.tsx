@@ -24,7 +24,7 @@ export default function SettingsLayout({
   const pathname = usePathname();
 
   return (
-    <div className="min-h-screen w-full" style={{ backgroundColor: 'rgb(26, 20, 25)' }}>
+    <div className="min-h-screen w-full bg-background">
       <div className="mx-auto flex max-w-[1200px] flex-col overflow-y-auto px-4 pb-24 pt-safe-offset-6 md:px-6 lg:px-8">
       {/* Header */}
       <header className="flex items-center justify-between py-12">
@@ -48,8 +48,7 @@ export default function SettingsLayout({
         <div className="hidden space-y-8 md:block md:w-1/4">
           <div className="relative text-center">
             <div 
-              className="mx-auto w-40 h-40 rounded-full transition-opacity duration-200 flex items-center justify-center text-white text-4xl font-semibold"
-              style={{ backgroundColor: '#21141E' }}
+              className="mx-auto w-40 h-40 rounded-full transition-opacity duration-200 flex items-center justify-center text-foreground text-4xl font-semibold bg-muted"
             >
               A
             </div>
@@ -83,7 +82,7 @@ export default function SettingsLayout({
           </div>
 
           {/* Message Usage Card */}
-          <div className="space-y-6 rounded-lg p-4" style={{ backgroundColor: 'rgb(15, 10, 14)' }}>
+          <div className="space-y-6 rounded-lg p-4 bg-card">
             <div className="flex flex-row justify-between sm:flex-col sm:justify-between lg:flex-row lg:items-center">
               <span className="text-sm font-semibold">Message Usage</span>
                           <div className="text-xs text-muted-foreground">
@@ -105,7 +104,7 @@ export default function SettingsLayout({
           </div>
 
           {/* Keyboard Shortcuts Card */}
-          <div className="space-y-6 rounded-lg p-4" style={{ backgroundColor: 'rgb(15, 10, 14)' }}>
+          <div className="space-y-6 rounded-lg p-4 bg-card">
             <span className="text-sm font-semibold">Keyboard Shortcuts</span>
             <div className="grid gap-4">
               <div className="flex items-center justify-between">
