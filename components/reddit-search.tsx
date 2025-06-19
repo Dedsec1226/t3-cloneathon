@@ -2,7 +2,7 @@
 /* eslint-disable @next/next/no-img-element */
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, Search, ThumbsUp, Check, ArrowUpRight } from 'lucide-react';
+import { Calendar, Search, ThumbsUp, Check, ArrowUpRight, MessageCircle } from 'lucide-react';
 import {
     Accordion,
     AccordionContent,
@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { RedditLogo } from '@phosphor-icons/react';
 
 type RedditResult = {
     url: string;
@@ -48,7 +47,7 @@ const SearchLoadingState = () => {
                         <div className="flex items-center justify-between w-full">
                             <div className="flex items-center gap-2">
                                 <div className="p-1.5 rounded-md bg-orange-50 dark:bg-orange-900/20">
-                                    <RedditLogo className="h-3.5 w-3.5 text-orange-500" />
+                                    <MessageCircle className="h-3.5 w-3.5 text-orange-500" />
                                 </div>
                                 <h2 className="font-medium text-left text-sm">Reddit Results</h2>
                             </div>
@@ -87,7 +86,7 @@ const SearchLoadingState = () => {
                                         <div className="p-3">
                                             <div className="flex items-center gap-2 mb-2">
                                                 <div className="w-8 h-8 rounded-md bg-orange-50 dark:bg-orange-900/20 animate-pulse flex items-center justify-center">
-                                                    <RedditLogo className="h-4 w-4 text-orange-500/30" />
+                                                    <MessageCircle className="h-4 w-4 text-orange-500/30" />
                                                 </div>
                                                 <div className="flex-1 space-y-1.5">
                                                     <div className="h-3.5 bg-neutral-100 dark:bg-neutral-800 rounded-md animate-pulse w-3/4" />
@@ -137,7 +136,7 @@ const ResultCard = ({ result }: { result: RedditResult }) => {
                 <div className="flex items-center gap-2 mb-2">
                     <div className="relative w-8 h-8 rounded-md bg-orange-50 dark:bg-orange-900/20 flex items-center justify-center overflow-hidden">
                         {!imageLoaded && (
-                            <RedditLogo weight="fill" className="h-4 w-4 text-orange-500" />
+                            <MessageCircle className="h-4 w-4 text-orange-500" />
                         )}
                         <img
                             src={`https://www.reddit.com/r/${subreddit}/favicon.ico`}
@@ -228,7 +227,7 @@ const RedditSearch: React.FC<{
                         <div className="flex items-center justify-between w-full">
                             <div className="flex items-center gap-2">
                                 <div className="p-1.5 rounded-md bg-orange-50 dark:bg-orange-900/20">
-                                    <RedditLogo className="h-3.5 w-3.5 text-orange-500" />
+                                    <MessageCircle className="h-3.5 w-3.5 text-orange-500" />
                                 </div>
                                 <h2 className="font-medium text-left text-sm">Reddit Results</h2>
                             </div>

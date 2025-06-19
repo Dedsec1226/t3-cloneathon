@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from '@/lib/utils';
 import { User } from '@/lib/db/schema';
-import { LinkedinLogo, RedditLogo, Share, XLogo } from '@phosphor-icons/react';
+import { Linkedin, MessageCircle, Share, MessageSquare } from 'lucide-react';
 import { ClassicLoader } from '@/components/ui/loading';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
@@ -250,7 +250,7 @@ const Navbar = memo(({
                                                             onClick={handleShareLinkedIn}
                                                             title="Share on LinkedIn"
                                                         >
-                                                        <LinkedinLogo size={16} />
+                                                        <Linkedin size={16} />
                                                         </Button>
                                                         <Button
                                                             variant="outline"
@@ -259,7 +259,7 @@ const Navbar = memo(({
                                                             onClick={handleShareTwitter}
                                                         title="Share on X"
                                                         >
-                                                        <XLogo size={16} />
+                                                        <MessageSquare size={16} />
                                                         </Button>
                                                         <Button
                                                             variant="outline"
@@ -268,7 +268,7 @@ const Navbar = memo(({
                                                             onClick={handleShareReddit}
                                                             title="Share on Reddit"
                                                         >
-                                                        <RedditLogo size={16} />
+                                                        <MessageCircle size={16} />
                                                         </Button>
                                                     </div>
                                             </div>

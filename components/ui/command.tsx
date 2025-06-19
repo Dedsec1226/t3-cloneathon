@@ -1,4 +1,5 @@
 import * as React from "react"
+import { motion, AnimatePresence } from "framer-motion"
 import { cn } from "@/lib/utils"
 
 const CommandDialog = React.forwardRef<
@@ -26,21 +27,42 @@ const CommandDialog = React.forwardRef<
     }
   }, [open, onOpenChange])
 
-  if (!open) return null
-
   return (
-    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm">
-      <div
-        ref={ref}
-        className={cn(
-          "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 sm:rounded-lg md:w-full",
-          className
-        )}
-        {...props}
-      >
-        {children}
-      </div>
-    </div>
+    <AnimatePresence>
+      {open && (
+        <>
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15, ease: "easeOut" }}
+            className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm"
+            onClick={() => onOpenChange(false)}
+          />
+          
+          {/* Dialog Content */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: -10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: -10 }}
+            transition={{ duration: 0.15, ease: "easeOut" }}
+            className="fixed left-[50%] top-[50%] z-50 translate-x-[-50%] translate-y-[-50%]"
+          >
+            <div
+              ref={ref}
+              className={cn(
+                "grid w-full max-w-lg gap-4 border bg-background p-6 shadow-lg sm:rounded-lg md:w-full",
+                className
+              )}
+              {...props}
+            >
+              {children}
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
   )
 })
 CommandDialog.displayName = "CommandDialog"

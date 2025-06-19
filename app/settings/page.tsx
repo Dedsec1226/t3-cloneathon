@@ -2,9 +2,54 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Copy } from 'lucide-react';
+import { Copy, LogIn } from 'lucide-react';
+import { useUser } from '@clerk/nextjs';
+import { toast } from 'sonner';
+import Link from 'next/link';
 
 export default function AccountPage() {
+  const { user, isLoaded } = useUser();
+
+  const handleCopyUserId = () => {
+    if (user?.id) {
+      navigator.clipboard.writeText(user.id);
+      toast.success('User ID copied to clipboard');
+    }
+  };
+
+  // Show loading state while checking authentication
+  if (!isLoaded) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  // Show sign in prompt if user is not authenticated
+  if (!user) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] text-center space-y-6">
+        <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
+          <LogIn className="w-8 h-8 text-muted-foreground" />
+        </div>
+        <div className="space-y-3">
+          <h2 className="text-2xl font-bold">Sign in required</h2>
+          <p className="text-muted-foreground max-w-md">
+            Please sign in to view your account information, manage your settings, and access premium features.
+          </p>
+        </div>
+        <Link 
+          href="/login"
+          className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
+        >
+          <LogIn className="mr-2 h-4 w-4" />
+          Sign In
+        </Link>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8">
       {/* Message Usage (Mobile Only) */}
@@ -81,28 +126,6 @@ export default function AccountPage() {
         </p>
       </div>
 
-      {/* Danger Zone */}
-      <div className="!mt-20">
-        <div className="w-fit space-y-2 border-0 border-muted-foreground/10">
-          <h2 className="text-2xl font-bold">Danger Zone</h2>
-          <div className="space-y-6">
-            <div className="space-y-2">
-              <p className="px-px py-1.5 text-sm text-muted-foreground/80">
-                Permanently delete your account and all associated data.
-              </p>
-              <div className="flex flex-row gap-2">
-                <Button 
-                  variant="destructive"
-                  className="border border-red-800/20 bg-red-800/80 hover:bg-red-600 dark:bg-red-800/20 hover:dark:bg-red-800"
-                >
-                  Delete Account
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Support Information (Mobile Only) */}
       <div className="mt-8 block md:hidden">
         <div className="w-fit space-y-2">
@@ -114,6 +137,7 @@ export default function AccountPage() {
             <Button 
               variant="outline"
               className="flex items-center gap-2"
+              onClick={handleCopyUserId}
             >
               <span>Copy User ID</span>
               <Copy className="h-4 w-4 text-muted-foreground" />

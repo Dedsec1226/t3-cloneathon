@@ -3,7 +3,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { XLogo, XLogoIcon } from '@phosphor-icons/react';
+import { MessageSquare } from 'lucide-react';
 import { Tweet } from 'react-tweet';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -78,7 +78,7 @@ const XSearchLoadingState = () => {
             <CardHeader className="pb-3">
                 <div className="flex items-center gap-3">
                     <div className="p-2 rounded-lg bg-neutral-50 dark:bg-neutral-800 animate-pulse">
-                        <XLogoIcon className="h-4 w-4 text-neutral-400" />
+                        <MessageSquare className="h-4 w-4 text-neutral-400" />
                     </div>
                     <div className="space-y-2 flex-1">
                         <div className="h-4 w-32 bg-neutral-200 dark:bg-neutral-700 rounded animate-pulse" />
@@ -169,7 +169,7 @@ const XSearch: React.FC<XSearchProps> = ({ result, args }) => {
                         <div className="flex items-center justify-between flex-1 min-w-0">
                             <div className="flex items-center gap-2.5 min-w-0 flex-1">
                                 <div className="p-1.5 rounded-md bg-black dark:bg-white flex-shrink-0">
-                                    <XLogo className="h-3.5 w-3.5 text-white dark:text-black" />
+                                    <MessageSquare className="h-3.5 w-3.5 text-white dark:text-black" />
                                 </div>
                                 <div className="text-left min-w-0 flex-1">
                                     <h3 className="font-medium text-sm">X Search Results</h3>
@@ -242,7 +242,7 @@ const XSearch: React.FC<XSearchProps> = ({ result, args }) => {
                                                         <SheetHeader className="px-4 sm:px-6 py-4 border-b border-neutral-200 dark:border-neutral-800">
                                                             <SheetTitle className="flex items-center gap-2.5">
                                                                 <div className="p-1.5 rounded-md bg-black dark:bg-white">
-                                                                    <XLogo className="h-3.5 w-3.5 text-white dark:text-black" />
+                                                                    <MessageSquare className="h-3.5 w-3.5 text-white dark:text-black" />
                                                                 </div>
                                                                 <span>All Posts ({tweetCitations.length})</span>
                                                             </SheetTitle>

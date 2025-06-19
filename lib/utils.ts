@@ -1,7 +1,6 @@
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
-import { Globe, Book, Youtube, MessageCircle, BarChart3, Hash, Telescope, Brain } from 'lucide-react';
-import { RedditLogo, XLogo } from '@phosphor-icons/react';
+import { Book, Youtube, MessageCircle, BarChart3, Brain, MessageSquare } from 'lucide-react';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -21,8 +20,8 @@ export interface SearchGroup {
 export const searchGroups: SearchGroup[] = [
   { id: 'academic', name: 'Academic', icon: Book, description: 'Academic research', show: true },
   { id: 'youtube', name: 'YouTube', icon: Youtube, description: 'YouTube videos', show: true },
-  { id: 'reddit', name: 'Reddit', icon: RedditLogo, description: 'Reddit discussions', show: true },
-  { id: 'x', name: 'X', icon: XLogo, description: 'X (Twitter) posts', show: true },
+  { id: 'reddit', name: 'Reddit', icon: MessageCircle, description: 'Reddit discussions', show: true },
+  { id: 'x', name: 'X', icon: MessageSquare, description: 'X (Twitter) posts', show: true },
   { id: 'analysis', name: 'Analytics', icon: BarChart3, description: 'Data analysis', show: true },
 
   { id: 'memory', name: 'Memory', icon: Brain, description: 'Personal AI memory', show: true, requireAuth: true },
