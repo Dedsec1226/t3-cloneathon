@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
-import React, { useState, memo } from 'react';
+import React, { useState, memo, useEffect } from 'react';
 import { Globe, Lock, Copy, Check, Cpu } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -49,6 +49,11 @@ const Navbar = memo(({
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [privateDropdownOpen, setPrivateDropdownOpen] = useState(false);
     const [isChangingVisibility, setIsChangingVisibility] = useState(false);
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
 
     const handleCopyLink = (e: React.MouseEvent) => {
@@ -101,7 +106,23 @@ const Navbar = memo(({
         }
     };
 
-
+    // Prevent hydration mismatch by not rendering theme-dependent content until mounted
+    if (!mounted) {
+        return (
+            <motion.div 
+                className="fixed top-0 left-0 right-0 navbar-layer flex justify-between items-center p-3 bg-background fix-hit-testing"
+            >
+                <div className="flex-1" />
+                <div className="flex items-center justify-center">
+                    {/* Placeholder content during hydration */}
+                </div>
+                <div className="flex items-center gap-3">
+                    <div className="w-8 h-8" /> {/* Theme toggle placeholder */}
+                    <div className="w-8 h-8 rounded-full bg-neutral-200 dark:bg-neutral-700" /> {/* User profile placeholder */}
+                </div>
+            </motion.div>
+        );
+    }
 
     return (
         <motion.div 
@@ -110,7 +131,7 @@ const Navbar = memo(({
             transition={{ duration: 0.3, ease: "easeOut" }}
             style={{ opacity: 1 }}
             className={cn(
-            "fixed top-0 left-0 right-0 navbar-layer flex justify-between items-center p-3 transition-colors duration-200 fix-hit-testing",
+            "fixed top-0 left-0 right-0 navbar-layer flex justify-between items-center p-3 transition-colors duration-75 fix-hit-testing",
             isDialogOpen
                 ? "bg-transparent"
                 : (status === "streaming" || status === 'ready'
@@ -142,7 +163,7 @@ const Navbar = memo(({
                                         <DropdownMenuTrigger asChild>
                                             <Button
                                                 variant="secondary"
-                                            className="rounded-lg pointer-events-auto flex items-center gap-2 px-4 py-2 text-sm bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-all duration-200 focus:outline-none! focus:ring-0!"
+                                            className="rounded-lg pointer-events-auto flex items-center gap-2 px-4 py-2 text-sm bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-all duration-75 focus:outline-none! focus:ring-0!"
                                                 disabled={isChangingVisibility}
                                             >
                                                 {isChangingVisibility ? (
@@ -260,7 +281,7 @@ const Navbar = memo(({
                                         <DropdownMenuTrigger asChild>
                                             <Button
                                                 variant="secondary"
-                                            className="rounded-lg pointer-events-auto flex items-center gap-2 px-4 py-2 text-sm bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-all duration-200 focus:outline-none"
+                                            className="rounded-lg pointer-events-auto flex items-center gap-2 px-4 py-2 text-sm bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-all duration-75 focus:outline-none"
                                                 disabled={isChangingVisibility}
                                             >
                                                 {isChangingVisibility ? (
@@ -327,13 +348,13 @@ const Navbar = memo(({
             <div className="flex-1 flex justify-end items-center gap-3">
                 {/* Settings and theme toggle group - always visible and clickable */}
                 <div className="force-pointer-events relative z-50 fix-hit-testing">
-                    <div className="flex flex-row items-center bg-gradient-noise-top text-muted-foreground gap-0.5 rounded-md p-1 transition-all rounded-bl-xl">
+                    <div className="flex flex-row items-center gap-0.5 rounded-md p-1 transition-all bg-[#fbe4f4] dark:bg-black/40 backdrop-blur-sm">
 
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <a aria-label="Go to settings" role="button" data-state="closed" href="/settings" data-discover="true">
-                                    <button className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-muted/40 hover:text-foreground disabled:hover:bg-transparent disabled:hover:text-foreground/50 size-8 bg-muted/20 dark:bg-muted/30 backdrop-blur-sm">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-settings2 size-4">
+                                    <button className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-black/10 dark:hover:bg-white/10 disabled:hover:bg-transparent disabled:hover:text-foreground/50 size-8 text-[#b83268] dark:text-pink-200">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-4">
                                             <path d="M20 7h-9"></path>
                                             <path d="M14 17H5"></path>
                                             <circle cx="17" cy="17" r="3"></circle>

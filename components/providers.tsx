@@ -25,8 +25,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <NuqsAdapter>
           <ThemeProvider
             attribute="class"
-            defaultTheme="system"
-            enableSystem
+            defaultTheme="dark"
+            enableSystem={false}
             disableTransitionOnChange
           >
           {children}

@@ -1,15 +1,14 @@
 "use client";
 
-import { Menu, Search, LogIn, Plus } from "lucide-react";
+import { Menu, Search, Plus } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useSidebarStore } from "@/lib/sidebar-store";
 
-export default function Sidebar({ sidebarOpen, setSidebarOpen }: {
-  sidebarOpen: boolean;
-  setSidebarOpen: (open: boolean) => void;
-}) {
+export default function Sidebar() {
+  const { isOpen: sidebarOpen, setSidebarOpen } = useSidebarStore();
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -38,43 +37,54 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: {
     <>
       {/* Sidebar */}
       <div
-        className={`fixed top-0 left-0 h-full w-64 ${sidebarBg} shadow-lg z-40 flex flex-col justify-between transform transition-transform duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] rounded-tr-2xl rounded-br-2xl ${
+        className={`fixed top-0 left-0 h-full w-64 ${sidebarBg} shadow-lg z-[55] flex flex-col justify-between transform transition-transform duration-200 ease-out rounded-tr-2xl rounded-br-2xl ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         <div>
-          <div className="w-full flex justify-center pt-5 pb-6">
-            <span className={`text-lg font-bold tracking-tight select-none ${isDark ? 'text-pink-200' : 'text-[#b83268]'}`}>
-              T3.Chat
+          {/* Header section with consistent spacing */}
+          <div className="w-full flex justify-center pt-8 pb-4 bg-inherit">
+            <span className={`text-xl font-bold tracking-tight select-none ${isDark ? 'text-pink-200' : 'text-[#b83268]'} drop-shadow-sm`}>
+              T3
             </span>
           </div>
-          <div className="flex flex-col items-center px-4">
-            <button className={`w-full py-2 rounded-xl ${newChatBtn} font-semibold text-base shadow-sm hover:brightness-110 transition mb-6`}>
+          
+          {/* Content section with consistent padding */}
+          <div className="flex flex-col px-4 space-y-4">
+            {/* New Chat button with proper spacing */}
+            <button className={`w-full py-3 rounded-xl ${newChatBtn} font-semibold text-sm shadow-sm hover:brightness-110 transition duration-200`}>
               New Chat
             </button>
-            <div className={`w-full flex items-center bg-transparent border-b ${searchBarBorder} py-1 mb-2`}>
-              <Search className={`h-4 w-4 mr-2 ${searchIcon}`} />
+            
+            {/* Search bar with consistent styling */}
+            <div className={`w-full flex items-center bg-transparent border-b ${searchBarBorder} py-2`}>
+              <Search className={`h-4 w-4 mr-3 ${searchIcon}`} />
               <input
                 type="text"
                 placeholder="Search your threads..."
-                className={`flex-1 text-sm ${searchInput}`}
+                className={`flex-1 text-sm ${searchInput} py-1`}
               />
             </div>
           </div>
         </div>
-        <div className="pl-8 pb-6 flex">
-          <Link href="/login" className={`flex items-center gap-2 ${loginText} ${loginHover} transition text-base mb-2`}>
-            <LogIn className="h-4 w-4" />
+        {/* Bottom section with consistent padding */}
+        <div className="px-4 pb-6">
+          <Link href="/login" className={`flex items-center gap-3 ${loginText} ${loginHover} transition duration-200 text-sm p-2 rounded-lg hover:bg-black/10 dark:hover:bg-white/10`}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-4">
+              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+              <polyline points="10 17 15 12 10 7"></polyline>
+              <line x1="15" x2="3" y1="12" y2="12"></line>
+            </svg>
             <span>Login</span>
           </Link>
         </div>
       </div>
 
       {/* Toggle/Search/Plus */}
-      <div className={`fixed top-4 left-4 z-[100] flex items-center gap-1 ${toggleGroupBg} rounded-lg px-2 py-1 backdrop-blur-md`}>
+      <div className={`fixed top-4 left-4 z-[100] flex items-center gap-1 ${toggleGroupBg} rounded-lg px-2 py-1.5 backdrop-blur-md shadow-sm`}>
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
-          className={btnClass + ` ${toggleIcon}`}
+          className={`${btnClass} ${toggleIcon} hover:bg-black/10 dark:hover:bg-white/10`}
           aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
         >
           <Menu className="h-4 w-4" />
@@ -83,23 +93,23 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: {
           {!sidebarOpen && (
             <>
               <motion.button
-                className={btnClass + ` ${searchIcon}`}
+                className={`${btnClass} ${searchIcon} hover:bg-black/10 dark:hover:bg-white/10`}
                 initial={{ opacity: 1, x: 0, scaleX: 1 }}
                 animate={{ opacity: 1, x: 0, scaleX: 1 }}
                 exit={{ opacity: 0, x: -12, scaleX: 0.2 }}
-                transition={{ duration: 0.12 }}
+                transition={{ duration: 0.08 }}
               >
                 <Search className="h-4 w-4" />
               </motion.button>
               <motion.button
-                className={btnClass + ` opacity-40 cursor-not-allowed ${plusIcon}`}
+                className={`${btnClass} opacity-40 cursor-not-allowed ${plusIcon}`}
                 disabled
                 initial={{ opacity: 1, x: 0, scaleX: 1 }}
                 animate={{ opacity: 1, x: 0, scaleX: 1 }}
                 exit={{ opacity: 0, x: -12, scaleX: 0.2 }}
-                transition={{ duration: 0.12 }}
+                transition={{ duration: 0.08 }}
               >
-                <Plus className="h-4 w-4 mx-auto" />
+                <Plus className="h-4 w-4" />
               </motion.button>
             </>
           )}

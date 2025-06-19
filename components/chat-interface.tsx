@@ -28,6 +28,7 @@ import { useAutoResume } from '@/hooks/use-auto-resume';
 import { useRouter } from 'next/navigation';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Navbar } from '@/components/navbar';
+import { useSidebarStore } from '@/lib/sidebar-store';
 
 // import { SignInPromptDialog } from '@/components/sign-in-prompt-dialog';
 
@@ -74,6 +75,9 @@ const ChatInterface = memo(({ initialChatId, initialMessages, initialVisibility 
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const [user, setUser] = useState<User | null>(null);
     const [isStoppedByUser, setIsStoppedByUser] = useState(false);
+    
+    // Get sidebar state
+    const { isOpen: sidebarOpen } = useSidebarStore();
 
     // Generate random UUID once for greeting selection
     const greetingUuidRef = useRef<string>(uuidv4());
@@ -638,7 +642,10 @@ const ChatInterface = memo(({ initialChatId, initialMessages, initialVisibility 
 
     return (
         <TooltipProvider>
-            <div className="flex flex-col font-sans! items-center h-screen bg-background text-foreground transition-all duration-500">
+            <div className={cn(
+                "flex flex-col font-sans! items-center h-screen bg-background text-foreground transition-all duration-200 ease-out",
+                sidebarOpen && "sidebar-open"
+            )}>
                 <Navbar
                     isDialogOpen={anyDialogOpen}
                     chatId={initialChatId || (messages.length > 0 ? chatId : null)}
@@ -675,25 +682,30 @@ const ChatInterface = memo(({ initialChatId, initialMessages, initialVisibility 
                     }}
                 /> */}
 
-                {/* FIXED: Use consistent layout that doesn't jump between states */}
+                {/* FIXED: Use consistent layout that properly aligns with form component */}
                 <div className="flex-1 w-full relative overflow-hidden content-layer">
-                    {/* Main scrollable content area with consistent positioning */}
-                    <div className={`h-full ${
+                    {/* Main scrollable content area with sidebar-aware positioning */}
+                    <div className={`h-full transition-all duration-300 cubic-bezier(0.4, 0.0, 0.2, 1) ${
                         status === 'ready' && messages.length === 0
-                        ? 'flex flex-col justify-between px-4' 
+                        ? 'flex flex-col justify-between' 
                         : 'overflow-y-auto pt-20 pb-32'
-                    }`}>
+                    } ${sidebarOpen ? 'ml-[250px]' : 'ml-0'}`}>
                     
-                    {/* Content wrapper - centers empty state, flows normally for messages */}
+                    {/* Content wrapper - centers empty state properly accounting for sidebar, flows normally for messages */}
                     <div className={`${
                         status === 'ready' && messages.length === 0
-                        ? 'flex-1 flex items-center justify-center' 
+                        ? sidebarOpen 
+                            ? 'flex-1 flex items-center justify-center' 
+                            : 'flex-1 flex items-center justify-center' 
                         : 'w-full max-w-[95%] sm:max-w-2xl mx-auto space-y-6 p-2 sm:p-4'
-                    } transition-all duration-300`}>
+                    } transition-all duration-300 cubic-bezier(0.4, 0.0, 0.2, 1)`}>
                         
-                        {/* Empty state content */}
+                        {/* Empty state content - matching form component structure exactly */}
                         {status === 'ready' && messages.length === 0 && !input.trim() && (
-                            <div className="w-full max-w-2xl mx-auto space-y-4 px-2 pt-[calc(max(2vh,0.5rem))] pb-6 duration-300 animate-in fade-in-50 zoom-in-95 sm:px-8">
+                            <div className={cn(
+                                "w-full max-w-3xl mx-auto px-4 space-y-4 pt-[calc(max(2vh,0.5rem))] pb-6 duration-300 animate-in fade-in-50 zoom-in-95",
+                                !sidebarOpen && "transform -translate-x-[125px]"
+                            )}>
                                 <h1 className="text-4xl font-semibold text-left">
                                     How can I help you?
                                 </h1>
@@ -839,9 +851,12 @@ const ChatInterface = memo(({ initialChatId, initialMessages, initialVisibility 
                         !initialChatId || 
                         (!user && selectedVisibilityType === 'private')
                     ) && (
-                        <div className="pb-4 px-4">
+                        <div className={cn(
+                            "pb-4 px-4 transition-all duration-200 ease-out",
+                            sidebarOpen ? "" : ""
+                        )}>
                             <div className="w-full flex justify-center">
-                                <div className="prose max-w-none rounded-t-md border border-secondary/40 bg-chat-background/50 py-2 px-6 text-sm text-secondary-foreground/80 backdrop-blur-md blur-fallback:bg-chat-background text-center inline-block mx-auto">
+                                <div className="prose max-w-none rounded-t-md border border-secondary/40 bg-chat-background/50 py-2 px-6 text-sm text-secondary-foreground/80 backdrop-blur-md blur-fallback:bg-chat-background text-center inline-block mx-auto transition-all duration-200 ease-out">
                                     <span className="font-semibold text-center block">Make sure you agree to our <a href="/terms-of-service" className="text-foreground hover:text-primary dark:hover:text-muted-foreground underline font-semibold">Terms</a> and our <a href="/privacy-policy" className="text-foreground hover:text-primary dark:hover:text-muted-foreground underline font-semibold">Privacy Policy</a></span>
                                 </div>
                             </div>
@@ -857,7 +872,10 @@ const ChatInterface = memo(({ initialChatId, initialMessages, initialVisibility 
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: 20 }}
                                 transition={{ duration: 0.2 }}
-                                className="fixed bottom-32 right-6 z-[9999]"
+                                className={cn(
+                                    "fixed bottom-32 z-[9999] transition-all duration-200 ease-out",
+                                    sidebarOpen ? "right-6" : "right-6"
+                                )}
                                 style={{ zIndex: 9999 }}
                             >
                                 <button
@@ -878,8 +896,14 @@ const ChatInterface = memo(({ initialChatId, initialMessages, initialVisibility 
                     {((user && isOwner) || 
                       !initialChatId || 
                       (!user && selectedVisibilityType === 'private')) && (
-                        <div className="fixed bottom-0 left-0 right-0 form-layer bg-gradient-to-t from-background via-background/95 to-background/80 backdrop-blur-sm border-t border-border/30 force-pointer-events fix-hit-testing">
-                            <div className="w-full max-w-3xl mx-auto px-4 pt-3">
+                        <div className={cn(
+                            "fixed bottom-0 form-layer bg-gradient-to-t from-background via-background/95 to-background/80 backdrop-blur-sm border-t border-border/30 force-pointer-events fix-hit-testing transition-all duration-200 ease-out",
+                            sidebarOpen ? "left-[250px] right-0" : "left-0 right-0"
+                        )}>
+                            <div className={cn(
+                                "w-full max-w-3xl mx-auto px-4 pt-3",
+                                !sidebarOpen && "transform -translate-x-[125px]"
+                            )}>
                             <FormComponent
                                 chatId={chatId}
                                 input={input}
